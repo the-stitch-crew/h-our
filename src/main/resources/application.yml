@@ -4,5 +4,5 @@ spring:
   config:
     import:
       - optional:file:.env[.yml]
-      - optional:file:.env.${spring.profiles.active}[.yml]
+      - optional:file:.env.${spring.profiles.active}[.properties]
 
