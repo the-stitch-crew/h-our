@@ -1,4 +1,4 @@
-package stitch.crew.hour.auth.dto;
+package stitch.crew.hour.user.dto;
 
 import java.time.LocalDate;
 

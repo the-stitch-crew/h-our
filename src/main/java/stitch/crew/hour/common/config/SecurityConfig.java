@@ -18,8 +18,12 @@ public class SecurityConfig {
                 .httpBasic(basic -> basic.disable())
                 .formLogin(formLogin -> formLogin.disable())
                 .authorizeHttpRequests(auth ->auth
-                        .anyRequest().permitAll()
+                    .requestMatchers("/api/auth/**").permitAll()
+                    .requestMatchers("/api/admin/**").hasRole("ADMIN")
+                    .anyRequest().permitAll()
                 )
                 .build();
     }
+
+
 }
