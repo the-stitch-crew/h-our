@@ -6,3 +6,15 @@ spring:
       - optional:file:.env[.yml]
       - optional:file:.env.${spring.profiles.active}[.properties]
 
+
+springdoc:
+  api-docs:
+    enabled: true
+    path: /v3/api-docs
+  swagger-ui:
+    enabled: true
+    path: /v3/swagger-ui
+    operations-sorter: method
+    display-request-duration: true
+    doc-expansion: none
+    persist-authorization: true
