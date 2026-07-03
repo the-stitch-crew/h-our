@@ -9,7 +9,7 @@ import org.springframework.http.HttpStatus;
 public enum ErrorCode {
     /*category*/
     EXIST_CATEGORY(HttpStatus.CONFLICT, "중복된 카테고리 이름입니다."),
-    CATEGORY_NOT_FOUND(HttpStatus.CONFLICT, "카테고리를 찾을 수 없습니다."),
+    CATEGORY_NOT_FOUND(HttpStatus.NOT_FOUND, "카테고리를 찾을 수 없습니다."),
 
 
     // 상품

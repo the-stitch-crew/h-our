@@ -15,6 +15,7 @@ public enum SuccessCode {
     CATEGORY_CREATED("카테고리가 정상적으로 생성되었습니다."),
     CATEGORY_READ("카테고리가 정상적으로 조회되었습니다."),
     CATEGORY_UPDATED("카테고리가 정상적으로 수정되었습니다."),
+    CATEGORY_DELETED("카테고리가 정상적으로 삭제되었습니다."),
 
     BUSINESS_SUCCESS("정상적으로 작성되었습니다.");
 

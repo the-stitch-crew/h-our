@@ -39,4 +39,12 @@ public class CategoryService {
         PreConditions.validate(!categoryRepository.existsByName(request.name()), ErrorCode.EXIST_CATEGORY);
         category.update(request.name(), request.thumbnail());
     }
+
+
+    @Transactional
+    public void deleteCategory(Long categoryId) {
+        Category category = categoryRepository.findById(categoryId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.CATEGORY_NOT_FOUND));
+        categoryRepository.delete(category);
+    }
 }

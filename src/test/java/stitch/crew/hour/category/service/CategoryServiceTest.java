@@ -189,5 +189,51 @@ class CategoryServiceTest {
         }
 
     }
+    @Nested
+    @DisplayName("Discribe: deleteCategory 메서드는")
+    class Describe_with_deleteCategory {
+        String name = "거거거거";
+        Long categoryId = 1L;
+
+        @Nested
+        @DisplayName("Context: 올바른 데이터가 주어지면")
+        class Context_with_available_data {
+            @BeforeEach
+            void setup() {
+                category = new Category(name, thumbnail);
+                ReflectionTestUtils.setField(category, "id", 1L);
+            }
+
+            @Test
+            @DisplayName("It : Category 삭제 성공")
+            void it_success_category_delete() {
+                //given
+                given(categoryRepository.findById(categoryId)).willReturn(Optional.of(category));
+                //when
+                categoryService.deleteCategory(categoryId);
+
+                //then
+                verify(categoryRepository).delete(category);
+            }
+        }
+        @Nested
+        @DisplayName("Context: 잘못된 categoryId가 주어지면")
+        class Context_with_unavailable_id {
+            @BeforeEach
+            void setup() {
+            }
+
+            @Test
+            @DisplayName("It : CATEGORY_NOT_FOUND 오류 발생")
+            void it_throws_category_not_found() {
+                //given
+                given(categoryRepository.findById(categoryId)).willReturn(Optional.empty());
+                //when
+                BusinessException exception = assertThrows(
+                        BusinessException.class, () -> categoryService.deleteCategory(categoryId));
+                assertThat(exception.getMessage()).isEqualTo(ErrorCode.CATEGORY_NOT_FOUND.getMessage());
+            }
+        }
+    }
 
 }
