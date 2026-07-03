@@ -5,13 +5,13 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import lombok.RequiredArgsConstructor;
+import stitch.crew.hour.common.util.PreConditions;
 import stitch.crew.hour.user.dto.SignupRequest;
 import stitch.crew.hour.common.exception.ErrorCode;
 import stitch.crew.hour.user.constant.Role;
 import stitch.crew.hour.user.domain.User;
 import stitch.crew.hour.user.dto.SignupResponse;
 import stitch.crew.hour.user.repository.UserRepository;
-import stitch.crew.hour.util.PreConditions;
 
 @Service
 @RequiredArgsConstructor

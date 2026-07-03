@@ -12,6 +12,8 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import stitch.crew.hour.common.response.ApiResponse;
+import stitch.crew.hour.common.response.ApiResult;
+import stitch.crew.hour.common.response.SuccessCode;
 import stitch.crew.hour.user.dto.SignupRequest;
 import stitch.crew.hour.user.dto.SignupResponse;
 import stitch.crew.hour.user.service.UserService;
@@ -28,13 +30,8 @@ public class UserController {
 	public ResponseEntity<ApiResponse<SignupResponse>> signUp(
 		@Valid @RequestBody SignupRequest request
 	){
-		return ResponseEntity.status(HttpStatus.CREATED)
-			.body(
-				ApiResponse.created(
-					userService.signup(request),
-					"회원가입 성공"
-				)
-			);
+		SignupResponse response = userService.signup(request);
+		return ApiResult.created(SuccessCode.USER_CREATED, response);
 	}
 
 }
