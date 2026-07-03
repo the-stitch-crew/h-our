@@ -28,4 +28,10 @@ public class CategoryAdminController {
         categoryService.updateCategory(categoryId, request);
         return ApiResult.ok(SuccessCode.CATEGORY_UPDATED);
     }
+
+    @DeleteMapping("/{categoryId}")
+    public ResponseEntity<ApiResponse<Void>> deleteCategory (@PathVariable Long categoryId) {
+        categoryService.deleteCategory(categoryId);
+        return ApiResult.ok(SuccessCode.CATEGORY_DELETED);
+    }
 }
