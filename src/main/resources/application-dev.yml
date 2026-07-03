@@ -25,5 +25,5 @@ custom:
       access: 900000  # 15분
       refresh: 604800000  #7일
     secrets:
-      app-key: ${jwt.app-key}
-      origin-key: ${jwt.secret-key}
+      app-key: ${JWT_APP_KEY}
+      origin-key: ${JWT_SECRET_KEY}
