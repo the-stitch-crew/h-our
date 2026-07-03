@@ -6,3 +6,9 @@ spring:
       - optional:file:.env[.yml]
       - optional:file:.env.${spring.profiles.active}[.properties]
 
+
+
+custom:
+  redis:
+    host: ${REDIS_HOST}
+    port: ${REDIS_PORT}
