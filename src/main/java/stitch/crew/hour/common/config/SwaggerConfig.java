@@ -12,9 +12,9 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 @OpenAPIDefinition(
         info = @Info(
-                title = "테크업 쇼핑몰",
+                title = "h'our",
                 version = "0.0.1",
-                description = "테크업 쇼핑몰 API 명세  "
+                description = "h'our API 명세  "
         )
 )
 public class SwaggerConfig {
@@ -50,37 +50,46 @@ public class SwaggerConfig {
     @Bean
     public GroupedOpenApi productApi(){
         return GroupedOpenApi.builder()
-                .pathsToMatch("/api/products/*","/api/admin/products/*")
+                .pathsToMatch("/api/admin/products", "/api/products","/api/products/*","/api/admin/products/*")
+                .group("Produce API")
                 .build();
     }
     @Bean
     public GroupedOpenApi categoryApi(){
         return GroupedOpenApi.builder()
-                .pathsToMatch("/api/categories/*","/api/admin/categories/*")
+                .pathsToMatch("/api/admin/categories", "/api/categories", "/api/categories/*","/api/admin/categories/*")
+                .group("Category API")
                 .build();
     }
     @Bean
     public GroupedOpenApi orderApi(){
         return GroupedOpenApi.builder()
-                .pathsToMatch("/api/orders/*","/api/admin/orders/*")
+                .pathsToMatch("/api/admin/orders", "/api/orders", "/api/orders/*","/api/admin/orders/*")
+                .group("Order API")
                 .build();
     }
     @Bean
     public GroupedOpenApi cartApi(){
         return GroupedOpenApi.builder()
-                .pathsToMatch("/api/carts/*","/api/admin/carts/*")
+                .pathsToMatch("/api/admin/carts", "/api/carts", "/api/carts/*","/api/admin/carts/*")
+                .group("Cart API")
                 .build();
     }
     @Bean
     public GroupedOpenApi paymentApi(){
         return GroupedOpenApi.builder()
-                .pathsToMatch("/api/payments/*","/api/admin/payments/*")
+                .pathsToMatch("/api/admin/payments", "/api/payments","/api/payments/*","/api/admin/payments/*")
+                .group("Payment API")
                 .build();
     }
     @Bean
     public GroupedOpenApi reservationApi(){
         return GroupedOpenApi.builder()
-                .pathsToMatch("/api/reservations/*","/api/admin/reservations/*", "/api/lessons/*" , "/api/admin/lessons/*")
+                .pathsToMatch(
+                        "/api/admin/reservations", "/api/reservations", "/api/reservations/*","/api/admin/reservations/*",
+                        "/api/admin/lessons", "/api/lessons", "/api/lessons/*" , "/api/admin/lessons/*"
+                )
+                .group("Reservation API")
                 .build();
     }
 }
