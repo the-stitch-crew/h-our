@@ -10,23 +10,24 @@
 
 ## 영향 받는 도메인
 - [ ] User
-- [ ] File
-- [x] Post
-- [ ] Request
-- [ ] Comment/Category/Search
-- [ ] DM
-- [ ] Infra
+- [ ] Category
+- [x] Product
+- [ ] Order
+- [ ] Bucket
+- [ ] Payment
+- [ ] Lesson
+- [ ] Reservation
 
 ## 테스트
 - (어떻게 검증했는지: 단위 테스트 / 통합테스트=> 해당 API 모두) + 슬라이스 테스트는 자율
 
 ## 체크리스트
-- [ ] `./gradlew clean compileJava test` 통과
+- [ ] CI 통과
 - [ ] 응답이 `ApiResponse<T>` 래핑 (Response 형식 응답 통일)
-- [ ] API 변경 있으면 `04_api/` 동기 수정
+- [ ] API 변경 있으면 API 문서 수정
 
 ## ERD/API 변경
-- [ ] 변경 없음
-- [ ] 있음 → `기획/04_api/` 또는 `03_erd/` 도 같은 PR에서 수정
+- [ ] ERD 변경
+- [ ] API 변경
 
 ## 기타 사항 기입
