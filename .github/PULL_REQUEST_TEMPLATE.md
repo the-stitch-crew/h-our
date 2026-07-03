@@ -17,6 +17,7 @@
 - [ ] Payment
 - [ ] Lesson
 - [ ] Reservation
+- [ ] Infra
 
 ## 테스트
 - (어떻게 검증했는지: 단위 테스트 / 통합테스트=> 해당 API 모두) + 슬라이스 테스트는 자율
