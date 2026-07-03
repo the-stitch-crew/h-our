@@ -1,12 +1,13 @@
-package stitch.crew.hour.common.product.domain;
+package stitch.crew.hour.product.domain;
 
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.apache.logging.log4j.util.Strings;
+import stitch.crew.hour.category.domain.Category;
 import stitch.crew.hour.common.domain.BaseEntity;
-import stitch.crew.hour.common.product.constant.ProductStatus;
+import stitch.crew.hour.product.constant.ProductStatus;
 
 @Entity
 @Setter
@@ -45,6 +46,13 @@ public class Product extends BaseEntity {
     @Column(nullable = false)
     private Boolean isMain;
 
+    @ManyToOne(optional = false)
+    @JoinColumn(
+            name = "category_id",
+            nullable = false
+    )
+    private Category category;
+
     public Product(
             String name,
             Long price,
@@ -59,6 +67,11 @@ public class Product extends BaseEntity {
         this.isMain = false;
         if (Strings.isNotBlank(summary)) this.summary = summary;
         if (Strings.isNotBlank(description)) this.description = description;
+    }
+
+    public void setCategory(Category category){
+        this.category = category;
+        category.getProducts().add(this);
     }
 
     public void updateContent(String name, Long price){

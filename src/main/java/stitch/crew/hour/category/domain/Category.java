@@ -5,6 +5,10 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import stitch.crew.hour.common.domain.BaseEntity;
+import stitch.crew.hour.product.domain.Product;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Getter
@@ -20,6 +24,9 @@ public class Category extends BaseEntity {
     private String name;
 
     private String thumbnail;
+
+    @OneToMany(mappedBy = "category")
+    private List<Product> products = new ArrayList<>();
 
     public Category(String name, String thumbnail) {
         this.name = name;
