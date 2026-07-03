@@ -1,8 +1,13 @@
 package stitch.crew.hour.category.dto;
 
-import java.util.List;
+import stitch.crew.hour.category.domain.Category;
 
 public record CategoryResponse(
-        List<CategoryInfo> categoryList
+        Long id,
+        String name,
+        String thumbnail
 ) {
+    public static CategoryResponse from(Category category) {
+        return new CategoryResponse(category.getId(), category.getName(), category.getThumbnail());
+    }
 }
