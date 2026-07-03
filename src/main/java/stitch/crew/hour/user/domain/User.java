@@ -1,6 +1,6 @@
 package stitch.crew.hour.user.domain;
 
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 
 import org.apache.logging.log4j.util.Strings;
 
@@ -16,6 +16,7 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import stitch.crew.hour.common.domain.BaseEntity;
+import stitch.crew.hour.user.constant.Gender;
 import stitch.crew.hour.user.constant.Role;
 
 @Entity
@@ -38,14 +39,15 @@ public class User extends BaseEntity {
 	private String password;
 
 	@Column(nullable = false)
-	private LocalDateTime birthDate;
+	private LocalDate birthDate;
 
 	@Column(nullable = false)
 	@Enumerated(EnumType.STRING)
 	private Role role;
 
 	@Column(nullable = false)
-	private String gender;
+	@Enumerated(EnumType.STRING)
+	private Gender gender;
 
 	@Column()
 	private String provider;
@@ -66,9 +68,9 @@ public class User extends BaseEntity {
 		String userName,
 		String email,
 		String password,
-		LocalDateTime birthDate,
+		LocalDate birthDate,
 		Role role,
-		String gender,
+		Gender gender,
 		String provider,
 		String phoneNumber,
 		String nationality,
