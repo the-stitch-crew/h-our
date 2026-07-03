@@ -18,6 +18,7 @@ import tools.jackson.databind.ObjectMapper;
 
 import static org.mockito.Mockito.doNothing;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -188,6 +189,175 @@ class CategoryAdminControllerTest {
                 //when-then
                 mockMvc.perform(
                                 post("/api/admin/categories")
+                                        .with(csrf())
+                                        .contentType(MediaType.APPLICATION_JSON)
+                                        .content(om.writeValueAsString(request))
+                        )
+                        .andExpect(status().isBadRequest())
+                        .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                        .andExpect(jsonPath("$.code").value(ErrorCode.VALIDATION_FAILED.name()))
+                        .andExpect(jsonPath("$.message").value("썸네일은 null이 허용되지 않습니다."))
+                        .andDo(print());
+            }
+        }
+    }
+    @Nested
+    @DisplayName("Discribe: PATCH /{categoryId} 엔드포인트는")
+    class updateCategory {
+        Long categoryId;
+        CategoryRequest request;
+        String name2;
+
+        @Nested
+        @DisplayName("Context: 올바른 데이터가 주어지면")
+        class Context_with_available_data {
+            @BeforeEach
+            void setUp() {
+                categoryId = 1L;
+                name = "거거거거";
+                name2 = "거거거거2";
+                thumbnail="ㅠㅠㅠㅠㅠ";
+                request = new CategoryRequest(name2, thumbnail);
+            }
+
+            @Test
+            @DisplayName("It : 200 상태와 성공 메시지를 반환한다")
+            void it_return_200_ok_and_success_message() throws Exception {
+                //given
+                doNothing().when(categoryService).updateCategory(categoryId, request);
+
+                //when-then
+                mockMvc.perform(
+                                patch("/api/admin/categories/" + categoryId)
+                                        .with(csrf())
+                                        .contentType(MediaType.APPLICATION_JSON)
+                                        .content(om.writeValueAsString(request))
+                        )
+                        .andExpect(status().isOk())
+                        .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                        .andExpect(jsonPath("$.code").value(SuccessCode.CATEGORY_UPDATED.name()))
+                        .andExpect(jsonPath("$.message").value(SuccessCode.CATEGORY_UPDATED.getSuccessMessage()))
+                        .andDo(print());
+            }
+
+            @Test
+            @DisplayName("It : 썸네일이 빈값이어도 200 상태와 성공 메시지를 반환한다")
+            void it_return_200_ok_and_success_message_if_enmpty_thumbnail() throws Exception {
+                //given
+                thumbnail="";
+                request = new CategoryRequest(name2, thumbnail);
+                doNothing().when(categoryService).updateCategory(categoryId, request);
+
+                //when-then
+                mockMvc.perform(
+                                patch("/api/admin/categories/" + categoryId)
+                                        .with(csrf())
+                                        .contentType(MediaType.APPLICATION_JSON)
+                                        .content(om.writeValueAsString(request))
+                        )
+                        .andExpect(status().isOk())
+                        .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                        .andExpect(jsonPath("$.code").value(SuccessCode.CATEGORY_UPDATED.name()))
+                        .andExpect(jsonPath("$.message").value(SuccessCode.CATEGORY_UPDATED.getSuccessMessage()))
+                        .andDo(print());
+            }
+        }
+
+        @Nested
+        @DisplayName("Context: name의 형식이 맞지 않으면")
+        class Context_with_unavailable_name {
+            @BeforeEach
+            void setUp() {
+                categoryId = 1L;
+                thumbnail="ㅠㅠㅠㅠㅠ";
+            }
+
+            @Test
+            @DisplayName("(이름이 null일때) It : 400 상태와 검증 메시지를 반환한다")
+            void it_return_400_bad_request_and_valid_message_if_name_null() throws Exception {
+                //given
+                name2 = null;
+                request = new CategoryRequest(name2, thumbnail);
+                doNothing().when(categoryService).updateCategory(categoryId, request);
+
+                //when-then
+                mockMvc.perform(
+                                patch("/api/admin/categories/" + categoryId)
+                                        .with(csrf())
+                                        .contentType(MediaType.APPLICATION_JSON)
+                                        .content(om.writeValueAsString(request))
+                        )
+                        .andDo(print())
+                        .andExpect(status().isBadRequest())
+                        .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                        .andExpect(jsonPath("$.code").value(ErrorCode.VALIDATION_FAILED.name()))
+                        .andExpect(jsonPath("$.message").value("name은 필수값입니다."));
+            }
+
+            @Test
+            @DisplayName("(이름이 empty일때) It : 400 상태와 검증 메시지를 반환한다")
+            void it_return_400_bad_request_and_valid_message_if_name_empty() throws Exception {
+                //given
+                name2 = "";
+                request = new CategoryRequest(name2, thumbnail);
+                doNothing().when(categoryService).updateCategory(categoryId, request);
+
+                //when-then
+                mockMvc.perform(
+                                patch("/api/admin/categories/" + categoryId)
+                                        .with(csrf())
+                                        .contentType(MediaType.APPLICATION_JSON)
+                                        .content(om.writeValueAsString(request))
+                        )
+                        .andExpect(status().isBadRequest())
+                        .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                        .andExpect(jsonPath("$.code").value(ErrorCode.VALIDATION_FAILED.name()))
+                        .andExpect(jsonPath("$.message").value("name은 필수값입니다."))
+                        .andDo(print());
+            }
+
+            @Test
+            @DisplayName("(이름이 20자를 넘을때) It : 400 상태와 검증 메시지를 반환한다")
+            void it_return_400_bad_request_and_valid_message_if_name_greater_20() throws Exception {
+                //given
+                name2="가나다라마바사아자차카타파하가나다라마바사아자";
+                request = new CategoryRequest(name2, thumbnail);
+                doNothing().when(categoryService).save(request);
+
+                //when-then
+                mockMvc.perform(
+                                patch("/api/admin/categories/" + categoryId)
+                                        .with(csrf())
+                                        .contentType(MediaType.APPLICATION_JSON)
+                                        .content(om.writeValueAsString(request))
+                        )
+                        .andExpect(status().isBadRequest())
+                        .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                        .andExpect(jsonPath("$.code").value(ErrorCode.VALIDATION_FAILED.name()))
+                        .andExpect(jsonPath("$.message").value("name은 최대 20자입니다."))
+                        .andDo(print());
+            }
+        }
+        @Nested
+        @DisplayName("Context: thumbnail의 형식이 맞지 않으면")
+        class Context_with_unavailable_thumbnail {
+            @BeforeEach
+            void setUp() {
+                categoryId = 1L;
+                name2 = "거거거거";
+                thumbnail = null;
+                request = new CategoryRequest(name2, thumbnail);
+            }
+
+            @Test
+            @DisplayName("(썸네일이 null일때) It : 400 상태와 검증 메시지를 반환한다")
+            void it_return_400_bad_request_and_valid_message_if_name_null() throws Exception {
+                //given
+                doNothing().when(categoryService).updateCategory(categoryId, request);
+
+                //when-then
+                mockMvc.perform(
+                                patch("/api/admin/categories/" + categoryId)
                                         .with(csrf())
                                         .contentType(MediaType.APPLICATION_JSON)
                                         .content(om.writeValueAsString(request))

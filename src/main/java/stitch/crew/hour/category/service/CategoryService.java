@@ -34,7 +34,8 @@ public class CategoryService {
 
     @Transactional
     public void updateCategory(Long categoryId, @Valid CategoryRequest request) {
-        Category category = categoryRepository.findById(categoryId).orElseThrow(() -> new BusinessException(ErrorCode.CATEGORY_NOT_FOUND));
+        Category category = categoryRepository.findById(categoryId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.CATEGORY_NOT_FOUND));
         PreConditions.validate(!categoryRepository.existsByName(request.name()), ErrorCode.EXIST_CATEGORY);
         category.update(request.name(), request.thumbnail());
     }

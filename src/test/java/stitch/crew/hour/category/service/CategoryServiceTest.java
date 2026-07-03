@@ -15,6 +15,7 @@ import stitch.crew.hour.common.exception.BusinessException;
 import stitch.crew.hour.common.exception.ErrorCode;
 
 import java.util.List;
+import java.util.Optional;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
@@ -116,6 +117,77 @@ class CategoryServiceTest {
                 assertThat(response.get(1).name()).isEqualTo(name2);
             }
         }
+    }
+
+    @Nested
+    @DisplayName("Discribe: updateCategory 메서드는")
+    class Describe_with_updateCategory{
+        String name2 = "거거거거2";
+        Long categoryId = 1L;
+        @Nested
+        @DisplayName("Context: 올바른 데이터가 주어지면")
+        class Context_with_available_data {
+            @BeforeEach
+            void setup() {
+                request = new CategoryRequest(name2, thumbnail);
+                category = new Category(name, thumbnail);
+                ReflectionTestUtils.setField(category, "id", 1L);
+            }
+            @Test
+            @DisplayName("It : Category 수정 성공")
+            void it_success_category_update() {
+                //given
+                given(categoryRepository.findById(categoryId)).willReturn(Optional.of(category));
+                given(categoryRepository.existsByName(name2)).willReturn(false);
+                //when
+                categoryService.updateCategory(categoryId, request);
+
+                //then
+                assertThat(category.getId()).isEqualTo(categoryId);
+                assertThat(category.getName()).isEqualTo(name2);
+                assertThat(category.getThumbnail()).isEqualTo(thumbnail);
+            }
+        }
+        @Nested
+        @DisplayName("Context: 입력된 id가 유효하지 않는다면")
+        class Context_with_unavailable_id {
+            @BeforeEach
+            void setup() {
+                request = new CategoryRequest(name, thumbnail);
+                category = new Category(name, thumbnail);
+            }
+            @Test
+            @DisplayName("It : CATEGORY_NOT_FOUND 오류 발생 ")
+            void it_throws_not_found_category() {
+                //given
+                given(categoryRepository.findById(categoryId)).willReturn(Optional.empty());
+                //when&then
+                BusinessException exception = assertThrows(
+                        BusinessException.class, () -> categoryService.updateCategory(categoryId, request));
+                assertThat(exception.getMessage()).isEqualTo(ErrorCode.CATEGORY_NOT_FOUND.getMessage());
+            }
+        }
+        @Nested
+        @DisplayName("Context: 이미 존재하는 이름의 데이터가 주어지면")
+        class Context_with_existing_name {
+            @BeforeEach
+            void setup() {
+                request = new CategoryRequest(name, thumbnail);
+                category = new Category(name, thumbnail);
+            }
+            @Test
+            @DisplayName("It : EXIST_CATEGORY 오류 발생 ")
+            void it_throws_not_found_category() {
+                //given
+                given(categoryRepository.findById(categoryId)).willReturn(Optional.of(category));
+                given(categoryRepository.existsByName(name)).willReturn(true);
+                //when&then
+                BusinessException exception = assertThrows(
+                        BusinessException.class, () -> categoryService.updateCategory(categoryId, request));
+                assertThat(exception.getMessage()).isEqualTo(ErrorCode.EXIST_CATEGORY .getMessage());
+            }
+        }
+
     }
 
 }
