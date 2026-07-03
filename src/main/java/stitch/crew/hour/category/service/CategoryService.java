@@ -4,10 +4,14 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import stitch.crew.hour.category.domain.Category;
+import stitch.crew.hour.category.dto.CategoryInfo;
+import stitch.crew.hour.category.dto.CategoryResponse;
 import stitch.crew.hour.category.dto.CategorySaveRequest;
 import stitch.crew.hour.category.repository.CategoryRepository;
 import stitch.crew.hour.common.exception.ErrorCode;
 import stitch.crew.hour.common.util.PreConditions;
+
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -19,5 +23,13 @@ public class CategoryService {
         PreConditions.validate(!categoryRepository.existsByName(request.name()), ErrorCode.EXIST_CATEGORY);
         Category category = new Category(request.name(), request.thumbnail());
         categoryRepository.save(category);
+    }
+
+    @Transactional(readOnly = true)
+    public CategoryResponse getCategories() {
+        List<Category> categories = categoryRepository.findAll();
+        return new CategoryResponse(
+                categories.stream().map(CategoryInfo::from).toList()
+        );
     }
 }
