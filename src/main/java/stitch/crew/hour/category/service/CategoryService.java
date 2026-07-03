@@ -8,6 +8,7 @@ import stitch.crew.hour.category.dto.CategorySaveRequest;
 import stitch.crew.hour.category.repository.CategoryRepository;
 import stitch.crew.hour.common.exception.BusinessException;
 import stitch.crew.hour.common.exception.ErrorCode;
+import stitch.crew.hour.common.util.PreConditions;
 
 @Service
 @RequiredArgsConstructor
@@ -16,7 +17,7 @@ public class CategoryService {
 
     @Transactional
     public void save(CategorySaveRequest request) {
-        if (categoryRepository.existsByName(request.name())) throw new BusinessException(ErrorCode.EXIST_CATEGORY);
+        PreConditions.validate(!categoryRepository.existsByName(request.name()), ErrorCode.EXIST_CATEGORY);
         Category category = new Category(request.name(), request.thumbnail());
         categoryRepository.save(category);
     }
