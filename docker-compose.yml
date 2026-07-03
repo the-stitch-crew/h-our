@@ -11,4 +11,22 @@ services:
       POSTGRES_PASSWORD: ${DB_PASSWORD}
     ports:
       - "${DB_PORT}:5432"
+    networks:
+      - hour_network
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  redis:
+    image: redis:latest
+    container_name: redis-db
+    ports:
+      - "6379:6379"
+    networks:
+      - hour_network
+
+volumes:
+  postgres_data:
+networks:
+  hour_network:
+    driver: bridge
 
