@@ -1,9 +1,6 @@
 package stitch.crew.hour.common.config;
 
 import lombok.RequiredArgsConstructor;
-import org.redisson.Redisson;
-import org.redisson.api.RedissonClient;
-import org.redisson.config.Config;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -19,14 +16,6 @@ import stitch.crew.hour.common.config.properties.RedisProperties;
 public class RedisConfig {
     private final RedisProperties redisProperties;
 
-    // 분산락 전용
-    @Bean
-    public RedissonClient redissonClient(){
-        Config config = new Config();
-        String uri = String.format("redis://%s:%s", redisProperties.getHost(), redisProperties.getPort());
-        config.useSingleServer().setAddress(uri);
-        return Redisson.create(config);
-    }
 
     // Refresh Token 전용 DB
     @Bean

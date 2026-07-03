@@ -9,7 +9,7 @@ services:
       - .env.dev
 
     ports:
-      - "${DB_PORT}:5432"
+      - "5432:5432"
     networks:
       - hour_network
     volumes:
