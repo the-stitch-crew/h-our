@@ -18,3 +18,8 @@ springdoc:
     display-request-duration: true
     doc-expansion: none
     persist-authorization: true
+
+custom:
+  redis:
+    host: ${REDIS_HOST}
+    port: ${REDIS_PORT}
