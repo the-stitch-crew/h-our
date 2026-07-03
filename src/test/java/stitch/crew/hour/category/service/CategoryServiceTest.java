@@ -8,10 +8,13 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.test.util.ReflectionTestUtils;
 import stitch.crew.hour.category.domain.Category;
+import stitch.crew.hour.category.dto.CategoryResponse;
 import stitch.crew.hour.category.dto.CategorySaveRequest;
 import stitch.crew.hour.category.repository.CategoryRepository;
 import stitch.crew.hour.common.exception.BusinessException;
 import stitch.crew.hour.common.exception.ErrorCode;
+
+import java.util.List;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
@@ -79,6 +82,38 @@ class CategoryServiceTest {
                 //when&then
                 BusinessException exception = assertThrows(BusinessException.class, () -> categoryService.save(request));
                 assertThat(exception.getMessage()).isEqualTo(ErrorCode.EXIST_CATEGORY.getMessage());
+            }
+        }
+    }
+
+    @Nested
+    @DisplayName("Discribe: getCategories 메서드는")
+    class Describe_with_getCategories{
+
+        String name2 = "거거거거2";
+        Category category2;
+
+        @Nested
+        @DisplayName("Context: 기본적으로")
+        class Context_with_available_data {
+            @BeforeEach
+            void setup() {
+                category = new Category(name, thumbnail);
+                category2 = new Category(name2, thumbnail);
+            }
+            @Test
+            @DisplayName("It : Category 목록 조회 성공")
+            void it_success_categories_get() {
+                //given
+                given(categoryRepository.findAll()).willReturn(List.of(category, category2));
+                //when
+                List<CategoryResponse> response = categoryService.getCategories();
+
+                //then
+                Assertions.assertNotNull(response);
+                assertThat(response.size()).isEqualTo(2);
+                assertThat(response.get(0).name()).isEqualTo(name);
+                assertThat(response.get(1).name()).isEqualTo(name2);
             }
         }
     }
