@@ -13,7 +13,7 @@
 - [ ] Category
 - [x] Product
 - [ ] Order
-- [ ] Bucket
+- [ ] Cart
 - [ ] Payment
 - [ ] Lesson
 - [ ] Reservation
