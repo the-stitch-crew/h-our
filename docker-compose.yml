@@ -5,16 +5,15 @@ services:
     image: postgres:latest
     container_name: postgres-db
 
-    environment:
-      POSTGRES_DB: ${DB_NAME}
-      POSTGRES_USER: ${DB_USERNAME}
-      POSTGRES_PASSWORD: ${DB_PASSWORD}
+    env_file:
+      - .env.dev
+
     ports:
       - "${DB_PORT}:5432"
     networks:
       - hour_network
     volumes:
-      - postgres_data:/var/lib/postgresql/data
+      - postgres_data:/var/lib/postgresql
 
   redis:
     image: redis:latest
