@@ -10,7 +10,7 @@ import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
-import stitch.crew.hour.category.dto.CategorySaveRequest;
+import stitch.crew.hour.category.dto.CategoryRequest;
 import stitch.crew.hour.category.service.CategoryService;
 import stitch.crew.hour.common.exception.ErrorCode;
 import stitch.crew.hour.common.response.SuccessCode;
@@ -41,7 +41,7 @@ class CategoryAdminControllerTest {
     @Nested
     @DisplayName("Discribe: POST / 엔드포인트는")
     class saveCategory {
-        CategorySaveRequest request;
+        CategoryRequest request;
 
         @Nested
         @DisplayName("Context: 올바른 데이터가 주어지면")
@@ -50,7 +50,7 @@ class CategoryAdminControllerTest {
             void setUp() {
                 name = "거거거거";
                 thumbnail="ㅠㅠㅠㅠㅠ";
-                request = new CategorySaveRequest(name, thumbnail);
+                request = new CategoryRequest(name, thumbnail);
             }
 
             @Test
@@ -78,7 +78,7 @@ class CategoryAdminControllerTest {
             void it_return_200_ok_and_success_message_if_enmpty_thumbnail() throws Exception {
                 //given
                 thumbnail="";
-                request = new CategorySaveRequest(name, thumbnail);
+                request = new CategoryRequest(name, thumbnail);
                 doNothing().when(categoryService).save(request);
 
                 //when-then
@@ -109,7 +109,7 @@ class CategoryAdminControllerTest {
             void it_return_400_bad_request_and_valid_message_if_name_null() throws Exception {
                 //given
                 name = null;
-                request = new CategorySaveRequest(name, thumbnail);
+                request = new CategoryRequest(name, thumbnail);
                 doNothing().when(categoryService).save(request);
 
                 //when-then
@@ -130,7 +130,7 @@ class CategoryAdminControllerTest {
             void it_return_400_bad_request_and_valid_message_if_name_empty() throws Exception {
                 //given
                 name = "";
-                request = new CategorySaveRequest(name, thumbnail);
+                request = new CategoryRequest(name, thumbnail);
                 doNothing().when(categoryService).save(request);
 
                 //when-then
@@ -152,7 +152,7 @@ class CategoryAdminControllerTest {
             void it_return_400_bad_request_and_valid_message_if_name_greater_20() throws Exception {
                 //given
                 name="가나다라마바사아자차카타파하가나다라마바사아자";
-                request = new CategorySaveRequest(name, thumbnail);
+                request = new CategoryRequest(name, thumbnail);
                 doNothing().when(categoryService).save(request);
 
                 //when-then
@@ -176,7 +176,7 @@ class CategoryAdminControllerTest {
             void setUp() {
                 name = "거거거거";
                 thumbnail = null;
-                request = new CategorySaveRequest(name, thumbnail);
+                request = new CategoryRequest(name, thumbnail);
             }
 
             @Test

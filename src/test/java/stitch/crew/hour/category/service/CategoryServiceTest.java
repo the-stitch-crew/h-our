@@ -9,7 +9,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.test.util.ReflectionTestUtils;
 import stitch.crew.hour.category.domain.Category;
 import stitch.crew.hour.category.dto.CategoryResponse;
-import stitch.crew.hour.category.dto.CategorySaveRequest;
+import stitch.crew.hour.category.dto.CategoryRequest;
 import stitch.crew.hour.category.repository.CategoryRepository;
 import stitch.crew.hour.common.exception.BusinessException;
 import stitch.crew.hour.common.exception.ErrorCode;
@@ -33,7 +33,7 @@ class CategoryServiceTest {
 
     String name = "거거거거";
     String thumbnail = "";
-    CategorySaveRequest request;
+    CategoryRequest request;
     Category category;
 
     @Nested
@@ -44,7 +44,7 @@ class CategoryServiceTest {
         class Context_with_available_data {
             @BeforeEach
             void setup() {
-                request = new CategorySaveRequest(name, thumbnail);
+                request = new CategoryRequest(name, thumbnail);
                 category = new Category(name, thumbnail);
                 ReflectionTestUtils.setField(category, "id", 1L);
             }
@@ -70,7 +70,7 @@ class CategoryServiceTest {
         class Context_with_existing_name {
             @BeforeEach
             void setup() {
-                request = new CategorySaveRequest(name, thumbnail);
+                request = new CategoryRequest(name, thumbnail);
                 category = new Category(name, thumbnail);
                 ReflectionTestUtils.setField(category, "id", 1L);
             }
