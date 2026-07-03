@@ -6,7 +6,6 @@ import org.springframework.transaction.annotation.Transactional;
 import stitch.crew.hour.category.domain.Category;
 import stitch.crew.hour.category.dto.CategorySaveRequest;
 import stitch.crew.hour.category.repository.CategoryRepository;
-import stitch.crew.hour.common.exception.BusinessException;
 import stitch.crew.hour.common.exception.ErrorCode;
 import stitch.crew.hour.common.util.PreConditions;
 
