@@ -4,5 +4,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import stitch.crew.hour.category.domain.Category;
 
 public interface CategoryRepository extends JpaRepository<Category, Long> {
+    Boolean existsByName(String name);
 
 }
