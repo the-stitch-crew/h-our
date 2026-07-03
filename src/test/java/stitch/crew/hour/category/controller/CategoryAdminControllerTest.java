@@ -54,8 +54,8 @@ class CategoryAdminControllerTest {
             }
 
             @Test
-            @DisplayName("It : 200 상태와 성공 메시지를 반환한다")
-            void it_return_200_ok_and_success_message() throws Exception {
+            @DisplayName("It : 201 상태와 성공 메시지를 반환한다")
+            void it_return_201_created_and_success_message() throws Exception {
                 //given
                 doNothing().when(categoryService).save(request);
 
@@ -66,7 +66,7 @@ class CategoryAdminControllerTest {
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content(om.writeValueAsString(request))
                 )
-                        .andExpect(status().isOk())
+                        .andExpect(status().isCreated())
                         .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                         .andExpect(jsonPath("$.code").value(SuccessCode.CATEGORY_CREATED.name()))
                         .andExpect(jsonPath("$.message").value(SuccessCode.CATEGORY_CREATED.getSuccessMessage()))
@@ -74,8 +74,8 @@ class CategoryAdminControllerTest {
             }
 
             @Test
-            @DisplayName("It : 썸네일이 빈값이어도 200 상태와 성공 메시지를 반환한다")
-            void it_return_200_ok_and_success_message_if_enmpty_thumbnail() throws Exception {
+            @DisplayName("It : 썸네일이 빈값이어도 201 상태와 성공 메시지를 반환한다")
+            void it_return_201_created_and_success_message_if_enmpty_thumbnail() throws Exception {
                 //given
                 thumbnail="";
                 request = new CategoryRequest(name, thumbnail);
@@ -88,7 +88,7 @@ class CategoryAdminControllerTest {
                                         .contentType(MediaType.APPLICATION_JSON)
                                         .content(om.writeValueAsString(request))
                         )
-                        .andExpect(status().isOk())
+                        .andExpect(status().isCreated())
                         .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                         .andExpect(jsonPath("$.code").value(SuccessCode.CATEGORY_CREATED.name()))
                         .andExpect(jsonPath("$.message").value(SuccessCode.CATEGORY_CREATED.getSuccessMessage()))

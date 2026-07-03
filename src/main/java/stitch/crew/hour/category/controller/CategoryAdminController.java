@@ -19,7 +19,7 @@ public class CategoryAdminController {
     @PostMapping
     public ResponseEntity<ApiResponse<Void>>  saveCategory (@RequestBody @Valid CategoryRequest request) {
         categoryService.save(request);
-        return ApiResult.ok(SuccessCode.CATEGORY_CREATED);
+        return ApiResult.created(SuccessCode.CATEGORY_CREATED);
     }
 
     @PatchMapping("/{categoryId}")
