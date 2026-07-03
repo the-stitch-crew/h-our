@@ -11,6 +11,8 @@ import stitch.crew.hour.common.response.ApiResponse;
 import stitch.crew.hour.common.response.ApiResult;
 import stitch.crew.hour.common.response.SuccessCode;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/api/categories")
 @RequiredArgsConstructor
@@ -18,8 +20,8 @@ public class CategoryController {
     private final CategoryService categoryService;
 
     @GetMapping
-    public ResponseEntity<ApiResponse<CategoryResponse>> getAllCategories() {
-        CategoryResponse response = categoryService.getCategories();
+    public ResponseEntity<ApiResponse<List<CategoryResponse>>> getAllCategories() {
+        List<CategoryResponse> response = categoryService.getCategories();
         return ApiResult.ok(SuccessCode.CATEGORY_READ,  response);
     }
 }

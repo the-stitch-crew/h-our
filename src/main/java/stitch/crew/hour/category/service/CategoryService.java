@@ -4,7 +4,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import stitch.crew.hour.category.domain.Category;
-import stitch.crew.hour.category.dto.CategoryInfo;
 import stitch.crew.hour.category.dto.CategoryResponse;
 import stitch.crew.hour.category.dto.CategorySaveRequest;
 import stitch.crew.hour.category.repository.CategoryRepository;
@@ -26,10 +25,8 @@ public class CategoryService {
     }
 
     @Transactional(readOnly = true)
-    public CategoryResponse getCategories() {
+    public List<CategoryResponse> getCategories() {
         List<Category> categories = categoryRepository.findAll();
-        return new CategoryResponse(
-                categories.stream().map(CategoryInfo::from).toList()
-        );
+        return categories.stream().map(CategoryResponse::from).toList();
     }
 }
