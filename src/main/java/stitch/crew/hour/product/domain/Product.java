@@ -2,6 +2,7 @@ package stitch.crew.hour.product.domain;
 
 import jakarta.persistence.*;
 import lombok.AccessLevel;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.apache.logging.log4j.util.Strings;
@@ -11,6 +12,7 @@ import stitch.crew.hour.product.constant.ProductStatus;
 
 @Entity
 @Setter
+@Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Product extends BaseEntity {
 
