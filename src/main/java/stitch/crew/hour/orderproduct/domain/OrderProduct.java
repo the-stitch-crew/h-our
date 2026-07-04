@@ -39,4 +39,24 @@ public class OrderProduct {
             nullable = false
     )
     private Order order;
+
+    public OrderProduct(
+            String name,
+            Long amount,
+            Long price,
+            Long productId,
+            String option
+    ){
+        this.name = name;
+        this.amount = amount;
+        this.price = price;
+        this.option = option;
+        if( productId != null ) this.productId = productId;
+    }
+
+    public void setOrder(Order order){
+        this.order = order;
+    }
+
+
 }
