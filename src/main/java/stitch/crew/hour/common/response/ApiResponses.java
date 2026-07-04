@@ -1,6 +1,6 @@
 package stitch.crew.hour.common.response;
 
-public record ApiResponse<T>(
+public record ApiResponses<T>(
         boolean success,
         String code,
         String message,

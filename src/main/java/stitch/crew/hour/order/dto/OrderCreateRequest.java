@@ -1,17 +1,18 @@
 package stitch.crew.hour.order.dto;
 
+import jakarta.validation.constraints.NotBlank;
 import stitch.crew.hour.orderproduct.dto.OrderProductCreateRequest;
 
 import java.util.List;
 
 public record OrderCreateRequest(
         List<OrderProductCreateRequest> requests,
-        String address,
-        String postalCode,
-        String receiverName,
-        String phoneNumber,
+        @NotBlank String address,
+        @NotBlank String postalCode,
+        @NotBlank String receiverName,
+        @NotBlank String phoneNumber,
         String request,
-        String ordererName,
-        String receiverPhoneNumber
+        @NotBlank String ordererName,
+        @NotBlank String receiverPhoneNumber
 ) {
 }

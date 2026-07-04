@@ -11,8 +11,14 @@ public enum ErrorCode {
     EXIST_CATEGORY(HttpStatus.CONFLICT, "이미 존재하는 카테고리입니다."),
 
 
-    // 상품
+    // 유저
+    NO_USER(HttpStatus.NOT_FOUND, "유저를 찾을 수 없습니다."),
 
+    // 배송규칙
+    NO_SHIPPING_POLICY(HttpStatus.NOT_FOUND, "활성화된 배송규칙이 없습니다."),
+
+    // 상품
+    NO_PRODUCT(HttpStatus.NOT_FOUND, "해당 상품을 찾을 수 없습니다."),
 
 
 

@@ -12,9 +12,7 @@ import stitch.crew.hour.shippingpolicy.repository.ShippingPolicyRepository;
 @Configuration
 @RequiredArgsConstructor
 public class DataInitConfig {
-
-    private ShippingPolicyRepository shippingPolicyRepository;
-
+    private final ShippingPolicyRepository shippingPolicyRepository;
     @Bean
     @Transactional
     CommandLineRunner init() {
