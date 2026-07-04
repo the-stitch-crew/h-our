@@ -2,6 +2,7 @@ package stitch.crew.hour.order.domain;
 
 import jakarta.persistence.*;
 import lombok.AccessLevel;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.apache.logging.log4j.util.Strings;
 import stitch.crew.hour.common.domain.BaseEntity;
@@ -14,6 +15,7 @@ import java.util.List;
 import java.util.UUID;
 
 @Entity
+@Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Order extends BaseEntity {
     @Id
