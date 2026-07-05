@@ -11,6 +11,15 @@ public enum ErrorCode {
     // User
     USER_EMAIL_ALREADY_EXISTS(HttpStatus.CONFLICT, "이미 등록된 이메일입니다."),
     USER_PHONE_ALREADY_EXISTS(HttpStatus.CONFLICT, "이미 등록된 전화번호입니다."),
+    USER_DONT_EXISTS(HttpStatus.BAD_REQUEST, "존재하지 않는 유저입니다."),
+
+
+    // Auth
+    LOGIN_FAILED(HttpStatus.UNAUTHORIZED, "이메일 또는 비밀번호가 일치하지 않습니다."),
+    EXPIRED_TOKEN(HttpStatus.UNAUTHORIZED, "만료된 토큰입니다."),
+    ABNORMAL_TOKEN(HttpStatus.UNAUTHORIZED, "비정상적인 토큰입니다."),
+    ERROR_FROM_TOKEN(HttpStatus.UNAUTHORIZED, "토큰 처리 중 오류가 발생했습니다."),
+    TOKEN_CREATION_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "토큰 생성에 실패했습니다."),
 
 
     /*category*/

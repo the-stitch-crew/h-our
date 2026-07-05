@@ -10,3 +10,16 @@ spring:
     username: sa
     password:
     driver-class-name: org.h2.Driver
+
+custom:
+  jwt:
+    validations:
+      access: 900000
+      refresh: 604800000
+    payload:
+      issuer: hour
+      subject-access-token: access-token
+      subject-refresh-token: refresh-token
+    secrets:
+      app-key: test-jwt-secret-key-must-be-at-least-32-bytes
+      origin-key: test-jwt-origin-key

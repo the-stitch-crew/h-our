@@ -5,11 +5,13 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import lombok.RequiredArgsConstructor;
+import stitch.crew.hour.common.exception.BusinessException;
 import stitch.crew.hour.common.util.PreConditions;
 import stitch.crew.hour.user.dto.SignupRequest;
 import stitch.crew.hour.common.exception.ErrorCode;
 import stitch.crew.hour.user.constant.Role;
 import stitch.crew.hour.user.domain.User;
+import stitch.crew.hour.user.dto.UserInfoResponse;
 import stitch.crew.hour.user.dto.SignupResponse;
 import stitch.crew.hour.user.repository.UserRepository;
 
@@ -31,7 +33,7 @@ public class UserService {
 
 		PreConditions.validate(
 			!userRepository.existsByPhoneNumber(request.phoneNumber()),
-			ErrorCode.USER_EMAIL_ALREADY_EXISTS
+			ErrorCode.USER_PHONE_ALREADY_EXISTS
 		);
 
 		User user = new User(
@@ -53,5 +55,16 @@ public class UserService {
 		return new SignupResponse(savedUser.getId());
 	}
 
+	public UserInfoResponse getMyInfo(String email) {
+		User user = userRepository.findByEmail(email)
+			.orElseThrow(() -> new BusinessException(ErrorCode.USER_DONT_EXISTS));
+
+		PreConditions.validate(
+			user.getDeletedAt() == null,
+			ErrorCode.ALREADY_DELETED
+		);
+
+		return UserInfoResponse.from(user);
+	}
 
 }
