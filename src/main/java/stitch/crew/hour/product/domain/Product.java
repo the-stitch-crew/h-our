@@ -6,9 +6,13 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.apache.logging.log4j.util.Strings;
+import stitch.crew.hour.cartproduct.domain.CartProduct;
 import stitch.crew.hour.category.domain.Category;
 import stitch.crew.hour.common.domain.BaseEntity;
 import stitch.crew.hour.product.constant.ProductStatus;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Setter
@@ -56,11 +60,15 @@ public class Product extends BaseEntity {
     )
     private Category category;
 
+    @OneToMany(mappedBy = "product")
+    private List<CartProduct> cartProduct = new ArrayList<>();
+
     public Product(
             String name,
             Long price,
             String summary,
-            String description
+            String description,
+            Category category
     ){
         this.name = name;
         this.price = price;
@@ -70,6 +78,7 @@ public class Product extends BaseEntity {
         this.isMain = false;
         if (Strings.isNotBlank(summary)) this.summary = summary;
         if (Strings.isNotBlank(description)) this.description = description;
+        setCategory(category);
     }
 
     public void setCategory(Category category){

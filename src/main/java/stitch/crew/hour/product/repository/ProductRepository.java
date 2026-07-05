@@ -1,4 +1,4 @@
-package stitch.crew.hour.product;
+package stitch.crew.hour.product.repository;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import stitch.crew.hour.common.exception.BusinessException;
