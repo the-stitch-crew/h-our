@@ -1,18 +1,22 @@
 package stitch.crew.hour.product.service;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import stitch.crew.hour.category.domain.Category;
 import stitch.crew.hour.category.repository.CategoryRepository;
+import stitch.crew.hour.common.dto.Paging;
 import stitch.crew.hour.common.exception.ErrorCode;
 import stitch.crew.hour.common.util.PreConditions;
 import stitch.crew.hour.product.domain.Product;
 import stitch.crew.hour.product.dto.ProductCreateRequest;
 import stitch.crew.hour.product.dto.ProductCreateResponse;
 import stitch.crew.hour.product.dto.ProductDetailsResponse;
+import stitch.crew.hour.product.dto.ProductSearchResponse;
 import stitch.crew.hour.product.repository.ProductRepository;
 import stitch.crew.hour.user.constant.UserRole;
 import stitch.crew.hour.user.domain.User;
@@ -64,4 +68,14 @@ public class ProductService {
         );
     }
 
+    @PreAuthorize("isAuthenticated()")
+    public Page<ProductSearchResponse> getProductSearch(
+        PageRequest pageRequest,
+        String categoryName
+    ){
+        return productRepository.getAllProduct(
+                pageRequest,
+                categoryName
+        );
+    }
 }

@@ -1,12 +1,18 @@
 package stitch.crew.hour.product.service;
 
+import jakarta.validation.constraints.Null;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.EnumSource;
+import org.junit.jupiter.params.provider.NullAndEmptySource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.security.authentication.TestingAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.transaction.annotation.Transactional;
@@ -14,10 +20,12 @@ import stitch.crew.hour.category.domain.Category;
 import stitch.crew.hour.category.repository.CategoryRepository;
 import stitch.crew.hour.common.exception.BusinessException;
 import stitch.crew.hour.common.exception.ErrorCode;
+import stitch.crew.hour.product.constant.ProductStatus;
 import stitch.crew.hour.product.domain.Product;
 import stitch.crew.hour.product.dto.ProductCreateRequest;
 import stitch.crew.hour.product.dto.ProductCreateResponse;
 import stitch.crew.hour.product.dto.ProductDetailsResponse;
+import stitch.crew.hour.product.dto.ProductSearchResponse;
 import stitch.crew.hour.product.repository.ProductRepository;
 import stitch.crew.hour.user.domain.CurrentUser;
 import stitch.crew.hour.user.domain.User;
@@ -169,4 +177,88 @@ class ProductServiceTest {
 
     }
 
+    @Nested
+    @DisplayName("Describe : getProductSearch()에")
+    class Describe_getAllProduct{
+
+        @Nested
+        @DisplayName("Context : 올바른 데이터가 주어진 경우")
+        class Context_with_Valid_Data{
+
+            @Test
+            @DisplayName("It : 카테고리가 주어진 경우 상품을 모두 성공적으로 조회")
+            void It_상품_모두_조회__성공(){
+                // given
+                SecurityContextHolder.getContext().setAuthentication(token);
+
+                // when
+                Page<ProductSearchResponse> founded = productService.getProductSearch(
+                        PageRequest.of(0, 20),
+                        testCategory.getName()
+                );
+
+                // then
+                Assertions.assertThat(founded.getContent().size()).isEqualTo(1);
+                Assertions.assertThat(founded.getTotalPages()).isEqualTo(1);
+                Assertions.assertThat(founded.getContent().getFirst().productId()).isEqualTo(testProduct.getId());
+            }
+
+            @ParameterizedTest
+            @NullAndEmptySource
+            @DisplayName("It : 카테고리 입력 없어도 상품을 모두 성공적으로 조회")
+            void It_상품_모두_조회__성공(String categoryName){
+                // given
+                SecurityContextHolder.getContext().setAuthentication(token);
+
+                // when
+                Page<ProductSearchResponse> founded = productService.getProductSearch(
+                        PageRequest.of(0, 20),
+                        categoryName
+                );
+
+                // then
+                Assertions.assertThat(founded.getContent().size()).isEqualTo(1);
+                Assertions.assertThat(founded.getTotalPages()).isEqualTo(1);
+                Assertions.assertThat(founded.getContent().getFirst().productId()).isEqualTo(testProduct.getId());
+            }
+
+            @Test
+            @DisplayName("It : 다른 카테고리인 경우 조회 차단")
+            void It_상품_조회_없음(){
+                // given
+                SecurityContextHolder.getContext().setAuthentication(token);
+
+                // when
+                Page<ProductSearchResponse> founded = productService.getProductSearch(
+                        PageRequest.of(0, 20),
+                        "없는 카테고리"
+                );
+
+                // then
+                Assertions.assertThat(founded.getContent().size()).isEqualTo(0);
+            }
+
+            @ParameterizedTest
+            @EnumSource(
+                    value = ProductStatus.class,
+                    names = { "DEACTIVATED", "DELETED" },
+                    mode = EnumSource.Mode.INCLUDE
+            )
+            @DisplayName("It : 삭제된 상품인 경우 조회 차단")
+            void It_삭제된_상품_조회_없음(ProductStatus status){
+                // given
+                testProduct.switchStatus(status);
+                SecurityContextHolder.getContext().setAuthentication(token);
+
+                // when
+                Page<ProductSearchResponse> founded = productService.getProductSearch(
+                        PageRequest.of(0, 20),
+                        ""
+                );
+
+                // then
+                Assertions.assertThat(founded.getContent().size()).isEqualTo(0);
+            }
+        }
+    }
 }

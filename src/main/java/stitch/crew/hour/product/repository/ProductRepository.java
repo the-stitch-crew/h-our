@@ -5,10 +5,10 @@ import stitch.crew.hour.common.exception.BusinessException;
 import stitch.crew.hour.common.exception.ErrorCode;
 import stitch.crew.hour.product.domain.Product;
 
-public interface ProductRepository extends JpaRepository<Product, Long> {
+public interface ProductRepository extends JpaRepository<Product, Long>, ProductRepositoryCustom {
     default Product findByIdOrThrow(Long productId){
         return findById(productId).orElseThrow(
-                ()->new BusinessException(ErrorCode.PRODUCT_NOT_FOUND)
+                () -> new BusinessException(ErrorCode.PRODUCT_NOT_FOUND)
         );
     }
 }
