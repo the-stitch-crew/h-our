@@ -261,4 +261,31 @@ class ProductServiceTest {
             }
         }
     }
+
+    @Nested
+    @DisplayName("Describe : deleteProduct()에")
+    class Describe_deleteProduct{
+
+        @Nested
+        @DisplayName("Context : 올바른 데이터가 주어진 경우")
+        class Context_with_Valid_Data{
+
+            @Test
+            @DisplayName("It : 상품 삭제 성공 ( SOFT DELETE )")
+            void It_상품_삭제__성공(){
+                // given
+                testUser.switchAdmin();
+                SecurityContextHolder.getContext().setAuthentication(token);
+
+                productService.deleteProduct(
+                        testUser.getId(),
+                        testProduct.getId()
+                );
+
+                Product foundedProduct = productRepository.findByIdOrThrow(testProduct.getId());
+
+                Assertions.assertThat(foundedProduct.getStatus()).isEqualTo(ProductStatus.DELETED);
+            }
+        }
+    }
 }

@@ -12,6 +12,7 @@ import stitch.crew.hour.category.repository.CategoryRepository;
 import stitch.crew.hour.common.dto.Paging;
 import stitch.crew.hour.common.exception.ErrorCode;
 import stitch.crew.hour.common.util.PreConditions;
+import stitch.crew.hour.product.constant.ProductStatus;
 import stitch.crew.hour.product.domain.Product;
 import stitch.crew.hour.product.dto.ProductCreateRequest;
 import stitch.crew.hour.product.dto.ProductCreateResponse;
@@ -77,5 +78,21 @@ public class ProductService {
                 pageRequest,
                 categoryName
         );
+    }
+
+    @PreAuthorize("isAuthenticated()")
+    public void deleteProduct(
+            Long userId,
+            Long productId
+    ){
+        User foundedUser = userRepository.findByIdOrthrow(userId);
+
+        PreConditions.validate(
+                foundedUser.getRole().equals(UserRole.ADMIN),
+                ErrorCode.NOT_ADMIN
+        );
+
+        Product foundedProduct = productRepository.findByIdOrThrow(productId);
+        foundedProduct.switchStatus(ProductStatus.DELETED);
     }
 }
