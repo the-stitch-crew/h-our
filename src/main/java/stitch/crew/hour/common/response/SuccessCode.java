@@ -10,6 +10,9 @@ public enum SuccessCode {
     // USER
     USER_CREATED("계정이 정상적으로 생성되었습니다."),
     USER_READ("계정이 정상적으로 조회되었습니다."),
+    USER_UPDATED("계정이 정상적으로 수정되었습니다."),
+    USER_PASSWORD_CHANGED("비밀번호가 정상적으로 변경되었습니다."),
+    USER_DELETED("계정이 정상적으로 탈퇴되었습니다."),
 
     // AUTH
     AUTH_LOGIN_SUCCESS("로그인에 성공했습니다."),

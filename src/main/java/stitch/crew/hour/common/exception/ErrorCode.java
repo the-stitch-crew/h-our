@@ -12,6 +12,7 @@ public enum ErrorCode {
     USER_EMAIL_ALREADY_EXISTS(HttpStatus.CONFLICT, "이미 등록된 이메일입니다."),
     USER_PHONE_ALREADY_EXISTS(HttpStatus.CONFLICT, "이미 등록된 전화번호입니다."),
     USER_DONT_EXISTS(HttpStatus.BAD_REQUEST, "존재하지 않는 유저입니다."),
+    USER_PASSWORD_NOT_MATCH(HttpStatus.BAD_REQUEST, "현재 비밀번호가 일치하지 않습니다."),
 
 
     // Auth

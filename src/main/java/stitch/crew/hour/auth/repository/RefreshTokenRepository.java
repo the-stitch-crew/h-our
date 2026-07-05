@@ -11,4 +11,6 @@ import stitch.crew.hour.auth.domain.RefreshToken;
 public interface RefreshTokenRepository extends JpaRepository<RefreshToken, Long> {
 
 	Optional<RefreshToken> findByRefreshToken(String refreshToken);
+
+	void deleteByEmail(String email);
 }
