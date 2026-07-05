@@ -25,11 +25,17 @@ public enum ErrorCode {
 
     /*category*/
     EXIST_CATEGORY(HttpStatus.CONFLICT, "중복된 카테고리 이름입니다."),
-    CATEGORY_NOT_FOUND(HttpStatus.CONFLICT, "카테고리를 찾을 수 없습니다."),
+    CATEGORY_NOT_FOUND(HttpStatus.NOT_FOUND, "카테고리를 찾을 수 없습니다."),
 
+
+    // 유저
+    NO_USER(HttpStatus.NOT_FOUND, "유저를 찾을 수 없습니다."),
+
+    // 배송규칙
+    NO_SHIPPING_POLICY(HttpStatus.NOT_FOUND, "활성화된 배송규칙이 없습니다."),
 
     // 상품
-
+    NO_PRODUCT(HttpStatus.NOT_FOUND, "해당 상품을 찾을 수 없습니다."),
 
 
 

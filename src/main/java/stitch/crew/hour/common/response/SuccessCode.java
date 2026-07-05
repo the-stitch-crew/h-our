@@ -16,11 +16,15 @@ public enum SuccessCode {
     AUTH_REFRESH_SUCCESS("토큰 갱신에 성공했습니다."),
     AUTH_LOGOUT_SUCCESS("로그아웃에 성공했습니다."),
 
+    // Order
+    ORDER_CREATED_SUCCESS("주문이 정상적으로 생성되었습니다."),
+
 
     /*CATEGORY*/
     CATEGORY_CREATED("카테고리가 정상적으로 생성되었습니다."),
     CATEGORY_READ("카테고리가 정상적으로 조회되었습니다."),
     CATEGORY_UPDATED("카테고리가 정상적으로 수정되었습니다."),
+    CATEGORY_DELETED("카테고리가 정상적으로 삭제되었습니다."),
 
     BUSINESS_SUCCESS("정상적으로 작성되었습니다.");
 
