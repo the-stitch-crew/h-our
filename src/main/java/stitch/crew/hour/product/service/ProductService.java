@@ -1,6 +1,7 @@
 package stitch.crew.hour.product.service;
 
 import lombok.RequiredArgsConstructor;
+import org.apache.logging.log4j.util.Strings;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -14,10 +15,7 @@ import stitch.crew.hour.common.exception.ErrorCode;
 import stitch.crew.hour.common.util.PreConditions;
 import stitch.crew.hour.product.constant.ProductStatus;
 import stitch.crew.hour.product.domain.Product;
-import stitch.crew.hour.product.dto.ProductCreateRequest;
-import stitch.crew.hour.product.dto.ProductCreateResponse;
-import stitch.crew.hour.product.dto.ProductDetailsResponse;
-import stitch.crew.hour.product.dto.ProductSearchResponse;
+import stitch.crew.hour.product.dto.*;
 import stitch.crew.hour.product.repository.ProductRepository;
 import stitch.crew.hour.user.constant.UserRole;
 import stitch.crew.hour.user.domain.User;
@@ -32,6 +30,7 @@ public class ProductService {
     private final UserRepository userRepository;
     private final CategoryRepository categoryRepository;
 
+    @Transactional
     @PreAuthorize("isAuthenticated()")
     public ProductCreateResponse createProduct(
             Long userId,
@@ -64,8 +63,9 @@ public class ProductService {
     public ProductDetailsResponse getProductDetail(
         Long productId
     ){
-        return ProductDetailsResponse.from(
-            productRepository.findByIdOrThrow(productId)
+        Product founded = productRepository.findByIdOrThrow(productId);
+        founded.increaseViewCount();
+        return ProductDetailsResponse.from(founded
         );
     }
 
@@ -80,6 +80,7 @@ public class ProductService {
         );
     }
 
+    @Transactional
     @PreAuthorize("isAuthenticated()")
     public void deleteProduct(
             Long userId,
@@ -94,5 +95,52 @@ public class ProductService {
 
         Product foundedProduct = productRepository.findByIdOrThrow(productId);
         foundedProduct.switchStatus(ProductStatus.DELETED);
+    }
+
+    @Transactional
+    @PreAuthorize("isAuthenticated()")
+    public void updateProduct(
+        Long userId,
+        Long productId,
+        ProductUpdateRequest request
+    ){
+        User foundedUser = userRepository.findByIdOrthrow(userId);
+
+        PreConditions.validate(
+                foundedUser.getRole().equals(UserRole.ADMIN),
+                ErrorCode.NOT_ADMIN
+        );
+
+        Product foundedProduct = productRepository.findByIdOrThrow(productId);
+
+        if (Strings.isNotBlank(request.name())) foundedProduct.setName(request.name());
+        if (request.price() != null) foundedProduct.setPrice(request.price());
+        if (Strings.isNotBlank(request.thumbnail())) foundedProduct.setThumbnail(request.thumbnail());
+        if (Strings.isNotBlank(request.summary())) foundedProduct.setSummary(request.summary());
+        if (Strings.isNotBlank(request.description())) foundedProduct.setDescription(request.description());
+    }
+
+    @Transactional
+    @PreAuthorize("isAuthenticated()")
+    public void switchToMain(
+            Long userId,
+            Long productId
+    ){
+        Product foundedProduct = productRepository.findByIdOrThrow(productId);
+
+        User foundedUser = userRepository.findByIdOrthrow(userId);
+
+        PreConditions.validate(
+                foundedUser.getRole().equals(UserRole.ADMIN),
+                ErrorCode.NOT_ADMIN
+        );
+
+        Category foundedCategory = foundedProduct.getCategory();
+
+        productRepository.setNoMain(foundedCategory.getId());
+
+        foundedProduct.setMain();
+
+        foundedCategory.setThumbnail(foundedCategory.getThumbnail());
     }
 }
