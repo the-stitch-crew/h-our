@@ -16,6 +16,8 @@ import stitch.crew.hour.orderproduct.domain.OrderProduct;
 import stitch.crew.hour.orderproduct.dto.OrderProductCreateRequest;
 import stitch.crew.hour.shippingpolicy.domain.ShippingPolicy;
 import stitch.crew.hour.shippingpolicy.repository.ShippingPolicyRepository;
+import stitch.crew.hour.user.constant.Gender;
+import stitch.crew.hour.user.constant.Role;
 import stitch.crew.hour.user.domain.User;
 import stitch.crew.hour.user.repository.UserRepository;
 import stitch.crew.hour.util.TestUtil;
@@ -57,6 +59,8 @@ class OrderServiceTest {
                             "wjdtn747@naver.com",
                             "1234",
                             LocalDate.now(),
+                            Role.USER,
+                            Gender.MALE,
                             "google",
                             "010",
                             "?",

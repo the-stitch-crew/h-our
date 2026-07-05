@@ -17,6 +17,8 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 import org.springframework.transaction.annotation.Transactional;
 import stitch.crew.hour.order.dto.OrderCreateRequest;
 import stitch.crew.hour.orderproduct.dto.OrderProductCreateRequest;
+import stitch.crew.hour.user.constant.Gender;
+import stitch.crew.hour.user.constant.Role;
 import stitch.crew.hour.user.domain.CurrentUser;
 import stitch.crew.hour.user.domain.User;
 import stitch.crew.hour.user.repository.UserRepository;
@@ -59,6 +61,8 @@ class OrderControllerTest {
                         "wjdtn747@naver.com",
                         "1234",
                         LocalDate.now(),
+                        Role.USER,
+                        Gender.MALE,
                         "google",
                         "010",
                         "?",
