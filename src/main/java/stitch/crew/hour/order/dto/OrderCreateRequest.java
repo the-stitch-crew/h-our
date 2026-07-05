@@ -9,7 +9,7 @@ public record OrderCreateRequest(
         List<OrderProductCreateRequest> requests,
         @NotBlank String address,
         @NotBlank String postalCode,
-        @NotBlank String receiverName,
+        String receiverName,
         @NotBlank String phoneNumber,
         String request,
         @NotBlank String ordererName,

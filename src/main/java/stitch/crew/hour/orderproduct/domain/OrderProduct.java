@@ -9,6 +9,7 @@ import stitch.crew.hour.order.domain.Order;
 
 @Entity
 @Getter
+@Table(name = "order_products")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class OrderProduct {
     @Id
@@ -45,12 +46,14 @@ public class OrderProduct {
             Long amount,
             Long price,
             Long productId,
-            String option
+            String option,
+            Order order
     ){
         this.name = name;
         this.amount = amount;
         this.price = price;
         this.option = option;
+        this.order = order;
         if( productId != null ) this.productId = productId;
     }
 

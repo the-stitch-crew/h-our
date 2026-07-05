@@ -13,6 +13,7 @@ import stitch.crew.hour.product.constant.ProductStatus;
 @Entity
 @Setter
 @Getter
+@Table(name = "products")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Product extends BaseEntity {
 

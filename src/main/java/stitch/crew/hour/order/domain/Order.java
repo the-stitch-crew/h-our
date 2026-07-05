@@ -17,6 +17,7 @@ import java.util.UUID;
 @Entity
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
+@Table(name = "Orders")
 public class Order extends BaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -65,7 +66,6 @@ public class Order extends BaseEntity {
 
     public Order(
         User user,
-        List<OrderProduct> orderProducts,
         Long deliveryFee,
         String address,
         String postalCode,
@@ -76,24 +76,31 @@ public class Order extends BaseEntity {
         String receiverPhoneNumber
     ){
         this.orderer = user;
-        this.orderProduct = orderProducts;
-        this.totalPrice = calTotalPrice(orderProducts);
         this.orderStatus = OrderStatus.ORDERED;
         this.deliveryFee = deliveryFee;
         this.address = address;
         this.postalCode = postalCode;
-        this.receiverName = receiverName;
+        this.totalPrice = 0;
+        this.ordererName = ordererName;
         this.phoneNumber = phoneNumber;
         this.receiverPhoneNumber = receiverPhoneNumber;
+        this.orderNumber = UUID.randomUUID();
         if (Strings.isNotBlank(request)) this.request = request;
-        if (Strings.isNotBlank(ordererName)) this.ordererName = user.getUserName();
-
+        if (Strings.isNotBlank(receiverName))  this.receiverName = receiverName;
+        else this.receiverName = ordererName;
         user.addOrder(this);
     }
 
-    public Integer calTotalPrice(List<OrderProduct> lst){
-        Long price = 0L;
-        for(OrderProduct op : lst) price += op.getPrice();
+    public void setOrderProducts(
+            List<OrderProduct> orderProducts
+    ){
+        this.orderProduct = orderProducts;
+        this.totalPrice = calTotalPrice(orderProducts, this.deliveryFee);
+    }
+
+    public Integer calTotalPrice(List<OrderProduct> lst, Long deliveryFee){
+        Long price = deliveryFee;
+        for(OrderProduct op : lst) price += (op.getPrice() * op.getAmount() );
         return price.intValue();
     }
 

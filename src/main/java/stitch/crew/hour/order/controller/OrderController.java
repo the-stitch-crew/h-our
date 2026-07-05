@@ -19,7 +19,7 @@ import stitch.crew.hour.user.domain.CurrentUser;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/orders")
-public class OrderController {
+public class OrderController implements OrderSwaggerSupporter {
 
     private final OrderService orderService;
 
@@ -34,7 +34,7 @@ public class OrderController {
         );
 
         return ApiResult.created(
-            SuccessCode.ORDER_CREATED,
+            SuccessCode.ORDER_CREATED_SUCCESS,
             order
         );
     }

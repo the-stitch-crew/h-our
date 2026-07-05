@@ -11,7 +11,7 @@ public enum SuccessCode {
     USER_CREATED("계정이 정상적으로 생성되었습니다."),
 
     // Order
-    ORDER_CREATED("주문이 정상적으로 생성되었습니다."),
+    ORDER_CREATED_SUCCESS("주문이 정상적으로 생성되었습니다."),
 
 
     /*CATEGORY*/
