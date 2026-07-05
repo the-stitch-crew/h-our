@@ -7,7 +7,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import stitch.crew.hour.category.dto.CategoryResponse;
 import stitch.crew.hour.category.service.CategoryService;
-import stitch.crew.hour.common.response.ApiResponse;
+import stitch.crew.hour.common.response.ApiResponses;
 import stitch.crew.hour.common.response.ApiResult;
 import stitch.crew.hour.common.response.SuccessCode;
 
@@ -20,7 +20,7 @@ public class CategoryController {
     private final CategoryService categoryService;
 
     @GetMapping
-    public ResponseEntity<ApiResponse<List<CategoryResponse>>> getAllCategories() {
+    public ResponseEntity<ApiResponses<List<CategoryResponse>>> getAllCategories() {
         List<CategoryResponse> response = categoryService.getCategories();
         return ApiResult.ok(SuccessCode.CATEGORY_READ,  response);
     }
