@@ -1,6 +1,9 @@
 package stitch.crew.hour.category.domain;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -29,6 +32,11 @@ public class Category extends BaseEntity {
     private List<Product> products = new ArrayList<>();
 
     public Category(String name, String thumbnail) {
+        this.name = name;
+        this.thumbnail = thumbnail;
+    }
+
+    public void update(String name, String thumbnail) {
         this.name = name;
         this.thumbnail = thumbnail;
     }
