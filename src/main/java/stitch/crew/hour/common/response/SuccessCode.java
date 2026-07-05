@@ -13,6 +13,8 @@ public enum SuccessCode {
 
     // AUTH
     AUTH_LOGIN_SUCCESS("로그인에 성공했습니다."),
+    AUTH_REFRESH_SUCCESS("토큰 갱신에 성공했습니다."),
+    AUTH_LOGOUT_SUCCESS("로그아웃에 성공했습니다."),
 
 
     /*CATEGORY*/
