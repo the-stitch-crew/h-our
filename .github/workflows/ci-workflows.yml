@@ -23,6 +23,6 @@ jobs:
         run: chmod +x ./gradlew
 
       - name: 테스트 실행
-        run: chmod +x ./gladlew test --daemon
+        run: chmod +x ./gladlew test --no-daemon
         env:
           SPRING_PROFILES_ACTIVE: test
