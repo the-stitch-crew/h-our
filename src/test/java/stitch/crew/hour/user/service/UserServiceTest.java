@@ -22,14 +22,17 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.util.ReflectionTestUtils;
 
+import stitch.crew.hour.auth.repository.RefreshTokenRepository;
 import stitch.crew.hour.common.exception.BusinessException;
 import stitch.crew.hour.common.exception.ErrorCode;
 import stitch.crew.hour.user.constant.Gender;
 import stitch.crew.hour.user.constant.Role;
 import stitch.crew.hour.user.domain.User;
+import stitch.crew.hour.user.dto.PasswordChangeRequest;
 import stitch.crew.hour.user.dto.SignupRequest;
 import stitch.crew.hour.user.dto.SignupResponse;
 import stitch.crew.hour.user.dto.UserInfoResponse;
+import stitch.crew.hour.user.dto.UserUpdateRequest;
 import stitch.crew.hour.user.repository.UserRepository;
 
 @ExtendWith(MockitoExtension.class)
@@ -44,6 +47,9 @@ class UserServiceTest {
 
 	@Mock
 	private PasswordEncoder passwordEncoder;
+
+	@Mock
+	private RefreshTokenRepository refreshTokenRepository;
 
 	@Nested
 	@DisplayName("Describe: signup 메서드는")
@@ -206,6 +212,173 @@ class UserServiceTest {
 
 			// then
 			assertThat(exception.getErrorCode()).isEqualTo(ErrorCode.ALREADY_DELETED);
+		}
+	}
+
+	@Nested
+	@DisplayName("Describe: updateMyInfo 메서드는")
+	class Describe_updateMyInfo {
+
+		@Test
+		@DisplayName("It: 전달된 회원 정보를 수정하고 수정된 정보를 반환한다")
+		void it_updates_user_info() {
+			// given
+			User user = createUser();
+			UserUpdateRequest request = new UserUpdateRequest(
+				"정수",
+				null,
+				null,
+				"010-1111-2222",
+				"CANADA"
+			);
+
+			given(userRepository.findByEmail(user.getEmail())).willReturn(Optional.of(user));
+			given(userRepository.existsByPhoneNumberAndEmailNot(request.phoneNumber(), user.getEmail()))
+				.willReturn(false);
+
+			// when
+			UserInfoResponse response = userService.updateMyInfo(user.getEmail(), request);
+
+			// then
+			assertThat(response.userName()).isEqualTo("정수");
+			assertThat(response.phoneNumber()).isEqualTo("010-1111-2222");
+			assertThat(response.nationality()).isEqualTo("CANADA");
+			assertThat(response.birthDate()).isEqualTo(user.getBirthDate());
+			assertThat(response.gender()).isEqualTo(user.getGender());
+		}
+
+		@Test
+		@DisplayName("It: 전화번호를 변경하지 않으면 중복 검사를 하지 않는다")
+		void it_does_not_check_duplicate_when_phone_number_is_not_changed() {
+			// given
+			User user = createUser();
+			UserUpdateRequest request = new UserUpdateRequest(
+				"정수",
+				null,
+				null,
+				user.getPhoneNumber(),
+				null
+			);
+
+			given(userRepository.findByEmail(user.getEmail())).willReturn(Optional.of(user));
+
+			// when
+			UserInfoResponse response = userService.updateMyInfo(user.getEmail(), request);
+
+			// then
+			assertThat(response.phoneNumber()).isEqualTo(user.getPhoneNumber());
+			verify(userRepository, never()).existsByPhoneNumberAndEmailNot(any(), any());
+		}
+
+		@Test
+		@DisplayName("It: 변경할 전화번호가 이미 존재하면 USER_PHONE_ALREADY_EXISTS 예외가 발생한다")
+		void it_throws_when_phone_number_already_exists() {
+			// given
+			User user = createUser();
+			UserUpdateRequest request = new UserUpdateRequest(
+				null,
+				null,
+				null,
+				"010-1111-2222",
+				null
+			);
+
+			given(userRepository.findByEmail(user.getEmail())).willReturn(Optional.of(user));
+			given(userRepository.existsByPhoneNumberAndEmailNot(request.phoneNumber(), user.getEmail()))
+				.willReturn(true);
+
+			// when
+			BusinessException exception = assertThrows(
+				BusinessException.class,
+				() -> userService.updateMyInfo(user.getEmail(), request)
+			);
+
+			// then
+			assertThat(exception.getErrorCode()).isEqualTo(ErrorCode.USER_PHONE_ALREADY_EXISTS);
+			assertThat(user.getPhoneNumber()).isEqualTo("010-1234-5678");
+		}
+	}
+
+	@Nested
+	@DisplayName("Describe: changePassword 메서드는")
+	class Describe_changePassword {
+
+		@Test
+		@DisplayName("It: 현재 비밀번호가 일치하면 새 비밀번호로 변경한다")
+		void it_changes_password() {
+			// given
+			User user = createUser();
+			PasswordChangeRequest request = new PasswordChangeRequest("password123", "newPassword123");
+
+			given(userRepository.findByEmail(user.getEmail())).willReturn(Optional.of(user));
+			given(passwordEncoder.matches(request.currentPassword(), user.getPassword())).willReturn(true);
+			given(passwordEncoder.encode(request.newPassword())).willReturn("newEncodedPassword");
+
+			// when
+			userService.changePassword(user.getEmail(), request);
+
+			// then
+			assertThat(user.getPassword()).isEqualTo("newEncodedPassword");
+		}
+
+		@Test
+		@DisplayName("It: 현재 비밀번호가 일치하지 않으면 USER_PASSWORD_NOT_MATCH 예외가 발생한다")
+		void it_throws_when_current_password_does_not_match() {
+			// given
+			User user = createUser();
+			PasswordChangeRequest request = new PasswordChangeRequest("wrongPassword", "newPassword123");
+
+			given(userRepository.findByEmail(user.getEmail())).willReturn(Optional.of(user));
+			given(passwordEncoder.matches(request.currentPassword(), user.getPassword())).willReturn(false);
+
+			// when
+			BusinessException exception = assertThrows(
+				BusinessException.class,
+				() -> userService.changePassword(user.getEmail(), request)
+			);
+
+			// then
+			assertThat(exception.getErrorCode()).isEqualTo(ErrorCode.USER_PASSWORD_NOT_MATCH);
+			verify(passwordEncoder, never()).encode(request.newPassword());
+		}
+	}
+
+	@Nested
+	@DisplayName("Describe: deleteMyAccount 메서드는")
+	class Describe_deleteMyAccount {
+
+		@Test
+		@DisplayName("It: 회원을 탈퇴 처리하고 리프레시 토큰을 삭제한다")
+		void it_deletes_user_and_refresh_tokens() {
+			// given
+			User user = createUser();
+			given(userRepository.findByEmail(user.getEmail())).willReturn(Optional.of(user));
+
+			// when
+			userService.deleteMyAccount(user.getEmail());
+
+			// then
+			assertThat(user.getDeletedAt()).isNotNull();
+			verify(refreshTokenRepository).deleteByEmail(user.getEmail());
+		}
+
+		@Test
+		@DisplayName("It: 이미 삭제된 회원이면 ALREADY_DELETED 예외가 발생한다")
+		void it_throws_already_deleted_when_user_is_deleted() {
+			// given
+			User user = createUser();
+			user.delete();
+			given(userRepository.findByEmail(user.getEmail())).willReturn(Optional.of(user));
+
+			// when
+			BusinessException exception = assertThrows(
+				BusinessException.class,
+				() -> userService.deleteMyAccount(user.getEmail())
+			);
+
+			// then
+			assertThat(exception.getErrorCode()).isEqualTo(ErrorCode.ALREADY_DELETED);
+			verify(refreshTokenRepository, never()).deleteByEmail(user.getEmail());
 		}
 	}
 
