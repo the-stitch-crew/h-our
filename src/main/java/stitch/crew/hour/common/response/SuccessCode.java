@@ -10,6 +10,9 @@ public enum SuccessCode {
     // USER
     USER_CREATED("계정이 정상적으로 생성되었습니다."),
 
+    // Order
+    ORDER_CREATED_SUCCESS("주문이 정상적으로 생성되었습니다."),
+
 
     /*CATEGORY*/
     CATEGORY_CREATED("카테고리가 정상적으로 생성되었습니다."),
