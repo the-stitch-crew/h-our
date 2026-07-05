@@ -12,7 +12,7 @@ import stitch.crew.hour.auth.dto.LoginRequest;
 import stitch.crew.hour.auth.service.AuthService;
 import stitch.crew.hour.auth.dto.LoginResponse;
 import stitch.crew.hour.auth.dto.RefreshTokenRequest;
-import stitch.crew.hour.common.response.ApiResponse;
+import stitch.crew.hour.common.response.ApiResponses;
 import stitch.crew.hour.common.response.ApiResult;
 import stitch.crew.hour.common.response.SuccessCode;
 
@@ -24,7 +24,7 @@ public class AuthController {
 	private final AuthService authService;
 
 	@PostMapping("/login")
-	public ResponseEntity<ApiResponse<LoginResponse>> login(
+	public ResponseEntity<ApiResponses<LoginResponse>> login(
 		@Valid @RequestBody LoginRequest request
 	) {
 		LoginResponse response = authService.login(request);
@@ -32,7 +32,7 @@ public class AuthController {
 	}
 
 	@PostMapping("/refresh")
-	public ResponseEntity<ApiResponse<LoginResponse>> refresh(
+	public ResponseEntity<ApiResponses<LoginResponse>> refresh(
 		@Valid @RequestBody RefreshTokenRequest request
 	) {
 		LoginResponse response = authService.refresh(request);
@@ -40,7 +40,7 @@ public class AuthController {
 	}
 
 	@PostMapping("/logout")
-	public ResponseEntity<ApiResponse<Void>> logout(
+	public ResponseEntity<ApiResponses<Void>> logout(
 		@Valid @RequestBody RefreshTokenRequest request
 	) {
 		authService.logout(request);

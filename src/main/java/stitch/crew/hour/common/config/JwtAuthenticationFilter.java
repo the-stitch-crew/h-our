@@ -18,6 +18,12 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import stitch.crew.hour.auth.service.JwtTokenProvider;
+import stitch.crew.hour.common.exception.BusinessException;
+import stitch.crew.hour.common.exception.ErrorCode;
+import stitch.crew.hour.common.util.PreConditions;
+import stitch.crew.hour.user.domain.CurrentUser;
+import stitch.crew.hour.user.domain.User;
+import stitch.crew.hour.user.repository.UserRepository;
 
 @Component
 @RequiredArgsConstructor
@@ -28,6 +34,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 	private static final String ROLE_PREFIX = "ROLE_";
 
 	private final JwtTokenProvider jwtTokenProvider;
+	private final UserRepository userRepository;
 
 	@Override
 	protected void doFilterInternal(
@@ -47,13 +54,19 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
 		Jws<Claims> claims = jwtTokenProvider.parseClaims(token);
 		String email = String.valueOf(claims.getPayload().get("email"));
-		String role = String.valueOf(claims.getPayload().get("role"));
+		User user = userRepository.findByEmail(email)
+			.orElseThrow(() -> new BusinessException(ErrorCode.USER_DONT_EXISTS));
+
+		PreConditions.validate(
+			user.getDeletedAt() == null,
+			ErrorCode.ALREADY_DELETED
+		);
 
 		UsernamePasswordAuthenticationToken authentication =
 			new UsernamePasswordAuthenticationToken(
-				email,
+				CurrentUser.from(user),
 				null,
-				List.of(new SimpleGrantedAuthority(ROLE_PREFIX + role))
+				List.of(new SimpleGrantedAuthority(ROLE_PREFIX + user.getRole().name()))
 			);
 		authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
 		SecurityContextHolder.getContext().setAuthentication(authentication);
