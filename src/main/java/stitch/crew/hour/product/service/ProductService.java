@@ -12,6 +12,7 @@ import stitch.crew.hour.common.util.PreConditions;
 import stitch.crew.hour.product.domain.Product;
 import stitch.crew.hour.product.dto.ProductCreateRequest;
 import stitch.crew.hour.product.dto.ProductCreateResponse;
+import stitch.crew.hour.product.dto.ProductDetailsResponse;
 import stitch.crew.hour.product.repository.ProductRepository;
 import stitch.crew.hour.user.constant.UserRole;
 import stitch.crew.hour.user.domain.User;
@@ -53,4 +54,14 @@ public class ProductService {
                 )
         );
     }
+
+    @PreAuthorize("isAuthenticated()")
+    public ProductDetailsResponse getProductDetail(
+        Long productId
+    ){
+        return ProductDetailsResponse.from(
+            productRepository.findByIdOrThrow(productId)
+        );
+    }
+
 }

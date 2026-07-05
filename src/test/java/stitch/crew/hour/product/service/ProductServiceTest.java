@@ -14,8 +14,11 @@ import stitch.crew.hour.category.domain.Category;
 import stitch.crew.hour.category.repository.CategoryRepository;
 import stitch.crew.hour.common.exception.BusinessException;
 import stitch.crew.hour.common.exception.ErrorCode;
+import stitch.crew.hour.product.domain.Product;
 import stitch.crew.hour.product.dto.ProductCreateRequest;
 import stitch.crew.hour.product.dto.ProductCreateResponse;
+import stitch.crew.hour.product.dto.ProductDetailsResponse;
+import stitch.crew.hour.product.repository.ProductRepository;
 import stitch.crew.hour.user.domain.CurrentUser;
 import stitch.crew.hour.user.domain.User;
 import stitch.crew.hour.user.repository.UserRepository;
@@ -35,10 +38,17 @@ class ProductServiceTest {
     UserRepository userRepository;
 
     @Autowired
+    ProductRepository productRepository;
+
+    @Autowired
     CategoryRepository categoryRepository;
 
     User testUser;
     TestingAuthenticationToken token;
+    Category testCategory;
+    Product testProduct;
+    @Autowired
+    private ProductService productService;
 
     @BeforeEach
     void setUp(){
@@ -61,20 +71,25 @@ class ProductServiceTest {
                 null,
                 "ROLE_USER"
         );
+
+        testCategory = categoryRepository.save(
+                new Category("카테고리명", "썸네일")
+        );
+
+        testProduct = productRepository.save(
+                new Product(
+                        "테스트용 상품",
+                        2000L,
+                        "상품요약",
+                        "설명글",
+                        testCategory
+                )
+        );
     }
 
     @Nested
     @DisplayName("Describe : createProduct()에")
     class Describe_createProduct{
-
-        Category category;
-
-        @BeforeEach
-        void setUp(){
-            category = categoryRepository.save(
-                    new Category("카테고리명", "썸네일")
-            );
-        }
 
         @Nested
         @DisplayName("Context : 올바른 데이터가 주어진 경우")
@@ -93,7 +108,7 @@ class ProductServiceTest {
                 // when
                 ProductCreateResponse product = service.createProduct(
                         testUser.getId(),
-                        category.getId(),
+                        testCategory.getId(),
                         request
                 );
 
@@ -120,12 +135,36 @@ class ProductServiceTest {
                 Assertions.assertThatThrownBy(
                         ()-> service.createProduct(
                                 testUser.getId(),
-                                category.getId(),
+                                testCategory.getId(),
                                 request
                         )
                 ).isInstanceOf(BusinessException.class)
                         .hasMessageContaining(ErrorCode.NOT_ADMIN.getMessage());
             }
+        }
+    }
+
+    @Nested
+    @DisplayName("Describe : getProductDetail()에")
+    class Describe_getProductDetail{
+
+        @Nested
+        @DisplayName("Context : 올바른 데이터가 주어진 경우")
+        class Context_with_Valid_Data{
+
+            @Test
+            @DisplayName("It : 상품 단건 조회 성공")
+            void It_상품_단건조회__성공(){
+                // given
+                SecurityContextHolder.getContext().setAuthentication(token);
+
+                // when
+                ProductDetailsResponse founded = productService.getProductDetail(testProduct.getId());
+
+                // then
+                Assertions.assertThat(founded.name()).isEqualTo(founded.name());
+            }
+
         }
 
     }

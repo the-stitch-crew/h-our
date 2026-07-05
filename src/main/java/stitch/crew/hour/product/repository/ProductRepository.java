@@ -8,7 +8,7 @@ import stitch.crew.hour.product.domain.Product;
 public interface ProductRepository extends JpaRepository<Product, Long> {
     default Product findByIdOrThrow(Long productId){
         return findById(productId).orElseThrow(
-                ()->new BusinessException(ErrorCode.NO_USER)
+                ()->new BusinessException(ErrorCode.PRODUCT_NOT_FOUND)
         );
     }
 }
