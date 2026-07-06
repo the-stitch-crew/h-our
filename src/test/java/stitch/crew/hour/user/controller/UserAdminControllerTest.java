@@ -3,6 +3,7 @@ package stitch.crew.hour.user.controller;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.willThrow;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -27,6 +28,7 @@ import stitch.crew.hour.common.response.SuccessCode;
 import stitch.crew.hour.user.constant.Gender;
 import stitch.crew.hour.user.constant.Role;
 import stitch.crew.hour.user.dto.UserInfoResponse;
+import stitch.crew.hour.user.dto.UserRoleUpdateRequest;
 import stitch.crew.hour.user.repository.UserRepository;
 import stitch.crew.hour.user.service.UserService;
 
@@ -121,6 +123,104 @@ class UserAdminControllerTest {
 				.andExpect(content().contentType(MediaType.APPLICATION_JSON))
 				.andExpect(jsonPath("$.code").value(ErrorCode.ALREADY_DELETED.name()))
 				.andExpect(jsonPath("$.message").value(ErrorCode.ALREADY_DELETED.getMessage()))
+				.andDo(print());
+		}
+	}
+
+	@Nested
+	@DisplayName("Describe: PATCH /api/admin/users/{userId}/role 엔드포인트는")
+	class Describe_updateUserRole {
+
+		@Test
+		@DisplayName("It: 유저 역할을 변경하고 변경된 정보를 반환한다")
+		void it_updates_user_role() throws Exception {
+			// given
+			Long userId = 1L;
+			UserRoleUpdateRequest request = new UserRoleUpdateRequest(Role.ADMIN);
+			UserInfoResponse response = new UserInfoResponse(
+				userId,
+				"대정수",
+				"legend@naver.com",
+				LocalDate.of(2000, 1, 1),
+				Gender.MALE,
+				Role.ADMIN,
+				"010-1234-5678",
+				"KOREA",
+				false
+			);
+
+			given(userService.updateUserRole(userId, request)).willReturn(response);
+
+			// when & then
+			mockMvc.perform(
+					patch("/api/admin/users/{userId}/role", userId)
+						.contentType(MediaType.APPLICATION_JSON)
+						.content("""
+							{
+							  "role": "ADMIN"
+							}
+							""")
+				)
+				.andExpect(status().isOk())
+				.andExpect(content().contentType(MediaType.APPLICATION_JSON))
+				.andExpect(jsonPath("$.code").value(SuccessCode.USER_ROLE_UPDATED.name()))
+				.andExpect(jsonPath("$.message").value(SuccessCode.USER_ROLE_UPDATED.getSuccessMessage()))
+				.andExpect(jsonPath("$.data.userId").value(userId))
+				.andExpect(jsonPath("$.data.role").value(Role.ADMIN.name()))
+				.andDo(print());
+		}
+
+		@Test
+		@DisplayName("It: 유저가 존재하지 않으면 404 상태를 반환한다")
+		void it_returns_404_when_user_does_not_exist() throws Exception {
+			// given
+			Long userId = 1L;
+			UserRoleUpdateRequest request = new UserRoleUpdateRequest(Role.ADMIN);
+			willThrow(new BusinessException(ErrorCode.USER_DONT_EXISTS))
+				.given(userService)
+				.updateUserRole(userId, request);
+
+			// when & then
+			mockMvc.perform(
+					patch("/api/admin/users/{userId}/role", userId)
+						.contentType(MediaType.APPLICATION_JSON)
+						.content("""
+							{
+							  "role": "ADMIN"
+							}
+							""")
+				)
+				.andExpect(status().isNotFound())
+				.andExpect(content().contentType(MediaType.APPLICATION_JSON))
+				.andExpect(jsonPath("$.code").value(ErrorCode.USER_DONT_EXISTS.name()))
+				.andExpect(jsonPath("$.message").value(ErrorCode.USER_DONT_EXISTS.getMessage()))
+				.andDo(print());
+		}
+
+		@Test
+		@DisplayName("It: 변경할 수 없는 역할이면 400 상태를 반환한다")
+		void it_returns_400_when_role_change_is_not_allowed() throws Exception {
+			// given
+			Long userId = 1L;
+			UserRoleUpdateRequest request = new UserRoleUpdateRequest(Role.SUPER_ADMIN);
+			willThrow(new BusinessException(ErrorCode.USER_ROLE_CHANGE_NOT_ALLOWED))
+				.given(userService)
+				.updateUserRole(userId, request);
+
+			// when & then
+			mockMvc.perform(
+					patch("/api/admin/users/{userId}/role", userId)
+						.contentType(MediaType.APPLICATION_JSON)
+						.content("""
+							{
+							  "role": "SUPER_ADMIN"
+							}
+							""")
+				)
+				.andExpect(status().isBadRequest())
+				.andExpect(content().contentType(MediaType.APPLICATION_JSON))
+				.andExpect(jsonPath("$.code").value(ErrorCode.USER_ROLE_CHANGE_NOT_ALLOWED.name()))
+				.andExpect(jsonPath("$.message").value(ErrorCode.USER_ROLE_CHANGE_NOT_ALLOWED.getMessage()))
 				.andDo(print());
 		}
 	}

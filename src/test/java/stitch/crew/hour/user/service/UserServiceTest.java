@@ -32,6 +32,7 @@ import stitch.crew.hour.user.dto.PasswordChangeRequest;
 import stitch.crew.hour.user.dto.SignupRequest;
 import stitch.crew.hour.user.dto.SignupResponse;
 import stitch.crew.hour.user.dto.UserInfoResponse;
+import stitch.crew.hour.user.dto.UserRoleUpdateRequest;
 import stitch.crew.hour.user.dto.UserUpdateRequest;
 import stitch.crew.hour.user.repository.UserRepository;
 
@@ -362,6 +363,99 @@ class UserServiceTest {
 	}
 
 	@Nested
+	@DisplayName("Describe: updateUserRole 메서드는")
+	class Describe_updateUserRole {
+
+		@Test
+		@DisplayName("It: USER 역할을 ADMIN으로 변경한다")
+		void it_changes_user_to_admin() {
+			// given
+			User user = createUser(Role.USER);
+			UserRoleUpdateRequest request = new UserRoleUpdateRequest(Role.ADMIN);
+			given(userRepository.findById(user.getId())).willReturn(Optional.of(user));
+
+			// when
+			UserInfoResponse response = userService.updateUserRole(user.getId(), request);
+
+			// then
+			assertThat(user.getRole()).isEqualTo(Role.ADMIN);
+			assertThat(response.role()).isEqualTo(Role.ADMIN);
+		}
+
+		@Test
+		@DisplayName("It: ADMIN 역할을 USER로 변경한다")
+		void it_changes_admin_to_user() {
+			// given
+			User user = createUser(Role.ADMIN);
+			UserRoleUpdateRequest request = new UserRoleUpdateRequest(Role.USER);
+			given(userRepository.findById(user.getId())).willReturn(Optional.of(user));
+
+			// when
+			UserInfoResponse response = userService.updateUserRole(user.getId(), request);
+
+			// then
+			assertThat(user.getRole()).isEqualTo(Role.USER);
+			assertThat(response.role()).isEqualTo(Role.USER);
+		}
+
+		@Test
+		@DisplayName("It: id에 해당하는 회원이 없으면 USER_DONT_EXISTS 예외가 발생한다")
+		void it_throws_user_dont_exists_when_user_does_not_exist() {
+			// given
+			Long userId = 1L;
+			UserRoleUpdateRequest request = new UserRoleUpdateRequest(Role.ADMIN);
+			given(userRepository.findById(userId)).willReturn(Optional.empty());
+
+			// when
+			BusinessException exception = assertThrows(
+				BusinessException.class,
+				() -> userService.updateUserRole(userId, request)
+			);
+
+			// then
+			assertThat(exception.getErrorCode()).isEqualTo(ErrorCode.USER_DONT_EXISTS);
+		}
+
+		@Test
+		@DisplayName("It: 삭제된 회원이면 USER_DONT_EXISTS 예외가 발생한다")
+		void it_throws_user_dont_exists_when_user_is_deleted() {
+			// given
+			User user = createUser();
+			user.delete();
+			UserRoleUpdateRequest request = new UserRoleUpdateRequest(Role.ADMIN);
+			given(userRepository.findById(user.getId())).willReturn(Optional.of(user));
+
+			// when
+			BusinessException exception = assertThrows(
+				BusinessException.class,
+				() -> userService.updateUserRole(user.getId(), request)
+			);
+
+			// then
+			assertThat(exception.getErrorCode()).isEqualTo(ErrorCode.USER_DONT_EXISTS);
+		}
+
+		@Test
+		@DisplayName("It: SUPER_ADMIN으로 변경하려 하면 USER_ROLE_CHANGE_NOT_ALLOWED 예외가 발생한다")
+		void it_throws_when_role_change_is_not_allowed() {
+			// given
+			User user = createUser(Role.USER);
+			UserRoleUpdateRequest request = new UserRoleUpdateRequest(Role.SUPER_ADMIN);
+			given(userRepository.findById(user.getId())).willReturn(Optional.of(user));
+
+			// when
+			BusinessException exception = assertThrows(
+				BusinessException.class,
+				() -> userService.updateUserRole(user.getId(), request)
+			);
+
+			// then
+			assertThat(exception.getErrorCode()).isEqualTo(ErrorCode.USER_ROLE_CHANGE_NOT_ALLOWED);
+			assertThat(user.getRole()).isEqualTo(Role.USER);
+		}
+	}
+
+	@Nested
 	@DisplayName("Describe: changePassword 메서드는")
 	class Describe_changePassword {
 
@@ -425,8 +519,8 @@ class UserServiceTest {
 		}
 
 		@Test
-		@DisplayName("It: 이미 삭제된 회원이면 ALREADY_DELETED 예외가 발생한다")
-		void it_throws_already_deleted_when_user_is_deleted() {
+		@DisplayName("It: 이미 삭제된 회원이면 USER_DONT_EXISTS 예외가 발생한다")
+		void it_throws_user_dont_exists_when_user_is_deleted() {
 			// given
 			User user = createUser();
 			user.delete();
@@ -439,7 +533,7 @@ class UserServiceTest {
 			);
 
 			// then
-			assertThat(exception.getErrorCode()).isEqualTo(ErrorCode.ALREADY_DELETED);
+			assertThat(exception.getErrorCode()).isEqualTo(ErrorCode.USER_DONT_EXISTS);
 			verify(refreshTokenRepository, never()).deleteByEmail(user.getEmail());
 		}
 	}
@@ -457,12 +551,16 @@ class UserServiceTest {
 	}
 
 	private User createUser() {
+		return createUser(Role.USER);
+	}
+
+	private User createUser(Role role) {
 		User user = new User(
 			"대정수",
 			"legend@naver.com",
 			"encodedPassword",
 			LocalDate.of(2000, 1, 1),
-			Role.USER,
+			role,
 			Gender.MALE,
 			null,
 			"010-1234-5678",
