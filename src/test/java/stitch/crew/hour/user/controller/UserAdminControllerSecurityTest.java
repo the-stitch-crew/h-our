@@ -1,6 +1,5 @@
 package stitch.crew.hour.user.controller;
 
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -21,11 +20,11 @@ import stitch.crew.hour.common.config.SecurityConfig;
 import stitch.crew.hour.user.repository.UserRepository;
 import stitch.crew.hour.user.service.UserService;
 
-@WebMvcTest(UserController.class)
+@WebMvcTest(UserAdminController.class)
 @Import({SecurityConfig.class, JwtAuthenticationFilter.class})
 @AutoConfigureMockMvc
-@DisplayName("UserController 보안 설정은")
-class UserControllerSecurityTest {
+@DisplayName("UserAdminController 보안 설정은")
+class UserAdminControllerSecurityTest {
 
 	@Autowired
 	private MockMvc mockMvc;
@@ -40,43 +39,24 @@ class UserControllerSecurityTest {
 	private UserRepository userRepository;
 
 	@Test
-	@DisplayName("GET /api/users/me 요청에 인증이 없으면 차단한다")
-	void it_rejects_get_my_info_without_authentication() throws Exception {
-		mockMvc.perform(get("/api/users/me"))
+	@DisplayName("GET /api/admin/users/{userId} 요청에 인증이 없으면 차단한다")
+	void it_rejects_get_user_info_without_authentication() throws Exception {
+		mockMvc.perform(get("/api/admin/users/{userId}", 1L))
 			.andExpect(status().is4xxClientError());
 	}
 
 	@Test
-	@DisplayName("PATCH /api/users/me 요청에 인증이 없으면 차단한다")
-	void it_rejects_update_my_info_without_authentication() throws Exception {
+	@DisplayName("PATCH /api/admin/users/{userId}/role 요청에 인증이 없으면 차단한다")
+	void it_rejects_update_user_role_without_authentication() throws Exception {
 		mockMvc.perform(
-				patch("/api/users/me")
-					.contentType(MediaType.APPLICATION_JSON)
-					.content("{}")
-			)
-			.andExpect(status().is4xxClientError());
-	}
-
-	@Test
-	@DisplayName("PATCH /api/users/me/password 요청에 인증이 없으면 차단한다")
-	void it_rejects_change_password_without_authentication() throws Exception {
-		mockMvc.perform(
-				patch("/api/users/me/password")
+				patch("/api/admin/users/{userId}/role", 1L)
 					.contentType(MediaType.APPLICATION_JSON)
 					.content("""
 						{
-						  "currentPassword": "password123",
-						  "newPassword": "newPassword123"
+						  "role": "ADMIN"
 						}
 						""")
 			)
-			.andExpect(status().is4xxClientError());
-	}
-
-	@Test
-	@DisplayName("DELETE /api/users/me 요청에 인증이 없으면 차단한다")
-	void it_rejects_delete_my_account_without_authentication() throws Exception {
-		mockMvc.perform(delete("/api/users/me"))
 			.andExpect(status().is4xxClientError());
 	}
 }
