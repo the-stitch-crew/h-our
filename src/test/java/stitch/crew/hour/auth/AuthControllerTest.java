@@ -1,0 +1,140 @@
+package stitch.crew.hour.auth;
+
+import static org.mockito.BDDMockito.given;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
+import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
+import org.springframework.http.MediaType;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
+import org.springframework.test.web.servlet.MockMvc;
+
+import stitch.crew.hour.auth.controller.AuthController;
+import stitch.crew.hour.auth.dto.LoginRequest;
+import stitch.crew.hour.auth.dto.LoginResponse;
+import stitch.crew.hour.auth.dto.RefreshTokenRequest;
+import stitch.crew.hour.auth.service.AuthService;
+import stitch.crew.hour.auth.service.JwtTokenProvider;
+import stitch.crew.hour.common.response.SuccessCode;
+
+@WebMvcTest(AuthController.class)
+@AutoConfigureMockMvc(addFilters = false)
+@DisplayName("AuthController의")
+class AuthControllerTest {
+
+	@Autowired
+	private MockMvc mockMvc;
+
+	@MockitoBean
+	private AuthService authService;
+
+	@MockitoBean
+	private JwtTokenProvider jwtTokenProvider;
+
+	@Nested
+	@DisplayName("Describe: POST /api/auth/login 엔드포인트는")
+	class Describe_login {
+
+		@Test
+		@DisplayName("It: 로그인 성공 시 200 상태와 토큰 정보를 반환한다")
+		void it_returns_200_ok_and_tokens() throws Exception {
+			// given
+			LoginRequest request = new LoginRequest("legend@naver.com", "password123");
+			LoginResponse response = new LoginResponse(
+				"access-token",
+				"refresh-token"
+			);
+
+			given(authService.login(request)).willReturn(response);
+
+			// when & then
+			mockMvc.perform(
+					post("/api/auth/login")
+						.contentType(MediaType.APPLICATION_JSON)
+						.content("""
+							{
+							  "email": "legend@naver.com",
+							  "password": "password123"
+							}
+							""")
+				)
+				.andExpect(status().isOk())
+				.andExpect(content().contentType(MediaType.APPLICATION_JSON))
+				.andExpect(jsonPath("$.code").value(SuccessCode.AUTH_LOGIN_SUCCESS.name()))
+				.andExpect(jsonPath("$.message").value(SuccessCode.AUTH_LOGIN_SUCCESS.getSuccessMessage()))
+				.andExpect(jsonPath("$.data.accessToken").value("access-token"))
+				.andExpect(jsonPath("$.data.refreshToken").value("refresh-token"))
+				.andDo(print());
+		}
+	}
+
+	@Nested
+	@DisplayName("Describe: POST /api/auth/refresh 엔드포인트는")
+	class Describe_refresh {
+
+		@Test
+		@DisplayName("It: 토큰 갱신 성공 시 200 상태와 새 토큰 정보를 반환한다")
+		void it_returns_200_ok_and_new_tokens() throws Exception {
+			// given
+			RefreshTokenRequest request = new RefreshTokenRequest("refresh-token");
+			LoginResponse response = new LoginResponse(
+				"new-access-token",
+				"new-refresh-token"
+			);
+
+			given(authService.refresh(request)).willReturn(response);
+
+			// when & then
+			mockMvc.perform(
+					post("/api/auth/refresh")
+						.contentType(MediaType.APPLICATION_JSON)
+						.content("""
+							{
+							  "refreshToken": "refresh-token"
+							}
+							""")
+				)
+				.andExpect(status().isOk())
+				.andExpect(content().contentType(MediaType.APPLICATION_JSON))
+				.andExpect(jsonPath("$.code").value(SuccessCode.AUTH_REFRESH_SUCCESS.name()))
+				.andExpect(jsonPath("$.message").value(SuccessCode.AUTH_REFRESH_SUCCESS.getSuccessMessage()))
+				.andExpect(jsonPath("$.data.accessToken").value("new-access-token"))
+				.andExpect(jsonPath("$.data.refreshToken").value("new-refresh-token"))
+				.andDo(print());
+		}
+	}
+
+	@Nested
+	@DisplayName("Describe: POST /api/auth/logout 엔드포인트는")
+	class Describe_logout {
+
+		@Test
+		@DisplayName("It: 로그아웃 성공 시 200 상태를 반환한다")
+		void it_returns_200_ok() throws Exception {
+			// when & then
+			mockMvc.perform(
+					post("/api/auth/logout")
+						.contentType(MediaType.APPLICATION_JSON)
+						.content("""
+							{
+							  "refreshToken": "refresh-token"
+							}
+							""")
+				)
+				.andExpect(status().isOk())
+				.andExpect(content().contentType(MediaType.APPLICATION_JSON))
+				.andExpect(jsonPath("$.code").value(SuccessCode.AUTH_LOGOUT_SUCCESS.name()))
+				.andExpect(jsonPath("$.message").value(SuccessCode.AUTH_LOGOUT_SUCCESS.getSuccessMessage()))
+				.andExpect(jsonPath("$.data").doesNotExist())
+				.andDo(print());
+		}
+	}
+}

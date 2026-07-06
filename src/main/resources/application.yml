@@ -3,7 +3,7 @@ spring:
     name: hour
   config:
     import:
-      - optional:file:.env[.yml]
+      - optional:file:.env[.properties]
       - optional:file:.env.${spring.profiles.active}[.properties]
 
 
