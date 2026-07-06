@@ -10,15 +10,12 @@ import stitch.crew.hour.order.dto.OrderCreateRequest;
 import stitch.crew.hour.order.dto.OrderCreateResponse;
 import stitch.crew.hour.order.repository.OrderBoundaryRepository;
 import stitch.crew.hour.orderproduct.domain.OrderProduct;
-import stitch.crew.hour.product.ProductRepository;
-import stitch.crew.hour.product.domain.Product;
 import stitch.crew.hour.shippingpolicy.domain.ShippingPolicy;
 import stitch.crew.hour.shippingpolicy.repository.ShippingPolicyRepository;
 import stitch.crew.hour.user.domain.User;
 import stitch.crew.hour.user.repository.UserRepository;
 
 import java.util.List;
-import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
