@@ -15,6 +15,13 @@ public enum SuccessCode {
     USER_DELETED("계정이 정상적으로 탈퇴되었습니다."),
     USER_ROLE_UPDATED("계정 권한이 정상적으로 변경되었습니다."),
 
+    // ADDRESS
+    ADDRESS_CREATED("주소가 정상적으로 생성되었습니다."),
+    ADDRESS_READ("주소가 정상적으로 조회되었습니다."),
+    ADDRESS_UPDATED("주소가 정상적으로 수정되었습니다."),
+    ADDRESS_MAIN_UPDATED("대표 주소가 정상적으로 변경되었습니다."),
+    ADDRESS_DELETED("주소가 정상적으로 삭제되었습니다."),
+
     // AUTH
     AUTH_LOGIN_SUCCESS("로그인에 성공했습니다."),
     AUTH_REFRESH_SUCCESS("토큰 갱신에 성공했습니다."),

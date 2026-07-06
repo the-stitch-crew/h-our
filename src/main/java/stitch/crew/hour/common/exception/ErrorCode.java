@@ -15,6 +15,9 @@ public enum ErrorCode {
     USER_DONT_EXISTS(HttpStatus.NOT_FOUND, "존재하지 않는 유저입니다."),
     USER_ROLE_CHANGE_NOT_ALLOWED(HttpStatus.BAD_REQUEST, "변경할 수 없는 역할입니다."),
 
+    // Address
+    ADDRESS_NOT_FOUND(HttpStatus.NOT_FOUND, "주소를 찾을 수 없습니다."),
+
 
     // Auth
     LOGIN_FAILED(HttpStatus.UNAUTHORIZED, "이메일 또는 비밀번호가 일치하지 않습니다."),
