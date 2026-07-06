@@ -1,6 +1,7 @@
 package stitch.crew.hour.common.exception;
 
 
+import io.swagger.v3.oas.annotations.Hidden;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -8,6 +9,7 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 import stitch.crew.hour.common.response.ApiResponses;
 import stitch.crew.hour.common.response.ApiResult;
 
+@Hidden
 @RestControllerAdvice
 public class GlobalExceptionHandler {
     @ExceptionHandler(BusinessException.class)

@@ -38,7 +38,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @SpringBootTest
 @AutoConfigureMockMvc
 @Transactional
-class ProductAdminControllerTest {
+class   ProductAdminControllerTest {
 
     final String BASE_URL = "/api/admin/products";
 
@@ -56,7 +56,6 @@ class ProductAdminControllerTest {
 
     @Autowired
     CategoryRepository categoryRepository;
-
 
     User testUser;
     TestingAuthenticationToken token;

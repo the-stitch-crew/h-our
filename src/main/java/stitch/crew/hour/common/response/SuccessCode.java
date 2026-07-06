@@ -15,6 +15,7 @@ public enum SuccessCode {
 
     // Product
     PRODUCT_CREATED_SUCCESS("상품이 정상적으로 생성되었습니다."),
+    PRODUCT_READ("상품이 정상적으로 조회되었습니다."),
 
     /*CATEGORY*/
     CATEGORY_CREATED("카테고리가 정상적으로 생성되었습니다."),

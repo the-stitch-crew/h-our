@@ -58,7 +58,6 @@ public class ProductService {
         );
     }
 
-    @PreAuthorize("isAuthenticated()")
     public ProductDetailsResponse getProductDetail(
         Long productId
     ){
@@ -68,7 +67,6 @@ public class ProductService {
         );
     }
 
-    @PreAuthorize("isAuthenticated()")
     public Page<ProductSearchResponse> getProductSearch(
         PageRequest pageRequest,
         String categoryName

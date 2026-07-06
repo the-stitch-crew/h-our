@@ -7,6 +7,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.parameters.RequestBody;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -17,7 +18,8 @@ import stitch.crew.hour.product.dto.ProductCreateRequest;
 import stitch.crew.hour.product.dto.ProductCreateResponse;
 import stitch.crew.hour.user.domain.CurrentUser;
 
-public interface ProductAdminSwaggerSupporter {
+@Tag(name="Product API", description="관리자가 사용하는 상품 관련 API")
+ public interface ProductAdminSwaggerSupporter {
 
 
     @Operation(
