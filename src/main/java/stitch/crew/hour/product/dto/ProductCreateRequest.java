@@ -7,6 +7,7 @@ public record ProductCreateRequest(
         @Size(max = 50, message = "상품명은 50자까지 입력가능합니다.") String name,
         @NotNull Long price,
         String summary,
-        String description
+        String description,
+        Long categoryId
 ) {
 }

@@ -34,12 +34,11 @@ public class ProductService {
     @PreAuthorize("isAuthenticated()")
     public ProductCreateResponse createProduct(
             Long userId,
-            Long categoryId,
             ProductCreateRequest request
     ){
         User foundedUser = userRepository.findByIdOrthrow(userId);
 
-        Category foundedCategory = categoryRepository.findByIdOrThrow(categoryId);
+        Category foundedCategory = categoryRepository.findByIdOrThrow(request.categoryId());
 
         PreConditions.validate(
                 foundedUser.getRole().equals(UserRole.ADMIN),

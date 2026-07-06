@@ -13,6 +13,8 @@ public enum SuccessCode {
     // Order
     ORDER_CREATED_SUCCESS("주문이 정상적으로 생성되었습니다."),
 
+    // Product
+    PRODUCT_CREATED_SUCCESS("상품이 정상적으로 생성되었습니다."),
 
     /*CATEGORY*/
     CATEGORY_CREATED("카테고리가 정상적으로 생성되었습니다."),

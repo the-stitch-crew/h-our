@@ -18,13 +18,15 @@ public class TestUtil {
 
     public static ProductCreateRequest productCreateRequest(
             String summary,
-            String description
+            String description,
+            Long categoryId
     ){
         return new ProductCreateRequest(
                 "상품명",
                 2000L,
                 summary,
-                description
+                description,
+                categoryId
         );
     }
 }

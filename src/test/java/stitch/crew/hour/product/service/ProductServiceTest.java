@@ -111,13 +111,13 @@ class ProductServiceTest {
                 SecurityContextHolder.getContext().setAuthentication(token);
                 ProductCreateRequest request = TestUtil.productCreateRequest(
                         "요약",
-                        "설명"
+                        "설명",
+                        testCategory.getId()
                 );
 
                 // when
                 ProductCreateResponse product = service.createProduct(
                         testUser.getId(),
-                        testCategory.getId(),
                         request
                 );
 
@@ -137,14 +137,14 @@ class ProductServiceTest {
                 SecurityContextHolder.getContext().setAuthentication(token);
                 ProductCreateRequest request = TestUtil.productCreateRequest(
                         "요약",
-                        "설명"
+                        "설명",
+                        testCategory.getId()
                 );
 
                 // when
                 Assertions.assertThatThrownBy(
                                 () -> service.createProduct(
                                         testUser.getId(),
-                                        testCategory.getId(),
                                         request
                                 )
                         ).isInstanceOf(BusinessException.class)
