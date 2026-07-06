@@ -10,6 +10,7 @@ import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.web.multipart.MultipartFile;
 import stitch.crew.hour.category.dto.CategoryRequest;
 import stitch.crew.hour.category.service.CategoryService;
 import stitch.crew.hour.common.exception.BusinessException;
@@ -39,6 +40,7 @@ class CategoryAdminControllerTest {
 
     String name;
     String thumbnail;
+    MultipartFile file;
 
     @Nested
     @DisplayName("Discribe: POST / 엔드포인트는")
@@ -52,7 +54,7 @@ class CategoryAdminControllerTest {
             void setUp() {
                 name = "거거거거";
                 thumbnail="ㅠㅠㅠㅠㅠ";
-                request = new CategoryRequest(name, thumbnail);
+                request = new CategoryRequest(name);
             }
 
             @Test
@@ -80,7 +82,7 @@ class CategoryAdminControllerTest {
             void it_return_201_created_and_success_message_if_enmpty_thumbnail() throws Exception {
                 //given
                 thumbnail="";
-                request = new CategoryRequest(name, thumbnail);
+                request = new CategoryRequest(name);
                 doNothing().when(categoryService).save(request, file);
 
                 //when-then
@@ -111,7 +113,7 @@ class CategoryAdminControllerTest {
             void it_return_400_bad_request_and_valid_message_if_name_null() throws Exception {
                 //given
                 name = null;
-                request = new CategoryRequest(name, thumbnail);
+                request = new CategoryRequest(name);
                 doNothing().when(categoryService).save(request, file);
 
                 //when-then
@@ -132,7 +134,7 @@ class CategoryAdminControllerTest {
             void it_return_400_bad_request_and_valid_message_if_name_empty() throws Exception {
                 //given
                 name = "";
-                request = new CategoryRequest(name, thumbnail);
+                request = new CategoryRequest(name);
                 doNothing().when(categoryService).save(request, file);
 
                 //when-then
@@ -154,7 +156,7 @@ class CategoryAdminControllerTest {
             void it_return_400_bad_request_and_valid_message_if_name_greater_20() throws Exception {
                 //given
                 name="가나다라마바사아자차카타파하가나다라마바사아자";
-                request = new CategoryRequest(name, thumbnail);
+                request = new CategoryRequest(name);
                 doNothing().when(categoryService).save(request, file);
 
                 //when-then
@@ -178,7 +180,7 @@ class CategoryAdminControllerTest {
             void setUp() {
                 name = "거거거거";
                 thumbnail = null;
-                request = new CategoryRequest(name, thumbnail);
+                request = new CategoryRequest(name);
             }
 
             @Test
@@ -218,7 +220,7 @@ class CategoryAdminControllerTest {
                 name = "거거거거";
                 name2 = "거거거거2";
                 thumbnail="ㅠㅠㅠㅠㅠ";
-                request = new CategoryRequest(name2, thumbnail);
+                request = new CategoryRequest(name2);
             }
 
             @Test
@@ -246,7 +248,7 @@ class CategoryAdminControllerTest {
             void it_return_200_ok_and_success_message_if_enmpty_thumbnail() throws Exception {
                 //given
                 thumbnail="";
-                request = new CategoryRequest(name2, thumbnail);
+                request = new CategoryRequest(name2);
                 doNothing().when(categoryService).updateCategory(categoryId, request, file);
 
                 //when-then
@@ -278,7 +280,7 @@ class CategoryAdminControllerTest {
             void it_return_400_bad_request_and_valid_message_if_name_null() throws Exception {
                 //given
                 name2 = null;
-                request = new CategoryRequest(name2, thumbnail);
+                request = new CategoryRequest(name2);
                 doNothing().when(categoryService).updateCategory(categoryId, request, file);
 
                 //when-then
@@ -300,7 +302,7 @@ class CategoryAdminControllerTest {
             void it_return_400_bad_request_and_valid_message_if_name_empty() throws Exception {
                 //given
                 name2 = "";
-                request = new CategoryRequest(name2, thumbnail);
+                request = new CategoryRequest(name2);
                 doNothing().when(categoryService).updateCategory(categoryId, request, file);
 
                 //when-then
@@ -322,7 +324,7 @@ class CategoryAdminControllerTest {
             void it_return_400_bad_request_and_valid_message_if_name_greater_20() throws Exception {
                 //given
                 name2="가나다라마바사아자차카타파하가나다라마바사아자";
-                request = new CategoryRequest(name2, thumbnail);
+                request = new CategoryRequest(name2);
                 doNothing().when(categoryService).save(request, file);
 
                 //when-then
@@ -347,7 +349,7 @@ class CategoryAdminControllerTest {
                 categoryId = 1L;
                 name2 = "거거거거";
                 thumbnail = null;
-                request = new CategoryRequest(name2, thumbnail);
+                request = new CategoryRequest(name2);
             }
 
             @Test

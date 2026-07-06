@@ -61,6 +61,6 @@ public class CategoryService {
         Category category = categoryRepository.findById(categoryId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.CATEGORY_NOT_FOUND));
         categoryRepository.delete(category);
-        imageService.deleteThumbnail(category.getThumbnail());
+        if (category.getThumbnail()!=null) imageService.deleteThumbnail(category.getThumbnail());
     }
 }
