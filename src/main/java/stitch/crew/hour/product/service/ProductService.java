@@ -17,7 +17,7 @@ import stitch.crew.hour.product.constant.ProductStatus;
 import stitch.crew.hour.product.domain.Product;
 import stitch.crew.hour.product.dto.*;
 import stitch.crew.hour.product.repository.ProductRepository;
-import stitch.crew.hour.user.constant.UserRole;
+import stitch.crew.hour.user.constant.Role;
 import stitch.crew.hour.user.domain.User;
 import stitch.crew.hour.user.repository.UserRepository;
 
@@ -41,7 +41,7 @@ public class ProductService {
         Category foundedCategory = categoryRepository.findByIdOrThrow(request.categoryId());
 
         PreConditions.validate(
-                foundedUser.getRole().equals(UserRole.ADMIN),
+                foundedUser.getRole().equals(Role.ADMIN),
                 ErrorCode.NOT_ADMIN
         );
 
@@ -86,7 +86,7 @@ public class ProductService {
         User foundedUser = userRepository.findByIdOrthrow(userId);
 
         PreConditions.validate(
-                foundedUser.getRole().equals(UserRole.ADMIN),
+                foundedUser.getRole().equals(Role.ADMIN),
                 ErrorCode.NOT_ADMIN
         );
 
@@ -104,7 +104,7 @@ public class ProductService {
         User foundedUser = userRepository.findByIdOrthrow(userId);
 
         PreConditions.validate(
-                foundedUser.getRole().equals(UserRole.ADMIN),
+                foundedUser.getRole().equals(Role.ADMIN),
                 ErrorCode.NOT_ADMIN
         );
 
@@ -128,7 +128,7 @@ public class ProductService {
         User foundedUser = userRepository.findByIdOrthrow(userId);
 
         PreConditions.validate(
-                foundedUser.getRole().equals(UserRole.ADMIN),
+                foundedUser.getRole().equals(Role.ADMIN),
                 ErrorCode.NOT_ADMIN
         );
 
