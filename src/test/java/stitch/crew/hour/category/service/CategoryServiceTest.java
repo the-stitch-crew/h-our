@@ -55,7 +55,7 @@ class CategoryServiceTest {
                 //given
                 given(categoryRepository.existsByName(name)).willReturn(false);
                 //when
-                categoryService.save(request);
+                categoryService.save(request, file);
 
                 //then
                 ArgumentCaptor<Category> captor = ArgumentCaptor.forClass(Category.class);
@@ -81,7 +81,7 @@ class CategoryServiceTest {
                 //given
                 given(categoryRepository.existsByName(name)).willReturn(true);
                 //when&then
-                BusinessException exception = assertThrows(BusinessException.class, () -> categoryService.save(request));
+                BusinessException exception = assertThrows(BusinessException.class, () -> categoryService.save(request, file));
                 assertThat(exception.getMessage()).isEqualTo(ErrorCode.EXIST_CATEGORY.getMessage());
             }
         }
@@ -140,7 +140,7 @@ class CategoryServiceTest {
                 given(categoryRepository.findById(categoryId)).willReturn(Optional.of(category));
                 given(categoryRepository.existsByName(name2)).willReturn(false);
                 //when
-                categoryService.updateCategory(categoryId, request);
+                categoryService.updateCategory(categoryId, request, file);
 
                 //then
                 assertThat(category.getId()).isEqualTo(categoryId);
@@ -163,7 +163,7 @@ class CategoryServiceTest {
                 given(categoryRepository.findById(categoryId)).willReturn(Optional.empty());
                 //when&then
                 BusinessException exception = assertThrows(
-                        BusinessException.class, () -> categoryService.updateCategory(categoryId, request));
+                        BusinessException.class, () -> categoryService.updateCategory(categoryId, request, file));
                 assertThat(exception.getMessage()).isEqualTo(ErrorCode.CATEGORY_NOT_FOUND.getMessage());
             }
         }
@@ -183,7 +183,7 @@ class CategoryServiceTest {
                 given(categoryRepository.existsByName(name)).willReturn(true);
                 //when&then
                 BusinessException exception = assertThrows(
-                        BusinessException.class, () -> categoryService.updateCategory(categoryId, request));
+                        BusinessException.class, () -> categoryService.updateCategory(categoryId, request, file));
                 assertThat(exception.getMessage()).isEqualTo(ErrorCode.EXIST_CATEGORY .getMessage());
             }
         }

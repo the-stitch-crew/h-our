@@ -5,6 +5,10 @@ spring:
     import:
       - optional:file:.env[.properties]
       - optional:file:.env.${spring.profiles.active}[.properties]
+  cloud:
+    aws:
+      region:
+        static: ${S3_REGION}
 
 
 springdoc:

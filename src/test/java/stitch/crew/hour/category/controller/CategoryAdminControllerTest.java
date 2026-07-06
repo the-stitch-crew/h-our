@@ -59,7 +59,7 @@ class CategoryAdminControllerTest {
             @DisplayName("It : 201 상태와 성공 메시지를 반환한다")
             void it_return_201_created_and_success_message() throws Exception {
                 //given
-                doNothing().when(categoryService).save(request);
+                doNothing().when(categoryService).save(request, file);
 
                 //when-then
                 mockMvc.perform(
@@ -81,7 +81,7 @@ class CategoryAdminControllerTest {
                 //given
                 thumbnail="";
                 request = new CategoryRequest(name, thumbnail);
-                doNothing().when(categoryService).save(request);
+                doNothing().when(categoryService).save(request, file);
 
                 //when-then
                 mockMvc.perform(
@@ -112,7 +112,7 @@ class CategoryAdminControllerTest {
                 //given
                 name = null;
                 request = new CategoryRequest(name, thumbnail);
-                doNothing().when(categoryService).save(request);
+                doNothing().when(categoryService).save(request, file);
 
                 //when-then
                 mockMvc.perform(
@@ -133,7 +133,7 @@ class CategoryAdminControllerTest {
                 //given
                 name = "";
                 request = new CategoryRequest(name, thumbnail);
-                doNothing().when(categoryService).save(request);
+                doNothing().when(categoryService).save(request, file);
 
                 //when-then
                 mockMvc.perform(
@@ -155,7 +155,7 @@ class CategoryAdminControllerTest {
                 //given
                 name="가나다라마바사아자차카타파하가나다라마바사아자";
                 request = new CategoryRequest(name, thumbnail);
-                doNothing().when(categoryService).save(request);
+                doNothing().when(categoryService).save(request, file);
 
                 //when-then
                 mockMvc.perform(
@@ -185,7 +185,7 @@ class CategoryAdminControllerTest {
             @DisplayName("(썸네일이 null일때) It : 400 상태와 검증 메시지를 반환한다")
             void it_return_400_bad_request_and_valid_message_if_name_null() throws Exception {
                 //given
-                doNothing().when(categoryService).save(request);
+                doNothing().when(categoryService).save(request, file);
 
                 //when-then
                 mockMvc.perform(
@@ -225,7 +225,7 @@ class CategoryAdminControllerTest {
             @DisplayName("It : 200 상태와 성공 메시지를 반환한다")
             void it_return_200_ok_and_success_message() throws Exception {
                 //given
-                doNothing().when(categoryService).updateCategory(categoryId, request);
+                doNothing().when(categoryService).updateCategory(categoryId, request, file);
 
                 //when-then
                 mockMvc.perform(
@@ -247,7 +247,7 @@ class CategoryAdminControllerTest {
                 //given
                 thumbnail="";
                 request = new CategoryRequest(name2, thumbnail);
-                doNothing().when(categoryService).updateCategory(categoryId, request);
+                doNothing().when(categoryService).updateCategory(categoryId, request, file);
 
                 //when-then
                 mockMvc.perform(
@@ -279,7 +279,7 @@ class CategoryAdminControllerTest {
                 //given
                 name2 = null;
                 request = new CategoryRequest(name2, thumbnail);
-                doNothing().when(categoryService).updateCategory(categoryId, request);
+                doNothing().when(categoryService).updateCategory(categoryId, request, file);
 
                 //when-then
                 mockMvc.perform(
@@ -301,7 +301,7 @@ class CategoryAdminControllerTest {
                 //given
                 name2 = "";
                 request = new CategoryRequest(name2, thumbnail);
-                doNothing().when(categoryService).updateCategory(categoryId, request);
+                doNothing().when(categoryService).updateCategory(categoryId, request, file);
 
                 //when-then
                 mockMvc.perform(
@@ -323,7 +323,7 @@ class CategoryAdminControllerTest {
                 //given
                 name2="가나다라마바사아자차카타파하가나다라마바사아자";
                 request = new CategoryRequest(name2, thumbnail);
-                doNothing().when(categoryService).save(request);
+                doNothing().when(categoryService).save(request, file);
 
                 //when-then
                 mockMvc.perform(
@@ -354,7 +354,7 @@ class CategoryAdminControllerTest {
             @DisplayName("(썸네일이 null일때) It : 400 상태와 검증 메시지를 반환한다")
             void it_return_400_bad_request_and_valid_message_if_name_null() throws Exception {
                 //given
-                doNothing().when(categoryService).updateCategory(categoryId, request);
+                doNothing().when(categoryService).updateCategory(categoryId, request, file);
 
                 //when-then
                 mockMvc.perform(
