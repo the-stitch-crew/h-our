@@ -94,7 +94,7 @@ class ProductAdminControllerTest {
         );
 
         testCategory = categoryRepository.save(
-                new Category("카테고리명", "썸네일")
+                new Category("카테고리명")
         );
 
         testProduct = productRepository.save(
