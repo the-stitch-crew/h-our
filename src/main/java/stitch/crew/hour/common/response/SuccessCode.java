@@ -9,6 +9,16 @@ public enum SuccessCode {
 
     // USER
     USER_CREATED("계정이 정상적으로 생성되었습니다."),
+    USER_READ("계정이 정상적으로 조회되었습니다."),
+    USER_UPDATED("계정이 정상적으로 수정되었습니다."),
+    USER_PASSWORD_CHANGED("비밀번호가 정상적으로 변경되었습니다."),
+    USER_DELETED("계정이 정상적으로 탈퇴되었습니다."),
+    USER_ROLE_UPDATED("계정 권한이 정상적으로 변경되었습니다."),
+
+    // AUTH
+    AUTH_LOGIN_SUCCESS("로그인에 성공했습니다."),
+    AUTH_REFRESH_SUCCESS("토큰 갱신에 성공했습니다."),
+    AUTH_LOGOUT_SUCCESS("로그아웃에 성공했습니다."),
 
     // Order
     ORDER_CREATED_SUCCESS("주문이 정상적으로 생성되었습니다."),

@@ -3,7 +3,7 @@ spring:
     name: hour
   config:
     import:
-      - optional:file:.env[.yml]
+      - optional:file:.env[.properties]
       - optional:file:.env.${spring.profiles.active}[.properties]
 
 
@@ -20,6 +20,17 @@ springdoc:
     persist-authorization: true
 
 custom:
+  jwt:
+    validations:
+      access: 900000  # 15분
+      refresh: 604800000  # 7일
+    payload:
+      issuer: hour
+      subject-access-token: access-token
+      subject-refresh-token: refresh-token
+    secrets:
+      app-key: ${JWT_APP_KEY}
+      origin-key: ${JWT_SECRET_KEY}
   redis:
     host: ${REDIS_HOST}
     port: ${REDIS_PORT}

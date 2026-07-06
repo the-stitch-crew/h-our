@@ -10,6 +10,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 public class JwtProperties {
     private final Validations validations;
     private final Secrets secrets;
+    private final Payload payload;
 
     @Getter
     @RequiredArgsConstructor
@@ -23,5 +24,13 @@ public class JwtProperties {
     public static class Secrets {
         private final String appKey;
         private final String originKey;
+    }
+
+    @Getter
+    @RequiredArgsConstructor
+    public static class Payload {
+        private final String issuer;
+        private final String subjectAccessToken;
+        private final String subjectRefreshToken;
     }
 }
