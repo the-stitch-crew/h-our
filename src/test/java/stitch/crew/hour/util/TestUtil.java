@@ -2,6 +2,7 @@ package stitch.crew.hour.util;
 
 import org.springframework.security.authentication.TestingAuthenticationToken;
 import stitch.crew.hour.orderproduct.dto.OrderProductCreateRequest;
+import stitch.crew.hour.product.dto.ProductCreateRequest;
 import stitch.crew.hour.user.constant.Role;
 import stitch.crew.hour.user.domain.CurrentUser;
 
@@ -14,6 +15,20 @@ public class TestUtil {
                     productId,
                 1L,
                 "옵션입니다."
+        );
+    }
+
+    public static ProductCreateRequest productCreateRequest(
+            String summary,
+            String description,
+            Long categoryId
+    ){
+        return new ProductCreateRequest(
+                "상품명",
+                2000L,
+                summary,
+                description,
+                categoryId
         );
     }
 

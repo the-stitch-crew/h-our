@@ -51,7 +51,7 @@ public class SwaggerConfig {
     public GroupedOpenApi productApi(){
         return GroupedOpenApi.builder()
                 .pathsToMatch("/api/admin/products", "/api/products","/api/products/*","/api/admin/products/*")
-                .group("Produce API")
+                .group("Product API")
                 .build();
     }
     @Bean

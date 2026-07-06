@@ -36,7 +36,8 @@ public enum ErrorCode {
     NO_SHIPPING_POLICY(HttpStatus.NOT_FOUND, "활성화된 배송규칙이 없습니다."),
 
     // 상품
-    NO_PRODUCT(HttpStatus.NOT_FOUND, "해당 상품을 찾을 수 없습니다."),
+    PRODUCT_NOT_FOUND(HttpStatus.NOT_FOUND, "해당 상품을 찾을 수 없습니다."),
+    NOT_ADMIN(HttpStatus.FORBIDDEN, "관리자 권한이 없는 계정입니다."),
 
     //Image
     STORAGE_WRITE_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "s3에 이미지를 저장하는데 실패했습니다."),
