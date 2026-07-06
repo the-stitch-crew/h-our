@@ -25,6 +25,8 @@ import stitch.crew.hour.product.constant.ProductStatus;
 import stitch.crew.hour.product.domain.Product;
 import stitch.crew.hour.product.dto.*;
 import stitch.crew.hour.product.repository.ProductRepository;
+import stitch.crew.hour.user.constant.Gender;
+import stitch.crew.hour.user.constant.Role;
 import stitch.crew.hour.user.domain.CurrentUser;
 import stitch.crew.hour.user.domain.User;
 import stitch.crew.hour.user.repository.UserRepository;
@@ -67,9 +69,11 @@ class ProductServiceTest {
                         "wjdtn747@naver.com",
                         "1234",
                         LocalDate.now(),
-                        "google",
+                        Role.ADMIN,
+                        Gender.MALE,
                         "010",
                         "?",
+                        "대한민국",
                         false,
                         false
                 )
@@ -78,7 +82,7 @@ class ProductServiceTest {
         token = new TestingAuthenticationToken(
                 CurrentUser.from(testUser),
                 null,
-                "ROLE_USER"
+                Role.ADMIN.getValue()
         );
 
         testCategory = categoryRepository.save(
@@ -107,7 +111,7 @@ class ProductServiceTest {
             @DisplayName("It : 상품을 정상적으로 생성")
             void It_상품_생성__성공() {
                 // given
-                testUser.switchAdmin();
+                testUser.changeRole(Role.ADMIN);
                 SecurityContextHolder.getContext().setAuthentication(token);
                 ProductCreateRequest request = TestUtil.productCreateRequest(
                         "요약",
@@ -132,8 +136,15 @@ class ProductServiceTest {
         class Context_with_InValid_Authorities {
             @Test
             @DisplayName("It : 어드민이 아닌 경우 상품 생성 실패")
-            void It_상품_생성__성공() {
+            void It_상품_생성__실패() {
                 // given
+                testUser.changeRole(Role.USER);
+                token = new TestingAuthenticationToken(
+                        CurrentUser.from(testUser),
+                        null,
+                        Role.USER.getValue()
+                );
+
                 SecurityContextHolder.getContext().setAuthentication(token);
                 ProductCreateRequest request = TestUtil.productCreateRequest(
                         "요약",
@@ -275,7 +286,7 @@ class ProductServiceTest {
             @DisplayName("It : 상품 삭제 성공 ( SOFT DELETE )")
             void It_상품_삭제__성공() {
                 // given
-                testUser.switchAdmin();
+                testUser.changeRole(Role.ADMIN);
                 SecurityContextHolder.getContext().setAuthentication(token);
 
                 productService.deleteProduct(
@@ -310,7 +321,7 @@ class ProductServiceTest {
                         "설명"
                 );
 
-                testUser.switchAdmin();
+                testUser.changeRole(Role.ADMIN);
                 SecurityContextHolder.getContext().setAuthentication(token);
 
                 // when
@@ -340,7 +351,7 @@ class ProductServiceTest {
                         description,
                         description
                 );
-                testUser.switchAdmin();
+                testUser.changeRole(Role.ADMIN);
                 SecurityContextHolder.getContext().setAuthentication(token);
 
                 // when
@@ -366,6 +377,14 @@ class ProductServiceTest {
             @DisplayName("It : 관리자가 아니므로 상품 수정 차단")
             void It_상품_수정__차단(){
                 // given
+                testUser.changeRole(Role.USER);
+
+                token = new TestingAuthenticationToken(
+                        CurrentUser.from(testUser),
+                        null,
+                        Role.USER.getValue()
+                );
+
                 SecurityContextHolder.getContext().setAuthentication(token);
                 ProductUpdateRequest request = new ProductUpdateRequest(
                         "수정된 상품명",
@@ -403,7 +422,7 @@ class ProductServiceTest {
             @DisplayName("It : 해당 Product를 Main으로 전환")
             void It_Product를_Main으로_전환(){
                 // given
-                testUser.switchAdmin();
+                testUser.changeRole(Role.ADMIN);
                 SecurityContextHolder.getContext().setAuthentication(token);
 
                 Product product = productRepository.save(
@@ -444,6 +463,13 @@ class ProductServiceTest {
         @DisplayName("It : 관리자가 아니므로 상품 수정 차단")
         void It_상품_Main_전환__차단(){
             // given
+            testUser.changeRole(Role.USER);
+            token = new TestingAuthenticationToken(
+                    CurrentUser.from(testUser),
+                    null,
+                    Role.USER.getValue()
+            );
+
             SecurityContextHolder.getContext().setAuthentication(token);
             Product product = productRepository.save(
                     new Product(

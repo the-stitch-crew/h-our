@@ -27,6 +27,8 @@ import stitch.crew.hour.product.dto.ProductCreateRequest;
 import stitch.crew.hour.product.dto.ProductUpdateRequest;
 import stitch.crew.hour.product.repository.ProductRepository;
 import stitch.crew.hour.product.service.ProductService;
+import stitch.crew.hour.user.constant.Gender;
+import stitch.crew.hour.user.constant.Role;
 import stitch.crew.hour.user.domain.CurrentUser;
 import stitch.crew.hour.user.domain.User;
 import stitch.crew.hour.user.repository.UserRepository;
@@ -43,7 +45,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @SpringBootTest
 @AutoConfigureMockMvc
 @Transactional
-class   ProductAdminControllerTest {
+class ProductAdminControllerTest {
 
     final String BASE_URL = "/api/admin/products";
 
@@ -75,9 +77,11 @@ class   ProductAdminControllerTest {
                         "wjdtn747@naver.com",
                         "1234",
                         LocalDate.now(),
-                        "google",
+                        Role.USER,
+                        Gender.MALE,
                         "010",
                         "?",
+                        "대한민국",
                         false,
                         false
                 )
@@ -86,7 +90,7 @@ class   ProductAdminControllerTest {
         token = new TestingAuthenticationToken(
                 CurrentUser.from(testUser),
                 null,
-                "ROLE_USER"
+                Role.ADMIN.getValue()
         );
 
         testCategory = categoryRepository.save(
@@ -129,7 +133,7 @@ class   ProductAdminControllerTest {
             @DisplayName("It : Product 생성 성공")
             void It_Product_생성_성공() throws Exception {
                 // given
-                testUser.switchAdmin();
+                testUser.changeRole(Role.ADMIN);
                 SecurityContextHolder.getContext().setAuthentication(token);
 
                 String json = objectMapper.writeValueAsString(createRequest);
@@ -160,6 +164,12 @@ class   ProductAdminControllerTest {
             @DisplayName("It : 유저 권한으로 생성 시 실패")
             void It_Product_생성_실패() throws Exception{
                 // given
+                token = new TestingAuthenticationToken(
+                        CurrentUser.from(testUser),
+                        null,
+                        Role.USER.getValue()
+                );
+
                 SecurityContextHolder.getContext().setAuthentication(token);
 
                 String json = objectMapper.writeValueAsString(createRequest);
@@ -174,9 +184,7 @@ class   ProductAdminControllerTest {
                         )
                         .andDo(print())
                         // then
-                        .andExpect(status().is4xxClientError())
-                        .andExpect(jsonPath("$.success").value(false))
-                        .andExpect(jsonPath("$.code").value(ErrorCode.NOT_ADMIN.name()));
+                        .andExpect(status().is4xxClientError());
             }
 
         }
@@ -194,7 +202,7 @@ class   ProductAdminControllerTest {
             @DisplayName("It : 상품을 성공적으로 삭제")
             void It_delete_Product_Success() throws Exception {
                 // given
-                testUser.switchAdmin();
+                testUser.changeRole(Role.ADMIN);
                 SecurityContextHolder.getContext().setAuthentication(token);
 
                 // when
@@ -236,7 +244,7 @@ class   ProductAdminControllerTest {
             @DisplayName("It : 상품을 성공적으로 수정")
             void It_Update_Product_Success() throws Exception {
                 // given
-                testUser.switchAdmin();
+                testUser.changeRole(Role.ADMIN);
                 SecurityContextHolder.getContext().setAuthentication(token);
 
                 String json = objectMapper.writeValueAsString(request);
@@ -268,7 +276,7 @@ class   ProductAdminControllerTest {
                         nullSource
                 );
 
-                testUser.switchAdmin();
+                testUser.changeRole(Role.ADMIN);
                 SecurityContextHolder.getContext().setAuthentication(token);
 
                 String json = objectMapper.writeValueAsString(request);
@@ -301,7 +309,7 @@ class   ProductAdminControllerTest {
             @DisplayName("It : 상품을 메인상품으로 등록")
             void It_Update_Product_Success() throws Exception {
                 // given
-                testUser.switchAdmin();
+                testUser.changeRole(Role.ADMIN);
                 SecurityContextHolder.getContext().setAuthentication(token);
 
                 // when

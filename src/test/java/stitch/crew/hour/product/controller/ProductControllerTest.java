@@ -29,6 +29,8 @@ import stitch.crew.hour.product.dto.ProductDetailsResponse;
 import stitch.crew.hour.product.dto.ProductSearchResponse;
 import stitch.crew.hour.product.repository.ProductRepository;
 import stitch.crew.hour.product.service.ProductService;
+import stitch.crew.hour.user.constant.Gender;
+import stitch.crew.hour.user.constant.Role;
 import stitch.crew.hour.user.domain.CurrentUser;
 import stitch.crew.hour.user.domain.User;
 import stitch.crew.hour.user.repository.UserRepository;
@@ -80,9 +82,11 @@ class ProductControllerTest {
                         "wjdtn747@naver.com",
                         "1234",
                         LocalDate.now(),
-                        "google",
+                        Role.ADMIN,
+                        Gender.MALE,
                         "010",
                         "?",
+                        "대한민국",
                         false,
                         false
                 )
@@ -91,7 +95,7 @@ class ProductControllerTest {
         token = new TestingAuthenticationToken(
                 CurrentUser.from(testUser),
                 null,
-                "ROLE_USER"
+                Role.ADMIN.getValue()
         );
 
         testCategory = categoryRepository.save(
