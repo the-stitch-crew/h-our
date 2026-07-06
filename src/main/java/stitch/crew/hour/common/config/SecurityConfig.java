@@ -25,6 +25,7 @@ public class SecurityConfig {
                     .requestMatchers(HttpMethod.POST, "/api/users/signup").permitAll()
                     .requestMatchers("/api/auth/**").permitAll()
                     .requestMatchers("/api/users/me", "/api/users/me/password").authenticated()
+                    .requestMatchers("/api/addresses", "/api/addresses/**").authenticated()
                     .requestMatchers("/api/admin/**").hasRole("ADMIN")
                     .anyRequest().permitAll()
                 )
