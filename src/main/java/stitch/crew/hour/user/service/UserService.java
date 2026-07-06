@@ -122,7 +122,7 @@ public class UserService {
 
 		PreConditions.validate(
 			user.getDeletedAt() == null,
-			ErrorCode.ALREADY_DELETED
+			ErrorCode.USER_DONT_EXISTS
 		);
 
 		return user;

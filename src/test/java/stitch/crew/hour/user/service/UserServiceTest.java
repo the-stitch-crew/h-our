@@ -197,8 +197,8 @@ class UserServiceTest {
 		}
 
 		@Test
-		@DisplayName("It: 삭제된 회원이면 ALREADY_DELETED 예외가 발생한다")
-		void it_throws_already_deleted_when_user_is_deleted() {
+		@DisplayName("It: 삭제된 회원이면 USER_DONT_EXISTS 예외가 발생한다")
+		void it_throws_USER_DONT_EXISTS_when_user_is_deleted() {
 			// given
 			User user = createUser();
 			user.delete();
@@ -211,7 +211,69 @@ class UserServiceTest {
 			);
 
 			// then
-			assertThat(exception.getErrorCode()).isEqualTo(ErrorCode.ALREADY_DELETED);
+			assertThat(exception.getErrorCode()).isEqualTo(ErrorCode.USER_DONT_EXISTS);
+		}
+	}
+
+	@Nested
+	@DisplayName("Describe: getUserInfo 메서드는")
+	class Describe_getUserInfo {
+
+		@Test
+		@DisplayName("It: id에 해당하는 회원 정보를 반환한다")
+		void it_returns_user_info() {
+			// given
+			User user = createUser();
+			given(userRepository.findById(user.getId())).willReturn(Optional.of(user));
+
+			// when
+			UserInfoResponse response = userService.getUserInfo(user.getId());
+
+			// then
+			assertThat(response.userId()).isEqualTo(user.getId());
+			assertThat(response.userName()).isEqualTo(user.getUserName());
+			assertThat(response.email()).isEqualTo(user.getEmail());
+			assertThat(response.birthDate()).isEqualTo(user.getBirthDate());
+			assertThat(response.gender()).isEqualTo(user.getGender());
+			assertThat(response.role()).isEqualTo(user.getRole());
+			assertThat(response.phoneNumber()).isEqualTo(user.getPhoneNumber());
+			assertThat(response.nationality()).isEqualTo(user.getNationality());
+			assertThat(response.isAuthLinked()).isFalse();
+		}
+
+		@Test
+		@DisplayName("It: id에 해당하는 회원이 없으면 NO_USER 예외가 발생한다")
+		void it_throws_no_user_when_user_does_not_exist() {
+			// given
+			Long userId = 1L;
+			given(userRepository.findById(userId)).willReturn(Optional.empty());
+
+			// when
+			BusinessException exception = assertThrows(
+				BusinessException.class,
+				() -> userService.getUserInfo(userId)
+			);
+
+			// then
+			assertThat(exception.getErrorCode()).isEqualTo(ErrorCode.USER_DONT_EXISTS);
+		}
+
+		@Test
+		@DisplayName("It: 삭제된 회원이면 USER_DONT_EXISTS 예외가 발생한다")
+		void it_throws_USER_DONT_EXISTS_when_user_is_deleted() {
+			// given
+			User user = createUser();
+			user.delete();
+			given(userRepository.findById(user.getId())).willReturn(Optional.of(user));
+
+			// when
+			BusinessException exception = assertThrows(
+				BusinessException.class,
+				() -> userService.getUserInfo(user.getId())
+			);
+
+			// then
+			assertThat(exception.getErrorCode()).isEqualTo(ErrorCode.USER_DONT_EXISTS);
 		}
 	}
 
