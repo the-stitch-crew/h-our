@@ -29,8 +29,7 @@ public enum ErrorCode {
     CATEGORY_NOT_FOUND(HttpStatus.NOT_FOUND, "카테고리를 찾을 수 없습니다."),
 
 
-    // 유저
-    NO_USER(HttpStatus.NOT_FOUND, "유저를 찾을 수 없습니다."),
+
 
     // 배송규칙
     NO_SHIPPING_POLICY(HttpStatus.NOT_FOUND, "활성화된 배송규칙이 없습니다."),

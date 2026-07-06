@@ -63,6 +63,18 @@ public class UserService {
 		return UserInfoResponse.from(getActiveUser(email));
 	}
 
+	public UserInfoResponse getUserInfo(Long userId) {
+		User user = userRepository.findById(userId)
+			.orElseThrow(() -> new BusinessException(ErrorCode.USER_DONT_EXISTS));
+
+		PreConditions.validate(
+			user.getDeletedAt() == null,
+			ErrorCode.USER_DONT_EXISTS
+		);
+
+		return UserInfoResponse.from(user);
+	}
+
 	@Transactional
 	public UserInfoResponse updateMyInfo(String email, UserUpdateRequest request) {
 		User user = getActiveUser(email);
