@@ -13,6 +13,7 @@ public enum ErrorCode {
     USER_PHONE_ALREADY_EXISTS(HttpStatus.CONFLICT, "이미 등록된 전화번호입니다."),
     USER_PASSWORD_NOT_MATCH(HttpStatus.BAD_REQUEST, "현재 비밀번호가 일치하지 않습니다."),
     USER_DONT_EXISTS(HttpStatus.NOT_FOUND, "존재하지 않는 유저입니다."),
+    USER_ROLE_CHANGE_NOT_ALLOWED(HttpStatus.BAD_REQUEST, "변경할 수 없는 역할입니다."),
 
 
     // Auth

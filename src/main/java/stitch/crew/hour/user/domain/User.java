@@ -125,6 +125,10 @@ public class User extends BaseEntity {
 		this.password = password;
 	}
 
+	public void changeRole(Role role) {
+		this.role = role;
+	}
+
 	public void addOrder(Order order) {
 		this.orders.add(order);
 	}
