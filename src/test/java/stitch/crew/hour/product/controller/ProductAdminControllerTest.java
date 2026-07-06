@@ -1,9 +1,12 @@
 package stitch.crew.hour.product.controller;
 
+import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.NullAndEmptySource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
@@ -18,8 +21,10 @@ import stitch.crew.hour.category.domain.Category;
 import stitch.crew.hour.category.repository.CategoryRepository;
 import stitch.crew.hour.common.exception.ErrorCode;
 import stitch.crew.hour.common.response.SuccessCode;
+import stitch.crew.hour.product.constant.ProductStatus;
 import stitch.crew.hour.product.domain.Product;
 import stitch.crew.hour.product.dto.ProductCreateRequest;
+import stitch.crew.hour.product.dto.ProductUpdateRequest;
 import stitch.crew.hour.product.repository.ProductRepository;
 import stitch.crew.hour.product.service.ProductService;
 import stitch.crew.hour.user.domain.CurrentUser;
@@ -175,8 +180,141 @@ class   ProductAdminControllerTest {
             }
 
         }
-
-
     }
 
+    @Nested
+    @DisplayName("Describe : DELETE /api/admin/products/{productId}")
+    class Describe_Delete_Product{
+
+        @Nested
+        @DisplayName("Context : 올바른 데이터가 주어진 경우")
+        class Context_with_Valid_Data{
+
+            @Test
+            @DisplayName("It : 상품을 성공적으로 삭제")
+            void It_delete_Product_Success() throws Exception {
+                // given
+                testUser.switchAdmin();
+                SecurityContextHolder.getContext().setAuthentication(token);
+
+                // when
+                mockMvc.perform(
+                                MockMvcRequestBuilders.delete(BASE_URL + "/%s".formatted(testProduct.getId()))
+                        )
+                        .andDo(print())
+
+                        // then
+                        .andExpect(status().isOk());
+                Product foundedProduct = productRepository.findByIdOrThrow(testProduct.getId());
+                Assertions.assertThat(foundedProduct.getStatus()).isEqualTo(ProductStatus.DELETED);
+            }
+        }
+    }
+
+    @Nested
+    @DisplayName("Describe : PUT /api/admin/products/{productId}")
+    class Describe_Put_Product{
+
+        ProductUpdateRequest request;
+
+        @BeforeEach
+        void setUp(){
+            request = new ProductUpdateRequest(
+                    "수정된 상품명",
+                    500L,
+                    "수정된 썸네일",
+                    "수정된 요약",
+                    "수정된 Description"
+            );
+        }
+
+        @Nested
+        @DisplayName("Context : 올바른 데이터가 주어진 경우")
+        class Context_with_Valid_Data{
+
+            @Test
+            @DisplayName("It : 상품을 성공적으로 수정")
+            void It_Update_Product_Success() throws Exception {
+                // given
+                testUser.switchAdmin();
+                SecurityContextHolder.getContext().setAuthentication(token);
+
+                String json = objectMapper.writeValueAsString(request);
+
+                // when
+                mockMvc.perform(
+                                MockMvcRequestBuilders.put(BASE_URL + "/%s".formatted(testProduct.getId()))
+                                        .contentType(MediaType.APPLICATION_JSON)
+                                        .content(json)
+                        )
+                        .andDo(print())
+                        // then
+                        .andExpect(status().isOk());
+                Product foundedProduct = productRepository.findByIdOrThrow(testProduct.getId());
+                Assertions.assertThat(foundedProduct.getName()).isEqualTo(request.name());
+                Assertions.assertThat(foundedProduct.getSummary()).isEqualTo(request.summary());
+            }
+
+            @ParameterizedTest
+            @NullAndEmptySource
+            @DisplayName("It : 상품을 일부만 성공적으로 수정")
+            void It_Update_Product_Partly_Success(String nullSource) throws Exception {
+                // given
+                request = new ProductUpdateRequest(
+                        "수정된 상품명",
+                        500L,
+                        nullSource,
+                        nullSource,
+                        nullSource
+                );
+
+                testUser.switchAdmin();
+                SecurityContextHolder.getContext().setAuthentication(token);
+
+                String json = objectMapper.writeValueAsString(request);
+
+                // when
+                mockMvc.perform(
+                                MockMvcRequestBuilders.put(BASE_URL + "/%s".formatted(testProduct.getId()))
+                                        .contentType(MediaType.APPLICATION_JSON)
+                                        .content(json)
+                        )
+
+                        // then
+                        .andExpect(status().isOk());
+                Product foundedProduct = productRepository.findByIdOrThrow(testProduct.getId());
+                Assertions.assertThat(foundedProduct.getName()).isEqualTo(request.name());
+                Assertions.assertThat(foundedProduct.getSummary()).isEqualTo(testProduct.getSummary());
+            }
+        }
+    }
+
+
+    @Nested
+    @DisplayName("Describe : PATCH /api/admin/products/{productId}/main")
+    class Describe_Patch_Product{
+        @Nested
+        @DisplayName("Context : 올바른 데이터가 주어진 경우")
+        class Context_with_Valid_Data {
+
+            @Test
+            @DisplayName("It : 상품을 메인상품으로 등록")
+            void It_Update_Product_Success() throws Exception {
+                // given
+                testUser.switchAdmin();
+                SecurityContextHolder.getContext().setAuthentication(token);
+
+                // when
+                mockMvc.perform(
+                                MockMvcRequestBuilders.patch(BASE_URL + "/%s".formatted(testProduct.getId()) + "/main")
+                        )
+                        .andDo(print())
+                        // then
+                        .andExpect(status().isOk());
+                Product foundedProduct = productRepository.findByIdOrThrow(testProduct.getId());
+                Assertions.assertThat(foundedProduct.getIsMain()).isEqualTo(true);
+                Assertions.assertThat(foundedProduct.getCategory().getThumbnail()).isEqualTo(foundedProduct.getThumbnail());
+            }
+        }
+    }
 }

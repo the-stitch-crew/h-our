@@ -14,6 +14,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.security.authentication.TestingAuthenticationToken;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
@@ -22,10 +23,12 @@ import stitch.crew.hour.category.domain.Category;
 import stitch.crew.hour.category.repository.CategoryRepository;
 import stitch.crew.hour.common.dto.Paging;
 import stitch.crew.hour.common.response.ApiResponses;
+import stitch.crew.hour.product.constant.ProductStatus;
 import stitch.crew.hour.product.domain.Product;
 import stitch.crew.hour.product.dto.ProductDetailsResponse;
 import stitch.crew.hour.product.dto.ProductSearchResponse;
 import stitch.crew.hour.product.repository.ProductRepository;
+import stitch.crew.hour.product.service.ProductService;
 import stitch.crew.hour.user.domain.CurrentUser;
 import stitch.crew.hour.user.domain.User;
 import stitch.crew.hour.user.repository.UserRepository;
@@ -66,6 +69,8 @@ class ProductControllerTest {
     TestingAuthenticationToken token;
     Category testCategory;
     Product testProduct;
+    @Autowired
+    private ProductService productService;
 
     @BeforeEach
     void setUp() {
@@ -206,8 +211,24 @@ class ProductControllerTest {
                         .andExpect(jsonPath("$.data.numberOfElements").value(0));
             }
 
+            @Test
+            @DisplayName("It : 삭제된 상품을 검색할 수 없음")
+            void It_삭제된거_상품_조회__실패() throws Exception {
+                // given
+                testProduct.switchStatus(ProductStatus.DELETED);
+
+                // when
+                mockMvc.perform(
+                                MockMvcRequestBuilders.get(BASE_URL)
+                                        .param("page",  "0")
+                                        .param("size", "20")
+                        ).andDo(print())
+                        // then
+                        .andExpect(status().isOk())
+                        .andExpect(jsonPath("$.success").value(true))
+                        .andExpect(jsonPath("$.data.numberOfElements").value(0));
+            }
         }
-
     }
-
 }
+

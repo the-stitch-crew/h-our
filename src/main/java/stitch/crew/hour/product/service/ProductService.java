@@ -138,6 +138,6 @@ public class ProductService {
 
         foundedProduct.setMain();
 
-        foundedCategory.setThumbnail(foundedCategory.getThumbnail());
+        foundedCategory.setThumbnail(foundedProduct.getThumbnail());
     }
 }
