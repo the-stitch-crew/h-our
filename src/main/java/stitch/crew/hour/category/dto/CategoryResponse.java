@@ -7,7 +7,7 @@ public record CategoryResponse(
         String name,
         String thumbnail
 ) {
-    public static CategoryResponse from(Category category) {
-        return new CategoryResponse(category.getId(), category.getName(), category.getThumbnail());
+    public static CategoryResponse from(Category category, String thumbnail) {
+        return new CategoryResponse(category.getId(), category.getName(), thumbnail);
     }
 }

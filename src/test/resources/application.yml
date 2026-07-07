@@ -1,4 +1,8 @@
 spring:
+  config:
+    import:
+      - optional:file:.env[.properties]
+      - optional:file:.env.test[.properties]
   sql:
     init:
       mode: never
@@ -7,9 +11,17 @@ spring:
     username: sa
     password:
     driver-class-name: org.h2.Driver
+  cloud:
+    aws:
+      region:
+        static: ${S3_REGION}
 
 
 custom:
   redis:
     host: localhost
     port: 6379
+  s3:
+    bucket-name: ${S3_BUCKET}
+    access-key: ${S3_ACCESS_KEY}
+    secret-key: ${S3_SECRET_KEY}
