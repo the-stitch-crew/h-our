@@ -1,0 +1,27 @@
+spring:
+  config:
+    import:
+      - optional:file:.env[.properties]
+      - optional:file:.env.test[.properties]
+  sql:
+    init:
+      mode: never
+  datasource:
+    url: jdbc:h2:mem:testdb;MODE=MySQL;NON_KEYWORDS=USER;DATABASE_TO_LOWER=TRUE;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
+    username: sa
+    password:
+    driver-class-name: org.h2.Driver
+  cloud:
+    aws:
+      region:
+        static: ap-northeast-2
+
+
+custom:
+  redis:
+    host: localhost
+    port: 6379
+  s3:
+    bucket-name: test
+    access-key: test
+    secret-key: test

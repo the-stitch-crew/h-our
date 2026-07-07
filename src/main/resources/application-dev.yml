@@ -10,6 +10,7 @@ spring:
       ddl-auto: create-drop
 
     show-sql: true
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
     properties:
       hibernate:
         format_sql: true
@@ -23,7 +24,10 @@ custom:
     validations:
       access: 900000  # 15분
       refresh: 604800000  #7일
+    payload:
+      issuer: hour
+      subject-access-token: access-token
+      subject-refresh-token: refresh-token
     secrets:
-      app-key: ${jwt.app-key}
-      origin-key: ${jwt.secret-key}
-
+      app-key: ${JWT_APP_KEY}
+      origin-key: ${JWT_SECRET_KEY}

@@ -3,6 +3,42 @@ spring:
     name: hour
   config:
     import:
-      - optional:file:.env[.yml]
+      - optional:file:.env[.properties]
       - optional:file:.env.${spring.profiles.active}[.properties]
+  cloud:
+    aws:
+      region:
+        static: ap-northeast-2
 
+
+springdoc:
+  api-docs:
+    enabled: true
+    path: /v3/api-docs
+  swagger-ui:
+    enabled: true
+    path: /v3/swagger-ui
+    operations-sorter: method
+    display-request-duration: true
+    doc-expansion: none
+    persist-authorization: true
+
+custom:
+  jwt:
+    validations:
+      access: 900000  # 15분
+      refresh: 604800000  # 7일
+    payload:
+      issuer: hour
+      subject-access-token: access-token
+      subject-refresh-token: refresh-token
+    secrets:
+      app-key: ${JWT_APP_KEY}
+      origin-key: ${JWT_SECRET_KEY}
+  redis:
+    host: ${REDIS_HOST}
+    port: ${REDIS_PORT}
+  s3:
+    bucket-name: ${S3_BUCKET}
+    access-key: ${S3_ACCESS_KEY}
+    secret-key: ${S3_SECRET_KEY}

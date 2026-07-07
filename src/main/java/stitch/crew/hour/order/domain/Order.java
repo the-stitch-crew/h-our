@@ -1,0 +1,122 @@
+package stitch.crew.hour.order.domain;
+
+import jakarta.persistence.*;
+import lombok.AccessLevel;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import org.apache.logging.log4j.util.Strings;
+import stitch.crew.hour.common.domain.BaseEntity;
+import stitch.crew.hour.order.constant.OrderStatus;
+import stitch.crew.hour.orderproduct.domain.OrderProduct;
+import stitch.crew.hour.user.domain.User;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
+
+@Entity
+@Getter
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@Table(name = "Orders")
+public class Order extends BaseEntity {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @Column(nullable = false)
+    private Integer totalPrice;
+
+    @Column(nullable = false)
+    @Enumerated(EnumType.STRING)
+    private OrderStatus orderStatus;
+
+    @Column(nullable = false)
+    private Long deliveryFee;
+
+    @Column(nullable = false, length = 255)
+    private String address;
+
+    @Column(nullable = false, length = 20)
+    private String postalCode;
+
+    @Column(nullable = false, length = 50)
+    private String receiverName;
+
+    @Column(nullable = false, length = 50)
+    private String phoneNumber;
+
+    @Column(length = 255)
+    private String request;
+
+    @Column(nullable = false, length = 50)
+    private String ordererName;
+
+    @Column(nullable = false, length = 50)
+    private String receiverPhoneNumber;
+
+    @Column(nullable = false, length = 50)
+    private UUID orderNumber;
+
+    @OneToMany(mappedBy = "order")
+    private List<OrderProduct> orderProduct = new ArrayList<>();
+
+    @ManyToOne
+    @JoinColumn(name = "orderer_id")
+    private User orderer;
+
+    public Order(
+        User user,
+        Long deliveryFee,
+        String address,
+        String postalCode,
+        String receiverName,
+        String request,
+        String receiverPhoneNumber
+    ){
+        this.orderer = user;
+        this.orderStatus = OrderStatus.ORDERED;
+        this.deliveryFee = deliveryFee;
+        this.address = address;
+        this.postalCode = postalCode;
+        this.totalPrice = 0;
+        this.receiverPhoneNumber = receiverPhoneNumber;
+        this.orderNumber = UUID.randomUUID();
+
+        if (Strings.isNotBlank(request)) this.request = request;
+
+        this.ordererName = user.getUserName();
+        this.phoneNumber = user.getPhoneNumber();
+
+        if (Strings.isNotBlank(receiverPhoneNumber)) this.receiverPhoneNumber = receiverPhoneNumber;
+        else this.receiverPhoneNumber = user.getPhoneNumber();
+
+        if (Strings.isNotBlank(receiverName))  this.receiverName = receiverName;
+        else this.receiverName = user.getUserName();
+
+        user.addOrder(this);
+    }
+
+    public void setOrderProduct(
+            OrderProduct orderProduct
+    ){
+        this.orderProduct.add(orderProduct);
+        this.totalPrice = calTotalPrice(this.orderProduct, this.deliveryFee);
+    }
+
+    public void setOrderProducts(
+            List<OrderProduct> orderProducts
+    ){
+        this.orderProduct = orderProducts;
+        this.totalPrice = calTotalPrice(orderProducts, this.deliveryFee);
+    }
+
+    public Integer calTotalPrice(List<OrderProduct> lst, Long deliveryFee){
+        Long price = deliveryFee;
+        for(OrderProduct op : lst) price += (op.getPrice() * op.getAmount() );
+        return price.intValue();
+    }
+
+    public void switchStatus(OrderStatus status){
+        this.orderStatus = status;
+    }
+}
