@@ -279,4 +279,110 @@ public interface OrderSwaggerSupporter {
             CurrentUser currentUser,
             Paging paging
     );
+
+    @Operation(
+            summary = "주문 결제완료로 전환",
+            description = "주문 상태를 결제완료로 전환하는 API"
+    )
+    @io.swagger.v3.oas.annotations.responses.ApiResponses(
+            {
+                    @ApiResponse(
+                            responseCode = "200",
+                            description = "주문 전환 성공",
+                            content = {
+                                    @Content(
+                                            mediaType = MediaType.APPLICATION_JSON_VALUE,
+                                            examples = @ExampleObject(
+                                                    value = """
+            {
+                "success":true,
+                "code":"ORDER_PURCHASED",
+                "message":"주문이 정상적으로 결제 상태로 전환 되었습니다.",
+                "data":null
+            }
+                                            """
+                                            )
+                                    )
+                            }
+                    ),
+                    @ApiResponse(
+                            responseCode = "403",
+                            description = "주문 전환 실패 ( 동일 계정 아님 )",
+                            content = {
+                                    @Content(
+                                            mediaType = MediaType.APPLICATION_JSON_VALUE,
+                                            examples = @ExampleObject(
+                                                    value = """
+            {
+                "success":false,
+                "code":"NO_AUTHORITY_ON_ORDER",
+                "message":"주문 관련 작업에 필요한 권한이 없습니다.",
+                "data":null
+            }
+                                            """
+                                            )
+                                    )
+                            }
+                    )
+
+            }
+    )
+    @SecurityRequirement(name = "Bearer Authentication")
+    ResponseEntity<ApiResponses<Void>> setOrderPurchased(
+            CurrentUser currentUser,
+            UUID orderNumber
+    );
+
+    @Operation(
+            summary = "주문 취소로 전환",
+            description = "주문 취소 상태로 전환하는 API"
+    )
+    @io.swagger.v3.oas.annotations.responses.ApiResponses(
+            {
+                    @ApiResponse(
+                            responseCode = "200",
+                            description = "주문 취소 전환 성공",
+                            content = {
+                                    @Content(
+                                            mediaType = MediaType.APPLICATION_JSON_VALUE,
+                                            examples = @ExampleObject(
+                                                    value = """
+            {
+                "success":true,
+                "code":"ORDER_PURCHASED",
+                "message":"주문이 정상적으로 결제 상태로 전환 되었습니다.",
+                "data":null
+            }
+                                            """
+                                            )
+                                    )
+                            }
+                    ),
+                    @ApiResponse(
+                            responseCode = "403",
+                            description = "주문 전환 실패 ( 동일 계정 아님 )",
+                            content = {
+                                    @Content(
+                                            mediaType = MediaType.APPLICATION_JSON_VALUE,
+                                            examples = @ExampleObject(
+                                                    value = """
+            {
+                "success":false,
+                "code":"NO_AUTHORITY_ON_ORDER",
+                "message":"주문 관련 작업에 필요한 권한이 없습니다.",
+                "data":null
+            }
+                                            """
+                                            )
+                                    )
+                            }
+                    )
+
+            }
+    )
+    @SecurityRequirement(name = "Bearer Authentication")
+    ResponseEntity<ApiResponses<Void>> setOrderCanceled(
+            CurrentUser currentUser,
+            UUID orderNumber
+    );
 }

@@ -88,4 +88,35 @@ public class OrderController implements OrderSwaggerSupporter {
         );
     }
 
+
+    @Override
+    @PatchMapping("/{orderNumber}/purchased")
+    public ResponseEntity<ApiResponses<Void>> setOrderPurchased(
+            @AuthenticationPrincipal CurrentUser currentUser,
+            @PathVariable UUID orderNumber
+    ) {
+        orderService.setPaymentPurchased(
+                currentUser.getId(),
+                orderNumber
+        );
+        return ApiResult.ok(
+                SuccessCode.ORDER_PURCHASED
+        );
+    }
+
+
+    @Override
+    @DeleteMapping("/{orderNumber}/canceled")
+    public ResponseEntity<ApiResponses<Void>> setOrderCanceled(
+            @AuthenticationPrincipal CurrentUser currentUser,
+            @PathVariable UUID orderNumber
+    ) {
+        orderService.setCanceled(
+                currentUser.getId(),
+                orderNumber
+        );
+        return ApiResult.ok(
+                SuccessCode.ORDER_CANCELED
+        );
+    }
 }

@@ -3,14 +3,18 @@ package stitch.crew.hour.order.service;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.access.annotation.Secured;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import stitch.crew.hour.cart.domain.Cart;
 import stitch.crew.hour.cart.repository.CartRepository;
 import stitch.crew.hour.common.exception.ErrorCode;
 import stitch.crew.hour.common.util.PreConditions;
+import stitch.crew.hour.order.constant.OrderStatus;
 import stitch.crew.hour.order.domain.Order;
 import stitch.crew.hour.order.dto.*;
 import stitch.crew.hour.order.repository.OrderBoundaryRepository;
@@ -29,7 +33,7 @@ import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
-@EnableMethodSecurity(prePostEnabled = true)
+@EnableMethodSecurity(prePostEnabled = true, securedEnabled = true)
 @Transactional(readOnly = true)
 public class OrderService {
     private final UserRepository userRepository;
@@ -139,15 +143,6 @@ public class OrderService {
         return OrderDetailResponse.from(foundedOrder);
     }
 
-
-    private Boolean validateAuthority(User user, Order order){
-        if ( user.getRole().equals(Role.ADMIN) ) return true;
-
-        if ( order.getOrderer().getId().equals(user.getId()) ) return true;
-
-        return false;
-    }
-
     @PreAuthorize("isAuthenticated()")
     public Page<OrderSearchResponse> getOrderSearches(
             Long userId,
@@ -159,5 +154,73 @@ public class OrderService {
         );
     }
 
+    @Transactional
+    @PreAuthorize("isAuthenticated()")
+    public void setPaymentPurchased(
+            Long userId,
+            UUID orderNumber
+    ){
+        User foundedUser = userRepository.findByIdOrthrow(userId);
+        Order foundedOrder = orderBoundaryRepository.findByOrderNumberOrThrow(orderNumber);
 
+        PreConditions.validate(
+                validateAuthority(foundedUser,foundedOrder),
+                ErrorCode.NO_AUTHORITY_ON_ORDER
+        );
+
+        foundedOrder.switchStatus(OrderStatus.PURCHASED);
+    }
+
+    @Transactional
+    @Secured("ROLE_ADMIN")
+    public void setInDelivery(
+            UUID orderNumber
+    ){
+        Order founded = orderBoundaryRepository.findByOrderNumberOrThrow(orderNumber);
+        founded.switchStatus(OrderStatus.IN_DELIVERY);
+    }
+
+    @Transactional
+    @Secured("ROLE_ADMIN")
+    public void setDelivered(
+            UUID orderNumber
+    ){
+        Order founded = orderBoundaryRepository.findByOrderNumberOrThrow(orderNumber);
+        founded.switchStatus(OrderStatus.DELIVERED);
+    }
+
+    @Transactional
+    @Secured("ROLE_ADMIN")
+    public void setComplete(
+            UUID orderNumber
+    ){
+        Order founded = orderBoundaryRepository.findByOrderNumberOrThrow(orderNumber);
+        founded.switchStatus(OrderStatus.COMPLETE);
+    }
+
+    @Transactional
+    @PreAuthorize("isAuthenticated()")
+    public void setCanceled(
+            Long userId,
+            UUID orderNumber
+    ){
+        User foundedUser = userRepository.findByIdOrthrow(userId);
+        Order foundedOrder = orderBoundaryRepository.findByOrderNumberOrThrow(orderNumber);
+
+        PreConditions.validate(
+                validateAuthority(foundedUser,foundedOrder),
+                ErrorCode.NO_AUTHORITY_ON_ORDER
+        );
+
+        foundedOrder.switchStatus(OrderStatus.CANCELED);
+    }
+
+
+    private Boolean validateAuthority(User user, Order order){
+        if ( user.getRole().equals(Role.ADMIN) ) return true;
+
+        if ( order.getOrderer().getId().equals(user.getId()) ) return true;
+
+        return false;
+    }
 }

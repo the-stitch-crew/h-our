@@ -7,6 +7,7 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -30,11 +31,15 @@ import stitch.crew.hour.cartproduct.domain.CartProduct;
 import stitch.crew.hour.cartproduct.repository.CartProductRepository;
 import stitch.crew.hour.category.domain.Category;
 import stitch.crew.hour.category.repository.CategoryRepository;
+import stitch.crew.hour.common.exception.ErrorCode;
 import stitch.crew.hour.common.response.SuccessCode;
+import stitch.crew.hour.order.constant.OrderStatus;
+import stitch.crew.hour.order.domain.Order;
 import stitch.crew.hour.order.dto.OrderCreateFromCartRequest;
 import stitch.crew.hour.order.dto.OrderCreateFromProductRequest;
 import stitch.crew.hour.order.dto.OrderCreateResponse;
 import stitch.crew.hour.order.dto.OrderDetailResponse;
+import stitch.crew.hour.order.repository.OrderBoundaryRepository;
 import stitch.crew.hour.order.service.OrderService;
 import stitch.crew.hour.orderproduct.dto.OrderProductCreateRequest;
 import stitch.crew.hour.orderproduct.dto.OrderProductDetailResponse;
@@ -67,6 +72,8 @@ class OrderControllerTest {
     CartProductRepository cartProductRepository;
     @Autowired
     OrderService orderService;
+    @Autowired
+    OrderBoundaryRepository orderBoundaryRepository;
 
     @Autowired
     MockMvc mockMvc;
@@ -397,4 +404,257 @@ class OrderControllerTest {
         }
     }
 
+    @Nested
+    @DisplayName("Describe : PATCH /api/orders/{orderNumber}/purchased")
+    class Describe_setOrderPurchased{
+
+        Cart testCart;
+        OrderCreateResponse orderFromCart;
+        User userTester;
+        TestingAuthenticationToken userToken;
+
+        @BeforeEach
+        void setUp(){
+            userTester = userRepository.save(
+                    new User(
+                            "이름",
+                            "wjdtn123132\74" +
+                                    "7@naver.com",
+                            "1234",
+                            LocalDate.now(),
+                            Role.USER,
+                            Gender.MALE,
+                            "google",
+                            "0123131230",
+                            "?",
+                            false,
+                            false
+                    )
+            );
+
+            userToken = new TestingAuthenticationToken(
+                    CurrentUser.from(userTester),
+                    null,
+                    Role.ADMIN.getValue()
+            );
+
+
+            // given
+            testCart = cartRepository.save(new Cart(testUser));
+            SecurityContextHolder.getContext().setAuthentication(token);
+
+            cartProductRepository.save(
+                    new CartProduct(
+                            testCart,
+                            testProduct,
+                            2L
+                    )
+            );
+
+            OrderCreateFromCartRequest requestFromCart = new OrderCreateFromCartRequest(
+                    "주소" ,
+                    "26331",
+                    "이정수" ,
+                    "요청사황",
+                    "01041245512"
+            );
+            orderFromCart = orderService.createOrderFromCart(
+                    testUser.getId(),
+                    requestFromCart
+            );
+        }
+
+        @Nested
+        @DisplayName("Context : 올바른 데이터가 주어진 경우")
+        class Context_with_valid_data{
+
+            @Test
+            @DisplayName("It : 주문을 결제완료 상태로 전환")
+            void It_성공적으로_결제완료_전환() throws Exception {
+                // given
+                SecurityContextHolder.getContext().setAuthentication(token);
+
+                // when
+                mockMvc.perform(
+                                MockMvcRequestBuilders.patch(BASE_URL + "/%s/purchased"
+                                        .formatted(orderFromCart.orderNumber()))
+                        ).andDo(print())
+
+                        // then
+                        .andExpect(MockMvcResultMatchers.status().isOk())
+                        .andExpect(jsonPath("$.message").value(SuccessCode.ORDER_PURCHASED.getSuccessMessage()));
+                Order foundedOrder = orderBoundaryRepository.findByOrderNumberOrThrow(orderFromCart.orderNumber());
+                Assertions.assertThat(foundedOrder.getOrderStatus()).isEqualTo(OrderStatus.PURCHASED);
+            }
+
+            @Test
+            @DisplayName("It : 어드민이어도 주문을 결제완료 상태로 전환")
+            void It_어드민_성공적으로_결제완료_전환() throws Exception {
+                // given
+                userTester.changeRole(Role.ADMIN);
+                SecurityContextHolder.getContext().setAuthentication(userToken);
+
+                // when
+                mockMvc.perform(
+                                MockMvcRequestBuilders.patch(BASE_URL + "/%s/purchased"
+                                        .formatted(orderFromCart.orderNumber()))
+                        ).andDo(print())
+
+                        // then
+                        .andExpect(MockMvcResultMatchers.status().isOk())
+                        .andExpect(jsonPath("$.message").value(SuccessCode.ORDER_PURCHASED.getSuccessMessage()));
+                Order foundedOrder = orderBoundaryRepository.findByOrderNumberOrThrow(orderFromCart.orderNumber());
+                Assertions.assertThat(foundedOrder.getOrderStatus()).isEqualTo(OrderStatus.PURCHASED);
+            }
+        }
+
+        @Nested
+        @DisplayName("Context : 올바르지 않은 권한이 주어진 경우")
+        class Context_with_Invalid_Authority{
+
+            @Test
+            @DisplayName("It : 권한이 없으므로 403을 반환")
+            void It_성공적으로_결제완료_전환() throws Exception {
+                // given
+                SecurityContextHolder.getContext().setAuthentication(userToken);
+
+                // when
+                mockMvc.perform(
+                                MockMvcRequestBuilders.patch(BASE_URL + "/%s/purchased"
+                                        .formatted(orderFromCart.orderNumber()))
+                        ).andDo(print())
+
+                        // then
+                        .andExpect(MockMvcResultMatchers.status().is4xxClientError())
+                        .andExpect(jsonPath("$.message").value(ErrorCode.NO_AUTHORITY_ON_ORDER.getMessage()));
+            }
+        }
+    }
+
+    @Nested
+    @DisplayName("Describe : DELETE /api/orders/{orderNumber}/canceled")
+    class Describe_setOrderCanceled{
+
+        Cart testCart;
+        OrderCreateResponse orderFromCart;
+        User userTester;
+        TestingAuthenticationToken userToken;
+
+        @BeforeEach
+        void setUp(){
+            userTester = userRepository.save(
+                    new User(
+                            "이름",
+                            "wjdtn12313274" +
+                                    "7@naver.com",
+                            "1234",
+                            LocalDate.now(),
+                            Role.USER,
+                            Gender.MALE,
+                            "google",
+                            "0123131230",
+                            "?",
+                            false,
+                            false
+                    )
+            );
+
+            userToken = new TestingAuthenticationToken(
+                    CurrentUser.from(userTester),
+                    null,
+                    Role.ADMIN.getValue()
+            );
+
+
+            // given
+            testCart = cartRepository.save(new Cart(testUser));
+            SecurityContextHolder.getContext().setAuthentication(token);
+
+            cartProductRepository.save(
+                    new CartProduct(
+                            testCart,
+                            testProduct,
+                            2L
+                    )
+            );
+
+            OrderCreateFromCartRequest requestFromCart = new OrderCreateFromCartRequest(
+                    "주소" ,
+                    "26331",
+                    "이정수" ,
+                    "요청사황",
+                    "01041245512"
+            );
+            orderFromCart = orderService.createOrderFromCart(
+                    testUser.getId(),
+                    requestFromCart
+            );
+        }
+
+        @Nested
+        @DisplayName("Context : 올바른 데이터가 주어진 경우")
+        class Context_with_valid_data{
+
+            @Test
+            @DisplayName("It : 주문을 주문취소 상태로 전환")
+            void It_성공적으로_주문취소_전환() throws Exception {
+                // given
+                SecurityContextHolder.getContext().setAuthentication(token);
+
+                // when
+                mockMvc.perform(
+                                MockMvcRequestBuilders.delete(BASE_URL + "/%s/canceled"
+                                        .formatted(orderFromCart.orderNumber()))
+                        ).andDo(print())
+
+                        // then
+                        .andExpect(MockMvcResultMatchers.status().isOk())
+                        .andExpect(jsonPath("$.message").value(SuccessCode.ORDER_CANCELED.getSuccessMessage()));
+                Order foundedOrder = orderBoundaryRepository.findByOrderNumberOrThrow(orderFromCart.orderNumber());
+                Assertions.assertThat(foundedOrder.getOrderStatus()).isEqualTo(OrderStatus.CANCELED);
+            }
+
+            @Test
+            @DisplayName("It : 어드민이어도 주문을 결제완료 상태로 전환")
+            void It_어드민_성공적으로_결제완료_전환() throws Exception {
+                // given
+                userTester.changeRole(Role.ADMIN);
+                SecurityContextHolder.getContext().setAuthentication(userToken);
+
+                // when
+                mockMvc.perform(
+                                MockMvcRequestBuilders.delete(BASE_URL + "/%s/canceled"
+                                        .formatted(orderFromCart.orderNumber()))
+                        ).andDo(print())
+
+                        // then
+                        .andExpect(MockMvcResultMatchers.status().isOk())
+                        .andExpect(jsonPath("$.message").value(SuccessCode.ORDER_CANCELED.getSuccessMessage()));
+                Order foundedOrder = orderBoundaryRepository.findByOrderNumberOrThrow(orderFromCart.orderNumber());
+                Assertions.assertThat(foundedOrder.getOrderStatus()).isEqualTo(OrderStatus.CANCELED);
+            }
+        }
+
+        @Nested
+        @DisplayName("Context : 올바르지 않은 권한이 주어진 경우")
+        class Context_with_Invalid_Authority{
+
+            @Test
+            @DisplayName("It : 권한이 없으므로 403을 반환")
+            void It_성공적으로_결제완료_전환() throws Exception {
+                // given
+                SecurityContextHolder.getContext().setAuthentication(userToken);
+
+                // when
+                mockMvc.perform(
+                                MockMvcRequestBuilders.delete(BASE_URL + "/%s/canceled"
+                                        .formatted(orderFromCart.orderNumber()))
+                        ).andDo(print())
+
+                        // then
+                        .andExpect(MockMvcResultMatchers.status().is4xxClientError())
+                        .andExpect(jsonPath("$.message").value(ErrorCode.NO_AUTHORITY_ON_ORDER.getMessage()));
+            }
+        }
+    }
 }

@@ -32,7 +32,7 @@ public enum ErrorCode {
 
     // 주문
     ORDER_NOT_FOUND(HttpStatus.NOT_FOUND, "주문을 찾을 수 없습니다."),
-    NO_AUTHORITY_ON_ORDER(HttpStatus.FORBIDDEN, "주문 조회에 필요한 권한이 없습니다."),
+    NO_AUTHORITY_ON_ORDER(HttpStatus.FORBIDDEN, "주문 관련 작업에 필요한 권한이 없습니다."),
 
     // Cart
     CART_NOT_FOUND(HttpStatus.NOT_FOUND, "해당 장바구니를 찾을 수 없습니다."),
