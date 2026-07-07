@@ -12,7 +12,6 @@ import stitch.crew.hour.common.domain.BaseEntity;
 import stitch.crew.hour.product.constant.ProductStatus;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -106,7 +105,7 @@ public class Product extends BaseEntity {
         lastErolledToMain = LocalDate.now();
     }
 
-    public void setNotMain(){
+    public void unsetMain(){
         this.isMain = false;
         lastErolledToMain = null;
     }

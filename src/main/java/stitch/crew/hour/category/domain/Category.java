@@ -36,6 +36,10 @@ public class Category extends BaseEntity {
         this.name = name;
     }
 
+    public void addProduct(Product product){
+        this.products.add(product);
+    }
+
     public void update(String name, String thumbnail) {
         this.name = name;
         this.thumbnail = thumbnail;

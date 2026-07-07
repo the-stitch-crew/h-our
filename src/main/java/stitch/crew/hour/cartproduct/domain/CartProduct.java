@@ -19,6 +19,15 @@ public class CartProduct {
     @Column(nullable = false)
     private Long amount;
 
+    @Column(nullable = false, length = 50)
+    private String productName;
+
+    @Column(nullable = false)
+    private Long productPrice;
+
+    @Column(nullable = false)
+    private Long totalPrice;
+
     @ManyToOne
     @JoinColumn(name = "product_id", nullable = false)
     private Product product;
@@ -35,6 +44,21 @@ public class CartProduct {
         if(amount <= 1L) this.amount = 1L;
         else this.amount = amount;
         this.product = product;
+        this.productName = product.getName();
+        this.productPrice = product.getPrice();
         this.cart = cart;
+        this.cart.addCart(this);
+        this.totalPrice = calPrice();
+    }
+
+    public void updateCartProduct(
+            Long amount
+    ){
+        this.amount = amount;
+        this.totalPrice = calPrice();
+    }
+
+    public Long calPrice(){
+        return this.productPrice * this.amount;
     }
 }
