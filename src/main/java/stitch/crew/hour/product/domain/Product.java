@@ -11,6 +11,8 @@ import stitch.crew.hour.category.domain.Category;
 import stitch.crew.hour.common.domain.BaseEntity;
 import stitch.crew.hour.product.constant.ProductStatus;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -52,6 +54,8 @@ public class Product extends BaseEntity {
 
     @Column(nullable = false)
     private Boolean isMain;
+
+    private LocalDate lastErolledToMain;
 
     @ManyToOne(optional = false)
     @JoinColumn(
@@ -99,6 +103,12 @@ public class Product extends BaseEntity {
     }
     public void setMain(){
         this.isMain = true;
+        lastErolledToMain = LocalDate.now();
+    }
+
+    public void setNotMain(){
+        this.isMain = false;
+        lastErolledToMain = null;
     }
     public void switchStatus(ProductStatus status){
         this.status = status;

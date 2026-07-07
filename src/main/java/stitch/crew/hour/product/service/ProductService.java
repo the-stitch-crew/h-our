@@ -11,6 +11,7 @@ import org.springframework.transaction.annotation.Transactional;
 import stitch.crew.hour.category.domain.Category;
 import stitch.crew.hour.category.repository.CategoryRepository;
 import stitch.crew.hour.common.dto.Paging;
+import stitch.crew.hour.common.exception.BusinessException;
 import stitch.crew.hour.common.exception.ErrorCode;
 import stitch.crew.hour.common.util.PreConditions;
 import stitch.crew.hour.product.constant.ProductStatus;
@@ -20,6 +21,8 @@ import stitch.crew.hour.product.repository.ProductRepository;
 import stitch.crew.hour.user.constant.Role;
 import stitch.crew.hour.user.domain.User;
 import stitch.crew.hour.user.repository.UserRepository;
+
+import java.util.List;
 
 @Service
 @EnableMethodSecurity
@@ -123,8 +126,6 @@ public class ProductService {
             Long userId,
             Long productId
     ){
-        Product foundedProduct = productRepository.findByIdOrThrow(productId);
-
         User foundedUser = userRepository.findByIdOrthrow(userId);
 
         PreConditions.validate(
@@ -132,12 +133,28 @@ public class ProductService {
                 ErrorCode.NOT_ADMIN
         );
 
-        Category foundedCategory = foundedProduct.getCategory();
+        Product targetProduct = productRepository.findByIdOrThrow(productId);
 
-        productRepository.setNoMain(foundedCategory.getId());
+        Category targetCategory = targetProduct.getCategory();
 
-        foundedProduct.setMain();
+        List<Product> mainProducts = productRepository.getMainProducts(targetCategory.getId());
 
-        foundedCategory.setThumbnail(foundedProduct.getThumbnail());
+        PreConditions.validate(
+                !mainProducts.contains(targetProduct),
+                ErrorCode.PRODUCT_ALREADY_MAIN
+        );
+
+        if( mainProducts.size() < 10 ) {
+            targetProduct.setMain();
+        }
+        else {
+            Product product = mainProducts.stream().sorted((s1,s2) ->
+                s1.getLastErolledToMain().compareTo(s2.getLastErolledToMain())
+            ).findFirst().orElseThrow(
+                    ()-> new BusinessException(ErrorCode.PRODUCT_NOT_FOUND)
+            );
+            product.setNotMain();
+            targetProduct.setMain();
+        }
     }
 }

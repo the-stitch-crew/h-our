@@ -11,6 +11,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
 import stitch.crew.hour.category.domain.QCategory;
 import stitch.crew.hour.product.constant.ProductStatus;
+import stitch.crew.hour.product.domain.Product;
 import stitch.crew.hour.product.domain.QProduct;
 import stitch.crew.hour.product.dto.ProductSearchResponse;
 import stitch.crew.hour.product.dto.QProductSearchResponse;
@@ -63,9 +64,24 @@ public class ProductRepositoryCustomImpl implements ProductRepositoryCustom {
         );
     }
 
+    @Override
+    public List<Product> getMainProducts(Long categoryId) {
+
+        return jpaQueryFactory.selectFrom(qProduct)
+                .join(qCategory)
+                .on(qProduct.category.id.eq(qCategory.id))
+                .fetchJoin()
+                .where(
+                        qCategory.id.eq(categoryId)
+                                .and(qProduct.isMain.eq(true))
+                )
+                .fetch();
+    }
+
     public BooleanExpression containsCategoryName(String categoryName){
         return (Strings.isNotBlank(categoryName))?
                 qProduct.category.name.containsIgnoreCase(categoryName)
                 : null;
     }
+
 }

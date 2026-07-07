@@ -21,5 +21,5 @@ public interface ProductRepository extends JpaRepository<Product, Long>, Product
                     SET p.isMain = false
                     WHERE p.category.id = :categoryId
             """)
-    public void setNoMain(Long categoryId);
+    void setNoMain(Long categoryId);
 }

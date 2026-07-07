@@ -321,7 +321,6 @@ class ProductAdminControllerTest {
                         .andExpect(status().isOk());
                 Product foundedProduct = productRepository.findByIdOrThrow(testProduct.getId());
                 Assertions.assertThat(foundedProduct.getIsMain()).isEqualTo(true);
-                Assertions.assertThat(foundedProduct.getCategory().getThumbnail()).isEqualTo(foundedProduct.getThumbnail());
             }
         }
     }
