@@ -39,6 +39,6 @@ custom:
     host: ${REDIS_HOST}
     port: ${REDIS_PORT}
   s3:
-    bucket-name: test
-    access-key: test
-    secret-key: test
+    bucket-name: ${S3_BUCKET}
+    access-key: ${S3_ACCESS_KEY}
+    secret-key: ${S3_SECRET_KEY}
