@@ -36,49 +36,49 @@ public class SwaggerConfig {
     @Bean
     public GroupedOpenApi authApi(){
         return GroupedOpenApi.builder()
-                .pathsToMatch("/api/auth/*")
+                .pathsToMatch("/api/auth/**")
                 .group("Authentication API")
                 .build();
     }
     @Bean
     public GroupedOpenApi userApi(){
         return GroupedOpenApi.builder()
-                .pathsToMatch("/api/users/*")
+                .pathsToMatch("/api/users/**")
                 .group("User API")
                 .build();
     }
     @Bean
     public GroupedOpenApi productApi(){
         return GroupedOpenApi.builder()
-                .pathsToMatch("/api/admin/products", "/api/products","/api/products/*","/api/admin/products/*")
+                .pathsToMatch("/api/admin/products", "/api/products","/api/products/**","/api/admin/products/**")
                 .group("Product API")
                 .build();
     }
     @Bean
     public GroupedOpenApi categoryApi(){
         return GroupedOpenApi.builder()
-                .pathsToMatch("/api/admin/categories", "/api/categories", "/api/categories/*","/api/admin/categories/*")
+                .pathsToMatch("/api/admin/categories", "/api/categories", "/api/categories/**","/api/admin/categories/**")
                 .group("Category API")
                 .build();
     }
     @Bean
     public GroupedOpenApi orderApi(){
         return GroupedOpenApi.builder()
-                .pathsToMatch("/api/admin/orders", "/api/orders", "/api/orders/*","/api/admin/orders/*")
+                .pathsToMatch("/api/admin/orders", "/api/orders", "/api/orders/**","/api/admin/orders/**")
                 .group("Order API")
                 .build();
     }
     @Bean
     public GroupedOpenApi cartApi(){
         return GroupedOpenApi.builder()
-                .pathsToMatch("/api/admin/carts", "/api/carts", "/api/carts/*","/api/admin/carts/*")
+                .pathsToMatch("/api/admin/carts", "/api/carts", "/api/carts/**","/api/admin/carts/**")
                 .group("Cart API")
                 .build();
     }
     @Bean
     public GroupedOpenApi paymentApi(){
         return GroupedOpenApi.builder()
-                .pathsToMatch("/api/admin/payments", "/api/payments","/api/payments/*","/api/admin/payments/*")
+                .pathsToMatch("/api/admin/payments", "/api/payments","/api/payments/**","/api/admin/payments/**")
                 .group("Payment API")
                 .build();
     }
@@ -86,8 +86,8 @@ public class SwaggerConfig {
     public GroupedOpenApi reservationApi(){
         return GroupedOpenApi.builder()
                 .pathsToMatch(
-                        "/api/admin/reservations", "/api/reservations", "/api/reservations/*","/api/admin/reservations/*",
-                        "/api/admin/lessons", "/api/lessons", "/api/lessons/*" , "/api/admin/lessons/*"
+                        "/api/admin/reservations", "/api/reservations", "/api/reservations/**","/api/admin/reservations/**",
+                        "/api/admin/lessons", "/api/lessons", "/api/lessons/**" , "/api/admin/lessons/**"
                 )
                 .group("Reservation API")
                 .build();

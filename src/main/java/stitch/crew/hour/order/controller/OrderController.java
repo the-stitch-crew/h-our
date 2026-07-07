@@ -11,7 +11,8 @@ import org.springframework.web.bind.annotation.RestController;
 import stitch.crew.hour.common.response.ApiResponses;
 import stitch.crew.hour.common.response.ApiResult;
 import stitch.crew.hour.common.response.SuccessCode;
-import stitch.crew.hour.order.dto.OrderCreateRequest;
+import stitch.crew.hour.order.dto.OrderCreateFromCartRequest;
+import stitch.crew.hour.order.dto.OrderCreateFromProductRequest;
 import stitch.crew.hour.order.dto.OrderCreateResponse;
 import stitch.crew.hour.order.service.OrderService;
 import stitch.crew.hour.user.domain.CurrentUser;
@@ -24,12 +25,29 @@ public class OrderController implements OrderSwaggerSupporter {
     private final OrderService orderService;
 
     @Override
-    @PostMapping
+    @PostMapping("/product")
     public ResponseEntity<ApiResponses<OrderCreateResponse>> createOrder(
             @AuthenticationPrincipal CurrentUser currentUser,
-            @RequestBody @Valid OrderCreateRequest request
+            @RequestBody @Valid OrderCreateFromProductRequest request
+    ){
+        OrderCreateResponse order = orderService.createSingleOrder(
+                currentUser.getId(),
+                request
+        );
+
+        return ApiResult.created(
+                SuccessCode.ORDER_CREATED_SUCCESS,
+                order
+        );
+    }
+
+    @Override
+    @PostMapping("/cart")
+    public ResponseEntity<ApiResponses<OrderCreateResponse>> createOrderFromCart(
+            @AuthenticationPrincipal CurrentUser currentUser,
+            @RequestBody @Valid OrderCreateFromCartRequest request
         ){
-        OrderCreateResponse order = orderService.createOrder(
+        OrderCreateResponse order = orderService.createOrderFromCart(
                 currentUser.getId(),
                 request
         );

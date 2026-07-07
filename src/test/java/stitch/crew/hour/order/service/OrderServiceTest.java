@@ -11,11 +11,20 @@ import org.springframework.security.authentication.TestingAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.transaction.annotation.Transactional;
-import stitch.crew.hour.order.dto.OrderCreateRequest;
+import stitch.crew.hour.cart.domain.Cart;
+import stitch.crew.hour.cart.repository.CartRepository;
+import stitch.crew.hour.cartproduct.domain.CartProduct;
+import stitch.crew.hour.cartproduct.repository.CartProductRepository;
+import stitch.crew.hour.category.domain.Category;
+import stitch.crew.hour.category.repository.CategoryRepository;
+import stitch.crew.hour.order.dto.OrderCreateFromCartRequest;
+import stitch.crew.hour.order.dto.OrderCreateFromProductRequest;
 import stitch.crew.hour.order.dto.OrderCreateResponse;
 import stitch.crew.hour.order.repository.OrderBoundaryRepository;
 import stitch.crew.hour.orderproduct.domain.OrderProduct;
 import stitch.crew.hour.orderproduct.dto.OrderProductCreateRequest;
+import stitch.crew.hour.product.domain.Product;
+import stitch.crew.hour.product.repository.ProductRepository;
 import stitch.crew.hour.shippingpolicy.domain.ShippingPolicy;
 import stitch.crew.hour.shippingpolicy.repository.ShippingPolicyRepository;
 import stitch.crew.hour.user.constant.Gender;
@@ -35,63 +44,71 @@ import static org.junit.jupiter.api.Assertions.*;
 @Transactional
 @DisplayName("OrderService의")
 class OrderServiceTest {
-
     @Autowired
     OrderService orderService;
-
     @Autowired
     UserRepository userRepository;
+    @Autowired
+    ProductRepository productRepository;
+    @Autowired
+    CategoryRepository categoryRepository;
+    @Autowired
+    CartRepository cartRepository;
+    @Autowired
+    CartProductRepository cartProductRepository;
 
     @Autowired
     ShippingPolicyRepository shippingPolicyRepository;
 
+
+    User testUser;
+    TestingAuthenticationToken token;
+
+    @BeforeEach
+    void setUp(){
+        testUser = userRepository.save(
+                new User(
+                        "이름",
+                        "wjdtn747@naver.com",
+                        "1234",
+                        LocalDate.now(),
+                        Role.USER,
+                        Gender.MALE,
+                        "google",
+                        "010",
+                        "?",
+                        false,
+                        false
+                )
+        );
+
+        token = new TestingAuthenticationToken(
+                CurrentUser.from(testUser),
+                null,
+                Role.ADMIN.getValue()
+        );
+    }
+
     @Nested
-    @DisplayName("Describe : createOrder()는")
+    @DisplayName("Describe : createSingleOrder()는")
     class Describe_Create_Order{
-
-        User testUser;
-        OrderProductCreateRequest testOrderProduct1;
-        OrderProductCreateRequest testOrderProduct2;
-        OrderCreateRequest testOrderRequest;
-
-        TestingAuthenticationToken token;
+        Category testCategory;
+        Product testProduct;
 
         @BeforeEach
         void setUp(){
-            testUser = userRepository.save(
-                    new User(
-                            "이름",
-                            "wjdtn747@naver.com",
-                            "1234",
-                            LocalDate.now(),
-                            Role.USER,
-                            Gender.MALE,
-                            "google",
-                            "010",
-                            "?",
-                            false,
-                            false
+            testCategory = categoryRepository.save(
+                    new Category("카테고리명")
+            );
+
+            testProduct = productRepository.save(
+                    new Product(
+                            "테스트용 상품",
+                            2000L,
+                            "상품요약",
+                            "설명글",
+                            testCategory
                     )
-            );
-            testOrderProduct1 = TestUtil.orderProductCreateRequest(1L);
-            testOrderProduct2 = TestUtil.orderProductCreateRequest(2L);
-
-            List<OrderProductCreateRequest> orderProducts = new ArrayList<>();
-            orderProducts.add(testOrderProduct1);
-            orderProducts.add(testOrderProduct2);
-            testOrderRequest = new OrderCreateRequest(
-                    orderProducts,
-                    "원주시",
-                    "26421312",
-                    "이정수",
-                    "요청이에용",
-                    "01041245512"
-            );
-
-            token = new TestingAuthenticationToken(
-                    CurrentUser.from(testUser),
-                    null,
-                    Role.ADMIN.getValue()
             );
         }
 
@@ -107,14 +124,25 @@ class OrderServiceTest {
                 SecurityContextHolder.getContext().setAuthentication(token);
                 ShippingPolicy activeOrThrow = shippingPolicyRepository.findActiveOrThrow();
 
+                OrderCreateFromProductRequest requestFromProduct = new OrderCreateFromProductRequest(
+                        testProduct.getId(),
+                        2L,
+                        "옵션",
+                        "원주시",
+                        "26421312",
+                        "이정수",
+                        "요청이에용",
+                        "01041245512"
+                );
+
                 // when
-                OrderCreateResponse order = orderService.createOrder(
+                OrderCreateResponse order = orderService.createSingleOrder(
                         testUser.getId(),
-                        testOrderRequest
+                        requestFromProduct
                 );
 
                 // then
-                Assertions.assertThat(order.orderProducts().size()).isEqualTo(2);
+                Assertions.assertThat(order.orderProducts().size()).isEqualTo(1);
                 Assertions.assertThat(order.totalPrice()).isEqualTo(
                         4000L + activeOrThrow.getDeliveryFee()
                 );
@@ -122,5 +150,76 @@ class OrderServiceTest {
 
         }
 
+    }
+
+    @Nested
+    @DisplayName("Describe : createOrderFromCart()는")
+    class Describe_createOrderFromCart{
+        Category testCategory;
+        Product testProduct;
+        Cart testCart;
+        CartProduct testCartProduct;
+
+        @BeforeEach
+        void setUp(){
+
+            testCategory = categoryRepository.save(
+                    new Category("카테고리명")
+            );
+
+            testProduct = productRepository.save(
+                    new Product(
+                            "테스트용 상품",
+                            2000L,
+                            "상품요약",
+                            "설명글",
+                            testCategory
+                    )
+            );
+
+            testCart = cartRepository.save(new Cart(testUser));
+
+            testCartProduct = cartProductRepository.save(
+                    new CartProduct(
+                            testCart,
+                            testProduct,
+                            2L
+                    )
+            );
+        }
+
+        @Nested
+        @DisplayName("Context : 올바른 정보가 주어진 경우")
+        class Context_with_Valid_Data{
+
+
+            @Test
+            @DisplayName("It : 성공적으로 주문을 생성")
+            void it_성공적으로_주문을_생성(){
+                // given
+                SecurityContextHolder.getContext().setAuthentication(token);
+                ShippingPolicy activeOrThrow = shippingPolicyRepository.findActiveOrThrow();
+
+                OrderCreateFromCartRequest requestFromCart = new OrderCreateFromCartRequest(
+                        "주소",
+                        "26331",
+                        "이정수",
+                        "요청사황",
+                        "01041245512"
+                );
+
+                // when
+                OrderCreateResponse order = orderService.createOrderFromCart(
+                        testUser.getId(),
+                        requestFromCart
+                );
+
+                // then
+                Assertions.assertThat(order.orderProducts().size()).isEqualTo(1);
+                Assertions.assertThat(order.totalPrice()).isEqualTo(
+                        4000L + activeOrThrow.getDeliveryFee()
+                );
+            }
+        }
     }
 }

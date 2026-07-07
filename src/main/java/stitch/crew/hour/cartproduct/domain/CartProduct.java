@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.apache.logging.log4j.util.Strings;
 import stitch.crew.hour.cart.domain.Cart;
 import stitch.crew.hour.product.domain.Product;
 
@@ -28,6 +29,12 @@ public class CartProduct {
     @Column(nullable = false)
     private Long totalPrice;
 
+    @Column(
+            nullable = false,
+            length = 255
+    )
+    private String option;
+
     @ManyToOne
     @JoinColumn(name = "product_id", nullable = false)
     private Product product;
@@ -46,16 +53,23 @@ public class CartProduct {
         this.product = product;
         this.productName = product.getName();
         this.productPrice = product.getPrice();
+        this.option = "";
         this.cart = cart;
         this.cart.addCart(this);
         this.totalPrice = calPrice();
     }
 
     public void updateCartProduct(
+            String option,
             Long amount
     ){
+        if (Strings.isNotBlank(option)) this.option = option;
         this.amount = amount;
         this.totalPrice = calPrice();
+    }
+
+    public void setOption(String option){
+        this.option = option;
     }
 
     public Long calPrice(){

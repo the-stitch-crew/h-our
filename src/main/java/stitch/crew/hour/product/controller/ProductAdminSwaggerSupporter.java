@@ -15,13 +15,12 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.PathVariable;
 import stitch.crew.hour.common.response.ApiResponses;
-import stitch.crew.hour.order.dto.OrderCreateRequest;
 import stitch.crew.hour.product.dto.ProductCreateRequest;
 import stitch.crew.hour.product.dto.ProductCreateResponse;
 import stitch.crew.hour.product.dto.ProductUpdateRequest;
 import stitch.crew.hour.user.domain.CurrentUser;
 
-@Tag(name="Product API", description="관리자가 사용하는 상품 관련 API")
+@Tag(name="Product Admin API", description="관리자가 사용하는 상품 관련 API")
  public interface ProductAdminSwaggerSupporter {
 
 
@@ -114,6 +113,7 @@ import stitch.crew.hour.user.domain.CurrentUser;
                     )
             }
     )
+    @SecurityRequirement(name = "Bearer Authentication")
     ResponseEntity<ApiResponses<Void>> deleteProduct(
         CurrentUser currentUser,
         Long productId
@@ -155,6 +155,7 @@ import stitch.crew.hour.user.domain.CurrentUser;
                     )
             }
     )
+    @SecurityRequirement(name = "Bearer Authentication")
     ResponseEntity<ApiResponses<Void>> updateProduct(
             CurrentUser currentUser,
             Long productId,
@@ -187,6 +188,7 @@ import stitch.crew.hour.user.domain.CurrentUser;
                     )
             }
     )
+    @SecurityRequirement(name = "Bearer Authentication")
     ResponseEntity<ApiResponses<Void>> setMainProduct(
             CurrentUser currentUser,
             Long productId

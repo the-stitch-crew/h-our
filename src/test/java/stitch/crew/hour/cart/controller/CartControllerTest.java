@@ -334,7 +334,8 @@ class CartControllerTest {
                 String json = objectMapper.writeValueAsString(
                         new UpdateCartProductRequest(
                                 testCartProduct.getId(),
-                                50L
+                                50L,
+                                "옵션"
                         )
                 );
 
@@ -360,7 +361,8 @@ class CartControllerTest {
                 String json = objectMapper.writeValueAsString(
                         new UpdateCartProductRequest(
                                 testCartProduct.getId(),
-                                0L
+                                0L,
+                                "옵션"
                         )
                 );
 

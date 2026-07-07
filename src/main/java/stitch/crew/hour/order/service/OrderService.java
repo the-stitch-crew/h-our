@@ -5,6 +5,8 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import stitch.crew.hour.cart.domain.Cart;
+import stitch.crew.hour.cart.repository.CartRepository;
 import stitch.crew.hour.common.exception.ErrorCode;
 import stitch.crew.hour.common.util.PreConditions;
 import stitch.crew.hour.order.domain.Order;
@@ -31,6 +33,7 @@ public class OrderService {
     private final OrderBoundaryRepository orderBoundaryRepository;
     private final ShippingPolicyRepository shippingPolicyRepository;
     private final ProductRepository productRepository;
+    private final CartRepository cartRepository;
 
     @Transactional
     @PreAuthorize("isAuthenticated() && #userId == authentication.principal.id")
@@ -74,11 +77,16 @@ public class OrderService {
 
     @Transactional
     @PreAuthorize("isAuthenticated() && #userId == authentication.principal.id")
-    public OrderCreateResponse createOrder(
+    public OrderCreateResponse createOrderFromCart(
             Long userId,
-            OrderCreateFromProductRequest request
+            OrderCreateFromCartRequest request
     ){
         User foundedUser = userRepository.findByIdOrthrow(userId);
+
+        PreConditions.validate(
+                foundedUser.getCart() != null,
+                ErrorCode.NO_CART
+        );
 
         ShippingPolicy activeOrThrow = shippingPolicyRepository.findActiveOrThrow();
 
@@ -94,19 +102,16 @@ public class OrderService {
                 )
         );
 
+        Cart cart = foundedUser.getCart();
 
-
-
-        List<OrderProduct> orderProducts = request.requests().stream().map(
-                (orderProductCreateRequest) -> orderBoundaryRepository.saveOrderProduct(
-                        new OrderProduct(
-                                orderProductCreateRequest.productName(),
-                                orderProductCreateRequest.amount(),
-                                orderProductCreateRequest.price(),
-                                orderProductCreateRequest.productId(),
-                                orderProductCreateRequest.option(),
-                                order
-                        )
+        List<OrderProduct> orderProducts = cart.getCartProducts().stream().map(
+                (cartProduct) -> new OrderProduct(
+                        cartProduct.getProductName(),
+                        cartProduct.getAmount(),
+                        cartProduct.getProductPrice(),
+                        cartProduct.getProduct().getId(),
+                        cartProduct.getOption(),
+                        order
                 )
         ).toList();
 

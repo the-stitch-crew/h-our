@@ -24,8 +24,20 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 import org.springframework.transaction.annotation.Transactional;
 
-import stitch.crew.hour.order.dto.OrderCreateRequest;
+import stitch.crew.hour.cart.domain.Cart;
+import stitch.crew.hour.cart.repository.CartRepository;
+import stitch.crew.hour.cartproduct.domain.CartProduct;
+import stitch.crew.hour.cartproduct.repository.CartProductRepository;
+import stitch.crew.hour.category.domain.Category;
+import stitch.crew.hour.category.repository.CategoryRepository;
+import stitch.crew.hour.common.response.SuccessCode;
+import stitch.crew.hour.order.dto.OrderCreateFromCartRequest;
+import stitch.crew.hour.order.dto.OrderCreateFromProductRequest;
+import stitch.crew.hour.order.dto.OrderDetailResponse;
 import stitch.crew.hour.orderproduct.dto.OrderProductCreateRequest;
+import stitch.crew.hour.orderproduct.dto.OrderProductDetailResponse;
+import stitch.crew.hour.product.domain.Product;
+import stitch.crew.hour.product.repository.ProductRepository;
 import stitch.crew.hour.user.constant.Gender;
 import stitch.crew.hour.user.constant.Role;
 import stitch.crew.hour.user.domain.CurrentUser;
@@ -43,6 +55,14 @@ class OrderControllerTest {
 
     @Autowired
     UserRepository userRepository;
+    @Autowired
+    ProductRepository productRepository;
+    @Autowired
+    CategoryRepository categoryRepository;
+    @Autowired
+    CartRepository cartRepository;
+    @Autowired
+    CartProductRepository cartProductRepository;
 
     @Autowired
     MockMvc mockMvc;
@@ -53,6 +73,9 @@ class OrderControllerTest {
     User testUser;
 
     TestingAuthenticationToken token;
+
+    Category testCategory;
+    Product testProduct;
 
     @BeforeEach
     void setUp() {
@@ -71,31 +94,39 @@ class OrderControllerTest {
                         false
                 )
         );
+
+        testCategory = categoryRepository.save(
+                new Category("카테고리명")
+        );
+
+        testProduct = productRepository.save(
+                new Product(
+                        "테스트용 상품",
+                        2000L,
+                        "상품요약",
+                        "설명글",
+                        testCategory
+                )
+        );
+
         token = new TestingAuthenticationToken(
                 CurrentUser.from(testUser),
                 null,
-                "ROLE_USER"
+                Role.ADMIN.getValue()
         );
     }
 
     @Nested
-    @DisplayName("Describe : POST /api/orders")
+    @DisplayName("Describe : POST /api/orders/product")
     class Describe_Create_Order{
-        OrderProductCreateRequest testOrderProduct1;
-        OrderProductCreateRequest testOrderProduct2;
-        List<OrderProductCreateRequest> orderProducts;
-        OrderCreateRequest testOrderRequest;
+        OrderCreateFromProductRequest requestFromProduct;
 
         @BeforeEach
         void setUp(){
-            testOrderProduct1 = TestUtil.orderProductCreateRequest(1L);
-            testOrderProduct2 = TestUtil.orderProductCreateRequest(2L);
-
-            orderProducts = new ArrayList<>();
-            orderProducts.add(testOrderProduct1);
-            orderProducts.add(testOrderProduct2);
-            testOrderRequest = new OrderCreateRequest(
-                    orderProducts,
+            requestFromProduct = new OrderCreateFromProductRequest(
+                    testProduct.getId(),
+                    2L,
+                    "옵션",
                     "원주시",
                     "26421312",
                     "이정수",
@@ -113,18 +144,18 @@ class OrderControllerTest {
             void It_성공적으로_주문_생성() throws Exception {
                 // given
                 SecurityContextHolder.getContext().setAuthentication(token);
-                String json = objectMapper.writeValueAsString(testOrderRequest);
+                String json = objectMapper.writeValueAsString(requestFromProduct);
 
                 // when
                 mockMvc.perform(
-                                MockMvcRequestBuilders.post(BASE_URL)
+                                MockMvcRequestBuilders.post(BASE_URL + "/product")
                                         .contentType(MediaType.APPLICATION_JSON)
                                         .content(json)
                         ).andDo(print())
                         // then
                         .andExpect(MockMvcResultMatchers.status().isCreated())
                         .andExpect(jsonPath("$.success").value(true))
-                        .andExpect(jsonPath("$.data.receiverName").value(testOrderRequest.receiverName()));
+                        .andExpect(jsonPath("$.data.receiverName").value(requestFromProduct.receiverName()));
             }
 
             @ParameterizedTest
@@ -134,8 +165,10 @@ class OrderControllerTest {
                 // given
                 SecurityContextHolder.getContext().setAuthentication(token);
 
-                testOrderRequest = new OrderCreateRequest(
-                        orderProducts,
+                OrderCreateFromProductRequest testOrderRequest = new OrderCreateFromProductRequest(
+                        testProduct.getId(),
+                        2L,
+                        "옵션",
                         "원주시",
                         "26421312",
                         "",
@@ -147,7 +180,110 @@ class OrderControllerTest {
 
                 // when
                 mockMvc.perform(
-                                MockMvcRequestBuilders.post(BASE_URL)
+                                MockMvcRequestBuilders.post(BASE_URL + "/product")
+                                        .contentType(MediaType.APPLICATION_JSON)
+                                        .content(json)
+                        ).andDo(print())
+                        // then
+                        .andExpect(MockMvcResultMatchers.status().isCreated())
+                        .andExpect(jsonPath("$.success").value(true))
+                        .andExpect(jsonPath("$.data.ordererName").value(testUser.getUserName()));
+            }
+        }
+    }
+
+    @Nested
+    @DisplayName("Describe : POST /api/orders/cart")
+    class Describe_Create_Order_By_Cart{
+        Category testCategory;
+        Product testProduct;
+        Cart testCart;
+        CartProduct testCartProduct;
+
+        OrderCreateFromCartRequest requestFromCart;
+
+        @BeforeEach
+        void setUp(){
+            testCategory = categoryRepository.save(
+                    new Category("카테고리명")
+            );
+
+            testProduct = productRepository.save(
+                    new Product(
+                            "테스트용 상품",
+                            2000L,
+                            "상품요약",
+                            "설명글",
+                            testCategory
+                    )
+            );
+
+            testCart = cartRepository.save(new Cart(testUser));
+
+            testCartProduct = cartProductRepository.save(
+                    new CartProduct(
+                            testCart,
+                            testProduct,
+                            2L
+                    )
+            );
+
+            requestFromCart = new OrderCreateFromCartRequest(
+                    "주소",
+                    "26331",
+                    "이정수",
+                    "요청사황",
+                    "01041245512"
+            );
+        }
+
+        @Nested
+        @DisplayName("Context : 올바른 데이터가 주어진 경우")
+        class Context_with_valid_data{
+
+            @Test
+            @DisplayName("It : 주문을 성공적으로 생성 후 201을 반환")
+            void It_성공적으로_주문_생성() throws Exception {
+                // given
+                SecurityContextHolder.getContext().setAuthentication(token);
+
+
+                String json = objectMapper.writeValueAsString(requestFromCart);
+
+                // when
+                mockMvc.perform(
+                                MockMvcRequestBuilders.post(BASE_URL + "/cart")
+                                        .contentType(MediaType.APPLICATION_JSON)
+                                        .content(json)
+                        ).andDo(print())
+
+                        // then
+                        .andExpect(MockMvcResultMatchers.status().isCreated())
+                        .andExpect(jsonPath("$.success").value(true))
+                        .andExpect(jsonPath("$.message").value(SuccessCode.ORDER_CREATED_SUCCESS.getSuccessMessage()))
+                        .andExpect(jsonPath("$.data.orderProducts[0].productId").value(testProduct.getId()));
+            }
+
+            @ParameterizedTest
+            @NullAndEmptySource
+            @DisplayName("It : ReceiverName이 공백인 경우 Orderer Name으로 설정 및 주문을 성공적으로 생성 후 201을 반환")
+            void It_ReceiverName이_공백_이더라도_성공적으로_주문_생성(String name) throws Exception {
+                // given
+                SecurityContextHolder.getContext().setAuthentication(token);
+
+                OrderCreateFromCartRequest testOrderRequest = new OrderCreateFromCartRequest(
+                        "주소",
+                        "26331",
+                        name,
+                        "요청사황",
+                        "01041245512"
+                );
+
+                String json = objectMapper.writeValueAsString(testOrderRequest);
+
+                // when
+                mockMvc.perform(
+                                MockMvcRequestBuilders.post(BASE_URL + "/cart")
                                         .contentType(MediaType.APPLICATION_JSON)
                                         .content(json)
                         ).andDo(print())

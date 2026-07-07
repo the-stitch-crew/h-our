@@ -119,7 +119,10 @@ public class CartService {
                     userId
             );
         } else {
-            foundedCardProduct.updateCartProduct(request.amount());
+            foundedCardProduct.updateCartProduct(
+                    request.option(),
+                    request.amount()
+            );
             return CartDetailResponse.from(
                     foundedCart,
                     userId

@@ -13,6 +13,10 @@ public record UpdateCartProductRequest(
                 description = "수정할 장바구니 내 상품 수",
                 example = "1"
         )
-        @NotNull Long amount
+        @NotNull Long amount,
+        @Schema(
+                description = "주문의 상품 옵션"
+        )
+        String option
 ) {
 }

@@ -11,7 +11,8 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import stitch.crew.hour.common.response.ApiResponses;
-import stitch.crew.hour.order.dto.OrderCreateRequest;
+import stitch.crew.hour.order.dto.OrderCreateFromCartRequest;
+import stitch.crew.hour.order.dto.OrderCreateFromProductRequest;
 import stitch.crew.hour.order.dto.OrderCreateResponse;
 import stitch.crew.hour.user.domain.CurrentUser;
 
@@ -20,14 +21,14 @@ public interface OrderSwaggerSupporter {
 
     @Operation(
             summary = "주문 생성",
-            description = "주문을 생성하는 API"
+            description = "단건 상품에 대한 주문을 생성하는 API"
     )
     @RequestBody(
             content = {
                     @Content(
                             mediaType = "application/json",
                             schema = @Schema(
-                                    implementation = OrderCreateRequest.class
+                                    implementation = OrderCreateFromProductRequest.class
                             )
                     )
             }
@@ -79,6 +80,65 @@ public interface OrderSwaggerSupporter {
     @SecurityRequirement(name = "Bearer Authentication")
     ResponseEntity<ApiResponses<OrderCreateResponse>> createOrder(
             CurrentUser currentUser,
-            OrderCreateRequest request
+            OrderCreateFromProductRequest request
+    );
+
+    @Operation(
+            summary = "주문 생성 ( 장바구니 )",
+            description = "장바구니로 부터 주문을 생성하는 API"
+    )
+    @RequestBody(
+            content = {
+                    @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(
+                                    implementation = OrderCreateFromProductRequest.class
+                            )
+                    )
+            }
+    )
+    @ApiResponse(
+            responseCode = "201",
+            description = "주문 생성 성공",
+            content = {
+                    @Content(
+                            mediaType = MediaType.APPLICATION_JSON_VALUE,
+                            examples = @ExampleObject(
+                                    value = """
+                            {
+                                "success":true,
+                                "code":"ORDER_CREATED_SUCCESS",
+                                "message":"주문이 정상적으로 생성되었습니다.",
+                                "data":{
+                                    "orderNumber":"47f23a3c-8590-44d4-b427-6848b5dd9829",
+                                    "orderProducts":[
+                                        {
+                                            "name":"테스트용 상품",
+                                            "amount":2,
+                                            "price":2000,
+                                            "productId":1
+                                        }
+                                    ],
+                                    "totalPrice":7500,
+                                    "deliveryFee":3500,
+                                    "address":"원주시",
+                                    "postalCode":"26421312",
+                                    "receiverName":"이정수",
+                                    "receiverPhoneNumber":"01041245512",
+                                    "phoneNumber":"010",
+                                    "ordererName":"이름",
+                                    "orderStatus":"ORDERED",
+                                    "createdAt":"2026-07-07T15:15:38.8604633"
+                                }
+                            }
+                                            """
+                            )
+                    )
+            }
+    )
+    @SecurityRequirement(name = "Bearer Authentication")
+    ResponseEntity<ApiResponses<OrderCreateResponse>> createOrderFromCart(
+            CurrentUser currentUser,
+            OrderCreateFromCartRequest request
     );
 }
