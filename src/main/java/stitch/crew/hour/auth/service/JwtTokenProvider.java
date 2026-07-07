@@ -20,7 +20,7 @@ import stitch.crew.hour.common.config.properties.JwtProperties;
 import stitch.crew.hour.common.exception.BusinessException;
 import stitch.crew.hour.common.exception.ErrorCode;
 import stitch.crew.hour.auth.domain.RefreshToken;
-import stitch.crew.hour.auth.dto.LoginResponse;
+import stitch.crew.hour.auth.dto.KeyPair;
 import stitch.crew.hour.auth.dto.TokenBody;
 import stitch.crew.hour.auth.repository.RefreshTokenRepository;
 import stitch.crew.hour.user.constant.Role;
@@ -38,7 +38,9 @@ public class JwtTokenProvider {
 		);
 	}
 
-	private String issueRefreshToken(String email) {
+	private String issueRefreshToken(
+		String email
+	) {
 		String issuedRefreshToken = Jwts.builder()
 			.id(UUID.randomUUID().toString())
 			.subject(jwtProperties.getPayload().getSubjectRefreshToken())
@@ -58,9 +60,11 @@ public class JwtTokenProvider {
 		return issuedRefreshToken;
 	}
 
-	private String issueAccessToken(String email, Role role) {
+	private String issueAccessToken(
+		String email,
+		Role role
+	) {
 		return Jwts.builder()
-			.id(UUID.randomUUID().toString())
 			.subject(jwtProperties.getPayload().getSubjectAccessToken())
 			.claim("role", role.name())
 			.issuer(jwtProperties.getPayload().getIssuer())
@@ -71,8 +75,11 @@ public class JwtTokenProvider {
 			.compact();
 	}
 
-	public LoginResponse issueKeyPair(String email, Role role) {
-		return new LoginResponse(
+	public KeyPair issueKeyPair(
+		String email,
+		Role role
+	) {
+		return new KeyPair(
 			issueAccessToken(email, role),
 			issueRefreshToken(email)
 		);
@@ -85,13 +92,20 @@ public class JwtTokenProvider {
 				.build()
 				.parseSignedClaims(token);
 			return true;
-		} catch (ExpiredJwtException exception) {
+		} catch (ExpiredJwtException e) {
 			throw new BusinessException(ErrorCode.EXPIRED_TOKEN);
-		} catch (MalformedJwtException exception) {
+		} catch (MalformedJwtException e) {
 			throw new BusinessException(ErrorCode.ABNORMAL_TOKEN);
-		} catch (JwtException exception) {
+		} catch (JwtException e) {
 			throw new BusinessException(ErrorCode.ERROR_FROM_TOKEN);
 		}
+	}
+
+	public Jws<Claims> parseClaims(String token) {
+		return Jwts.parser()
+			.verifyWith(getSecretKey())
+			.build()
+			.parseSignedClaims(token);
 	}
 
 	public void validateRefreshToken(String token) {
@@ -103,17 +117,8 @@ public class JwtTokenProvider {
 		}
 	}
 
-	public Jws<Claims> parseClaims(String token) {
-		return Jwts.parser()
-			.verifyWith(getSecretKey())
-			.build()
-			.parseSignedClaims(token);
-	}
-
 	public TokenBody parseJwt(String token) {
 		Jws<Claims> claimsJws = parseClaims(token);
-		return TokenBody.builder()
-			.email(String.valueOf(claimsJws.getPayload().get("email")))
-			.build();
+		return new TokenBody(String.valueOf(claimsJws.getPayload().get("email")));
 	}
 }

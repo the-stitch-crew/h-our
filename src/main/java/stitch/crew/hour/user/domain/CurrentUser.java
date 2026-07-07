@@ -1,6 +1,5 @@
 package stitch.crew.hour.user.domain;
 
-import java.security.Principal;
 import java.util.Collection;
 import java.util.List;
 
@@ -43,6 +42,6 @@ public class CurrentUser implements UserDetails {
 
 	@Override
 	public String getUsername() {
-		return "";
+		return email;
 	}
 }

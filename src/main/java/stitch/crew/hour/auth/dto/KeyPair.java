@@ -1,6 +1,6 @@
 package stitch.crew.hour.auth.dto;
 
-public record LoginResponse(
+public record KeyPair(
 	String accessToken,
 	String refreshToken
 ) {

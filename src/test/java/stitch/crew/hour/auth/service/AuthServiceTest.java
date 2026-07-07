@@ -27,7 +27,7 @@ import stitch.crew.hour.auth.dto.TokenBody;
 import stitch.crew.hour.auth.repository.RefreshTokenRepository;
 import stitch.crew.hour.common.exception.BusinessException;
 import stitch.crew.hour.common.exception.ErrorCode;
-import stitch.crew.hour.auth.dto.LoginResponse;
+import stitch.crew.hour.auth.dto.KeyPair;
 import stitch.crew.hour.user.constant.Gender;
 import stitch.crew.hour.user.constant.Role;
 import stitch.crew.hour.user.domain.User;
@@ -66,10 +66,10 @@ class AuthServiceTest {
 			given(userRepository.findByEmail(request.email())).willReturn(Optional.of(user));
 			given(passwordEncoder.matches(request.password(), user.getPassword())).willReturn(true);
 			given(jwtTokenProvider.issueKeyPair(user.getEmail(), user.getRole()))
-				.willReturn(new LoginResponse("access-token", "refresh-token"));
+				.willReturn(new KeyPair("access-token", "refresh-token"));
 
 			// when
-			LoginResponse response = authService.login(request);
+			KeyPair response = authService.login(request);
 
 			// then
 			assertThat(response.accessToken()).isEqualTo("access-token");
@@ -156,10 +156,10 @@ class AuthServiceTest {
 				.willReturn(new TokenBody(user.getEmail()));
 			given(userRepository.findByEmail(user.getEmail())).willReturn(Optional.of(user));
 			given(jwtTokenProvider.issueKeyPair(user.getEmail(), user.getRole()))
-				.willReturn(new LoginResponse("new-access-token", "new-refresh-token"));
+				.willReturn(new KeyPair("new-access-token", "new-refresh-token"));
 
 			// when
-			LoginResponse response = authService.refresh(request);
+			KeyPair response = authService.refresh(request);
 
 			// then
 			assertThat(response.accessToken()).isEqualTo("new-access-token");

@@ -8,6 +8,7 @@ import lombok.RequiredArgsConstructor;
 import stitch.crew.hour.auth.repository.RefreshTokenRepository;
 import stitch.crew.hour.common.exception.BusinessException;
 import stitch.crew.hour.common.util.PreConditions;
+import stitch.crew.hour.user.domain.CurrentUser;
 import stitch.crew.hour.user.dto.PasswordChangeRequest;
 import stitch.crew.hour.user.dto.SignupRequest;
 import stitch.crew.hour.common.exception.ErrorCode;
@@ -146,6 +147,10 @@ public class UserService {
 		);
 
 		return user;
+	}
+
+	public CurrentUser loadCurrentUserByEmail(String email) {
+		return CurrentUser.from(getActiveUser(email));
 	}
 
 }

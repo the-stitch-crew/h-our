@@ -10,7 +10,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import stitch.crew.hour.auth.dto.LoginRequest;
 import stitch.crew.hour.auth.service.AuthService;
-import stitch.crew.hour.auth.dto.LoginResponse;
+import stitch.crew.hour.auth.dto.KeyPair;
 import stitch.crew.hour.auth.dto.RefreshTokenRequest;
 import stitch.crew.hour.common.response.ApiResponses;
 import stitch.crew.hour.common.response.ApiResult;
@@ -24,18 +24,18 @@ public class AuthController {
 	private final AuthService authService;
 
 	@PostMapping("/login")
-	public ResponseEntity<ApiResponses<LoginResponse>> login(
+	public ResponseEntity<ApiResponses<KeyPair>> login(
 		@Valid @RequestBody LoginRequest request
 	) {
-		LoginResponse response = authService.login(request);
+		KeyPair response = authService.login(request);
 		return ApiResult.ok(SuccessCode.AUTH_LOGIN_SUCCESS, response);
 	}
 
 	@PostMapping("/refresh")
-	public ResponseEntity<ApiResponses<LoginResponse>> refresh(
+	public ResponseEntity<ApiResponses<KeyPair>> refresh(
 		@Valid @RequestBody RefreshTokenRequest request
 	) {
-		LoginResponse response = authService.refresh(request);
+		KeyPair response = authService.refresh(request);
 		return ApiResult.ok(SuccessCode.AUTH_REFRESH_SUCCESS, response);
 	}
 
