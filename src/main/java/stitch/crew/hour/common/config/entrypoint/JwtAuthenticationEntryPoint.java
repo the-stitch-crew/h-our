@@ -28,8 +28,8 @@ public class JwtAuthenticationEntryPoint implements AuthenticationEntryPoint {
 		response.getWriter().write("""
 			{
 				"success":false,
-				"UNAUTHORIZED"
-				"message":"권한이 없습니다.",
+				"code": "UNAUTHORIZED",
+				"message":"계정 인증이 필요합니다.",
 				"data":null
 			}
 			""");

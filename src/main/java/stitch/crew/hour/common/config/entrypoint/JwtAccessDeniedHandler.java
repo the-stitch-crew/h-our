@@ -27,7 +27,7 @@ public class JwtAccessDeniedHandler implements AccessDeniedHandler {
 		response.getWriter().write("""
 			{
 				"success":false,
-				"ACCESS_DENIED"
+				"code":"ACCESS_DENIED",
 				"message":"권한이 없습니다.",
 				"data":null
 			}
