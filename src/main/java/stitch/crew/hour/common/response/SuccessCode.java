@@ -29,6 +29,12 @@ public enum SuccessCode {
 
     // Order
     ORDER_CREATED_SUCCESS("주문이 정상적으로 생성되었습니다."),
+    ORDER_READ_SUCCESS("주문이 정상적으로 조회되었습니다."),
+    ORDER_PURCHASED("주문이 정상적으로 결제 상태로 전환 되었습니다."),
+    ORDER_IN_DELIVERY("주문이 정상적으로 배송 중 상태로 전환 되었습니다."),
+    ORDER_DELIVERED("주문이 정상적으로 배송완료 상태로 전환 되었습니다."),
+    ORDER_COMPLETE("주문이 정상적으로 주문완료 상태로 전환 되었습니다."),
+    ORDER_CANCELED("주문이 정상적으로 취소 상태로 전환 되었습니다."),
 
     // Product
     PRODUCT_CREATED_SUCCESS("상품이 정상적으로 생성되었습니다."),
@@ -36,6 +42,7 @@ public enum SuccessCode {
     PRODUCT_DELETE_SUCCESS("상품이 정상적으로 삭제되었습니다."),
     PRODUCT_UPDATE_SUCCESS("상품이 정상적으로 수정되었습니다."),
     PRODUCT_SWITCH_MAIN_SUCCESS("상품이 카테고리 메인 상품으로 수정되었습니다."),
+    PRODUCT_READ_SUCCESS("상품이 정상적으로 조회되었습니다."),
 
 
     /*CATEGORY*/

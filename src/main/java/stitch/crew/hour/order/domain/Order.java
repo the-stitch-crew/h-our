@@ -70,9 +70,7 @@ public class Order extends BaseEntity {
         String address,
         String postalCode,
         String receiverName,
-        String phoneNumber,
         String request,
-        String ordererName,
         String receiverPhoneNumber
     ){
         this.orderer = user;
@@ -81,14 +79,28 @@ public class Order extends BaseEntity {
         this.address = address;
         this.postalCode = postalCode;
         this.totalPrice = 0;
-        this.ordererName = ordererName;
-        this.phoneNumber = phoneNumber;
         this.receiverPhoneNumber = receiverPhoneNumber;
         this.orderNumber = UUID.randomUUID();
+
         if (Strings.isNotBlank(request)) this.request = request;
+
+        this.ordererName = user.getUserName();
+        this.phoneNumber = user.getPhoneNumber();
+
+        if (Strings.isNotBlank(receiverPhoneNumber)) this.receiverPhoneNumber = receiverPhoneNumber;
+        else this.receiverPhoneNumber = user.getPhoneNumber();
+
         if (Strings.isNotBlank(receiverName))  this.receiverName = receiverName;
-        else this.receiverName = ordererName;
+        else this.receiverName = user.getUserName();
+
         user.addOrder(this);
+    }
+
+    public void setOrderProduct(
+            OrderProduct orderProduct
+    ){
+        this.orderProduct.add(orderProduct);
+        this.totalPrice = calTotalPrice(this.orderProduct, this.deliveryFee);
     }
 
     public void setOrderProducts(

@@ -2,14 +2,14 @@ package stitch.crew.hour.orderproduct.dto;
 
 import stitch.crew.hour.orderproduct.domain.OrderProduct;
 
-public record OrderProductCreateResponse(
+public record OrderProductDetailResponse(
     String name,
     Long amount,
     Long price,
     Long productId
 ) {
-    public static OrderProductCreateResponse from(OrderProduct orderProduct){
-        return new OrderProductCreateResponse(
+    public static OrderProductDetailResponse from(OrderProduct orderProduct){
+        return new OrderProductDetailResponse(
                 orderProduct.getName(),
                 orderProduct.getAmount(),
                 orderProduct.getPrice(),

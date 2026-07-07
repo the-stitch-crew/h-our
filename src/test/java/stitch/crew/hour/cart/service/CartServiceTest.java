@@ -265,7 +265,8 @@ class CartServiceTest {
                         cart.cartId(),
                         new UpdateCartProductRequest(
                                 cartResponse.products().getFirst().cartProductId(),
-                                1L
+                                1L,
+                                "옵션"
                         )
                 );
 
@@ -295,7 +296,8 @@ class CartServiceTest {
                         cart.cartId(),
                         new UpdateCartProductRequest(
                                 cartResponse.products().getFirst().cartProductId(),
-                                0L
+                                0L,
+                                "옵션"
                         )
                 );
 
