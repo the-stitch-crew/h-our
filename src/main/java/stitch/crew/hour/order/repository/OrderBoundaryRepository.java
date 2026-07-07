@@ -5,6 +5,7 @@ import stitch.crew.hour.order.domain.Order;
 import stitch.crew.hour.orderproduct.domain.OrderProduct;
 
 import java.awt.*;
+import java.util.UUID;
 
 public interface OrderBoundaryRepository {
     Order saveOrder(Order order);
@@ -12,4 +13,6 @@ public interface OrderBoundaryRepository {
     OrderProduct saveOrderProduct(OrderProduct orderProduct);
 
     Order findOrderById(Long orderId);
+
+    Order findByOrderNumberOrThrow(UUID orderNumber);
 }

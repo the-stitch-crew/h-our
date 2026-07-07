@@ -23,6 +23,7 @@ import stitch.crew.hour.user.domain.User;
 import stitch.crew.hour.user.repository.UserRepository;
 
 import java.util.List;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -123,10 +124,10 @@ public class OrderService {
     @PreAuthorize("isAuthenticated() && #userId == authentication.principal.id")
     public OrderDetailResponse getOrderDetail(
             Long userId,
-            Long orderId
+            UUID orderNumber
     ){
         User foundedUser = userRepository.findByIdOrthrow(userId);
-        Order foundedOrder = orderBoundaryRepository.findOrderById(orderId);
+        Order foundedOrder = orderBoundaryRepository.findByOrderNumberOrThrow(orderNumber);
 
         PreConditions.validate(
                 validateAuthority(foundedUser,foundedOrder),

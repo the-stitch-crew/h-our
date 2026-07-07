@@ -33,7 +33,9 @@ import stitch.crew.hour.category.repository.CategoryRepository;
 import stitch.crew.hour.common.response.SuccessCode;
 import stitch.crew.hour.order.dto.OrderCreateFromCartRequest;
 import stitch.crew.hour.order.dto.OrderCreateFromProductRequest;
+import stitch.crew.hour.order.dto.OrderCreateResponse;
 import stitch.crew.hour.order.dto.OrderDetailResponse;
+import stitch.crew.hour.order.service.OrderService;
 import stitch.crew.hour.orderproduct.dto.OrderProductCreateRequest;
 import stitch.crew.hour.orderproduct.dto.OrderProductDetailResponse;
 import stitch.crew.hour.product.domain.Product;
@@ -63,6 +65,8 @@ class OrderControllerTest {
     CartRepository cartRepository;
     @Autowired
     CartProductRepository cartProductRepository;
+    @Autowired
+    OrderService orderService;
 
     @Autowired
     MockMvc mockMvc;
@@ -261,6 +265,77 @@ class OrderControllerTest {
                         .andExpect(MockMvcResultMatchers.status().isCreated())
                         .andExpect(jsonPath("$.success").value(true))
                         .andExpect(jsonPath("$.message").value(SuccessCode.ORDER_CREATED_SUCCESS.getSuccessMessage()))
+                        .andExpect(jsonPath("$.data.orderProducts[0].productId").value(testProduct.getId()));
+            }
+
+            @ParameterizedTest
+            @NullAndEmptySource
+            @DisplayName("It : ReceiverName이 공백인 경우 Orderer Name으로 설정 및 주문을 성공적으로 생성 후 201을 반환")
+            void It_ReceiverName이_공백_이더라도_성공적으로_주문_생성(String name) throws Exception {
+                // given
+                SecurityContextHolder.getContext().setAuthentication(token);
+
+                OrderCreateFromCartRequest testOrderRequest = new OrderCreateFromCartRequest(
+                        "주소",
+                        "26331",
+                        name,
+                        "요청사황",
+                        "01041245512"
+                );
+
+                String json = objectMapper.writeValueAsString(testOrderRequest);
+
+                // when
+                mockMvc.perform(
+                                MockMvcRequestBuilders.post(BASE_URL + "/cart")
+                                        .contentType(MediaType.APPLICATION_JSON)
+                                        .content(json)
+                        ).andDo(print())
+                        // then
+                        .andExpect(MockMvcResultMatchers.status().isCreated())
+                        .andExpect(jsonPath("$.success").value(true))
+                        .andExpect(jsonPath("$.data.ordererName").value(testUser.getUserName()));
+            }
+        }
+    }
+
+    @Nested
+    @DisplayName("Describe : GET /api/orders/{orderId}")
+    class Describe_getOrderDetail{
+
+        @Nested
+        @DisplayName("Context : 올바른 데이터가 주어진 경우")
+        class Context_with_valid_data{
+
+            @Test
+            @DisplayName("It : 주문을 성공적으로 조회 후 200을 반환")
+            void It_성공적으로_주문_조회() throws Exception {
+                // given
+                SecurityContextHolder.getContext().setAuthentication(token);
+                OrderCreateResponse order = orderService.createSingleOrder(
+                        testUser.getId(),
+                        new OrderCreateFromProductRequest(
+                                testProduct.getId(),
+                                2L,
+                                "옵션",
+                                "원주시",
+                                "26421312",
+                                "",
+                                "요청이에용",
+                                "01041245512"
+                        )
+                );
+
+
+                // when
+                mockMvc.perform(
+                                MockMvcRequestBuilders.get(BASE_URL + "/%s".formatted(order.orderNumber()))
+                        ).andDo(print())
+
+                        // then
+                        .andExpect(MockMvcResultMatchers.status().isOk())
+                        .andExpect(jsonPath("$.success").value(true))
+                        .andExpect(jsonPath("$.message").value(SuccessCode.ORDER_READ_SUCCESS.getSuccessMessage()))
                         .andExpect(jsonPath("$.data.orderProducts[0].productId").value(testProduct.getId()));
             }
 

@@ -6,6 +6,8 @@ import stitch.crew.hour.order.domain.Order;
 import stitch.crew.hour.orderproduct.domain.OrderProduct;
 import stitch.crew.hour.orderproduct.repository.OrderProductRepository;
 
+import java.util.UUID;
+
 @Repository
 @RequiredArgsConstructor
 public class OrderBoundaryRepositoryImpl implements OrderBoundaryRepository {
@@ -27,5 +29,10 @@ public class OrderBoundaryRepositoryImpl implements OrderBoundaryRepository {
     @Override
     public Order findOrderById(Long orderId) {
         return orderRepository.findByIdOrThrow(orderId);
+    }
+
+    @Override
+    public Order findByOrderNumberOrThrow(UUID orderNumber) {
+        return orderRepository.findByOrderNumberOrThrow(orderNumber);
     }
 }
