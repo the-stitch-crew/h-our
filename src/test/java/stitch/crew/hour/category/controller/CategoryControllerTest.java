@@ -54,8 +54,8 @@ class CategoryControllerTest {
                 name = "거거거거";
                 name2 = "거거거거2";
                 thumbnail="ㅠㅠㅠㅠㅠ";
-                category1 = new Category(name, thumbnail);
-                category2 = new Category(name2, thumbnail);
+                category1 = new Category(name);
+                category2 = new Category(name2);
 
             }
             @Test
@@ -63,7 +63,7 @@ class CategoryControllerTest {
             void it_return_200_ok_and_success_message_and_data() throws Exception {
                 //given
                 given(categoryService.getCategories()).willReturn(
-                        Arrays.asList(CategoryResponse.from(category1),CategoryResponse.from(category2)));
+                        Arrays.asList(CategoryResponse.from(category1, null),CategoryResponse.from(category2, null)));
 
                 //when-then
                 mockMvc.perform(

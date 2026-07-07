@@ -7,6 +7,7 @@ public final class PreConditions {
     public static void validate(boolean expression, ErrorCode errorCode){
         if (!expression) throw new BusinessException(errorCode);
     }
-
-
+    public static void check(boolean expression, ErrorCode errorCode){
+        if (expression) throw new BusinessException(errorCode);
+    }
 }
