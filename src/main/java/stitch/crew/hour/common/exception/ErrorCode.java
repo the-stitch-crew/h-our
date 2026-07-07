@@ -50,6 +50,16 @@ public enum ErrorCode {
     NOT_ADMIN(HttpStatus.FORBIDDEN, "관리자 권한이 없는 계정입니다."),
     PRODUCT_ALREADY_MAIN(HttpStatus.BAD_REQUEST, "이미 메인으로 등록된 상품입니다."),
 
+    //Image
+    STORAGE_WRITE_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "s3에 이미지를 저장하는데 실패했습니다."),
+    STORAGE_DELETE_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "s3에 이미지를 삭제하는데 실패했습니다."),
+    FILE_NAME_EMPTY(HttpStatus.BAD_REQUEST, "이미지 파일의 원래 이름이 없습니다."),
+    EXTENSIONS_INVALID(HttpStatus.BAD_REQUEST, "확장자가 존재하지 않습니다."),
+    FILE_EMPTY(HttpStatus.BAD_REQUEST, "빈 파일입니다."),
+    SIZE_INVALID(HttpStatus.BAD_REQUEST, "파일 크기는 20MB를 초과할 수 없습니다."),
+
+
+
 
     ALREADY_DELETED(HttpStatus.BAD_REQUEST, "이미 삭제된 객체입니다."),
     VALIDATION_FAILED(HttpStatus.BAD_REQUEST, "검증에 실패했습니다."),

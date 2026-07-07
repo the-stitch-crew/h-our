@@ -5,6 +5,10 @@ spring:
     import:
       - optional:file:.env[.properties]
       - optional:file:.env.${spring.profiles.active}[.properties]
+  cloud:
+    aws:
+      region:
+        static: ${S3_REGION}
 
 
 springdoc:
@@ -34,3 +38,7 @@ custom:
   redis:
     host: ${REDIS_HOST}
     port: ${REDIS_PORT}
+  s3:
+    bucket-name: ${S3_BUCKET}
+    access-key: ${S3_ACCESS_KEY}
+    secret-key: ${S3_SECRET_KEY}

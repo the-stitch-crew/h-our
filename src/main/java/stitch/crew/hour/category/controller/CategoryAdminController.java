@@ -4,6 +4,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 import stitch.crew.hour.category.dto.CategoryRequest;
 import stitch.crew.hour.category.service.CategoryService;
 import stitch.crew.hour.common.response.ApiResponses;
@@ -18,16 +19,18 @@ public class CategoryAdminController {
 
     @PostMapping
     public ResponseEntity<ApiResponses<Void>>  saveCategory (
-            @RequestBody @Valid CategoryRequest request
-    ) {
-        categoryService.save(request);
+            @RequestPart @Valid CategoryRequest request,
+            @RequestPart(required = false) MultipartFile file
+            ) {
+        categoryService.save(request, file);
         return ApiResult.created(SuccessCode.CATEGORY_CREATED);
     }
 
     @PatchMapping("/{categoryId}")
     public ResponseEntity<ApiResponses<Void>> updateCategory (@PathVariable Long categoryId,
-                                                             @RequestBody @Valid CategoryRequest request) {
-        categoryService.updateCategory(categoryId, request);
+                                                              @RequestPart @Valid CategoryRequest request,
+                                                              @RequestPart(required = false) MultipartFile file) {
+        categoryService.updateCategory(categoryId, request, file);
         return ApiResult.ok(SuccessCode.CATEGORY_UPDATED);
     }
 
