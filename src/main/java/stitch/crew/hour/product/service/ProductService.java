@@ -10,7 +10,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import stitch.crew.hour.category.domain.Category;
 import stitch.crew.hour.category.repository.CategoryRepository;
-import stitch.crew.hour.common.dto.Paging;
 import stitch.crew.hour.common.exception.BusinessException;
 import stitch.crew.hour.common.exception.ErrorCode;
 import stitch.crew.hour.common.util.PreConditions;
@@ -153,7 +152,7 @@ public class ProductService {
             ).findFirst().orElseThrow(
                     ()-> new BusinessException(ErrorCode.PRODUCT_NOT_FOUND)
             );
-            product.setNotMain();
+            product.unsetMain();
             targetProduct.setMain();
         }
     }
