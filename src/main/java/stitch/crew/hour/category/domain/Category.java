@@ -1,12 +1,10 @@
 package stitch.crew.hour.category.domain;
 
 import jakarta.persistence.*;
-import jakarta.validation.constraints.NotEmpty;
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Size;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 import stitch.crew.hour.common.domain.BaseEntity;
 import stitch.crew.hour.product.domain.Product;
 
@@ -15,6 +13,7 @@ import java.util.List;
 
 @Entity
 @Getter
+@Setter
 @Table(name = "categories")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Category extends BaseEntity {
@@ -24,16 +23,17 @@ public class Category extends BaseEntity {
     private Long id;
 
     @Column(nullable = false, length = 20)
+    @Setter
     private String name;
 
+    @Setter
     private String thumbnail;
 
     @OneToMany(mappedBy = "category")
     private List<Product> products = new ArrayList<>();
 
-    public Category(String name, String thumbnail) {
+    public Category(String name) {
         this.name = name;
-        this.thumbnail = thumbnail;
     }
 
     public void update(String name, String thumbnail) {

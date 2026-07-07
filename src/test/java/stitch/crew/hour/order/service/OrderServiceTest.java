@@ -7,6 +7,8 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.security.authentication.TestingAuthenticationToken;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.transaction.annotation.Transactional;
 import stitch.crew.hour.order.dto.OrderCreateRequest;
@@ -16,6 +18,9 @@ import stitch.crew.hour.orderproduct.domain.OrderProduct;
 import stitch.crew.hour.orderproduct.dto.OrderProductCreateRequest;
 import stitch.crew.hour.shippingpolicy.domain.ShippingPolicy;
 import stitch.crew.hour.shippingpolicy.repository.ShippingPolicyRepository;
+import stitch.crew.hour.user.constant.Gender;
+import stitch.crew.hour.user.constant.Role;
+import stitch.crew.hour.user.domain.CurrentUser;
 import stitch.crew.hour.user.domain.User;
 import stitch.crew.hour.user.repository.UserRepository;
 import stitch.crew.hour.util.TestUtil;
@@ -49,6 +54,8 @@ class OrderServiceTest {
         OrderProductCreateRequest testOrderProduct2;
         OrderCreateRequest testOrderRequest;
 
+        TestingAuthenticationToken token;
+
         @BeforeEach
         void setUp(){
             testUser = userRepository.save(
@@ -57,6 +64,8 @@ class OrderServiceTest {
                             "wjdtn747@naver.com",
                             "1234",
                             LocalDate.now(),
+                            Role.USER,
+                            Gender.MALE,
                             "google",
                             "010",
                             "?",
@@ -80,6 +89,12 @@ class OrderServiceTest {
                     "주문",
                     "01041245512"
             );
+
+            token = new TestingAuthenticationToken(
+                    CurrentUser.from(testUser),
+                    null,
+                    Role.ADMIN.getValue()
+            );
         }
 
         @Nested
@@ -91,6 +106,7 @@ class OrderServiceTest {
             @DisplayName("It : 성공적으로 주문을 생성")
             void it_성공적으로_주문을_생성(){
                 // given
+                SecurityContextHolder.getContext().setAuthentication(token);
                 ShippingPolicy activeOrThrow = shippingPolicyRepository.findActiveOrThrow();
 
                 // when

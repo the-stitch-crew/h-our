@@ -8,12 +8,15 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.http.MediaType;
+import org.springframework.security.authentication.TestingAuthenticationToken;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import stitch.crew.hour.category.domain.Category;
 import stitch.crew.hour.category.dto.CategoryResponse;
 import stitch.crew.hour.category.service.CategoryService;
+import stitch.crew.hour.common.config.JwtAuthenticationFilter;
 import stitch.crew.hour.common.response.SuccessCode;
+import stitch.crew.hour.util.TestUtil;
 import tools.jackson.databind.ObjectMapper;
 
 import java.util.Arrays;
@@ -37,8 +40,17 @@ class CategoryControllerTest {
     @MockitoBean
     private CategoryService categoryService;
 
+    @MockitoBean
+    JwtAuthenticationFilter jwtAuthenticationFilter;
+
     String name;
     String thumbnail;
+
+    String email = "newgamer@test.com";
+    String email2 = "newgamer2@test.com";
+
+    TestingAuthenticationToken adminAuthentication = TestUtil.createAdminAuthentication(email);
+    TestingAuthenticationToken userAuthentication = TestUtil.createUserAuthentication(email2);
 
     @Nested
     @DisplayName("Discribe: GET / 엔드포인트는")
@@ -54,8 +66,8 @@ class CategoryControllerTest {
                 name = "거거거거";
                 name2 = "거거거거2";
                 thumbnail="ㅠㅠㅠㅠㅠ";
-                category1 = new Category(name, thumbnail);
-                category2 = new Category(name2, thumbnail);
+                category1 = new Category(name);
+                category2 = new Category(name2);
 
             }
             @Test
@@ -63,12 +75,13 @@ class CategoryControllerTest {
             void it_return_200_ok_and_success_message_and_data() throws Exception {
                 //given
                 given(categoryService.getCategories()).willReturn(
-                        Arrays.asList(CategoryResponse.from(category1),CategoryResponse.from(category2)));
+                        Arrays.asList(CategoryResponse.from(category1, null),CategoryResponse.from(category2, null)));
 
                 //when-then
                 mockMvc.perform(
                                 get("/api/categories")
                                         .with(csrf())
+                                        .principal(adminAuthentication)
                         )
                         .andExpect(status().isOk())
                         .andExpect(content().contentType(MediaType.APPLICATION_JSON))

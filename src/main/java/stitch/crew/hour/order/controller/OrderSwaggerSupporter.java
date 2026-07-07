@@ -7,6 +7,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.parameters.RequestBody;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import stitch.crew.hour.common.response.ApiResponses;
@@ -14,6 +15,7 @@ import stitch.crew.hour.order.dto.OrderCreateRequest;
 import stitch.crew.hour.order.dto.OrderCreateResponse;
 import stitch.crew.hour.user.domain.CurrentUser;
 
+@Tag(name="Order API", description="모든 사용자가 사용하는 주문 관련 API")
 public interface OrderSwaggerSupporter {
 
     @Operation(
