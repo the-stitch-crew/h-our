@@ -31,6 +31,16 @@ public enum ErrorCode {
 
 
 
+    // Cart
+    CART_NOT_FOUND(HttpStatus.NOT_FOUND, "해당 장바구니를 찾을 수 없습니다."),
+    CART_ALREADY_EXISTS(HttpStatus.BAD_REQUEST, "이미 장바구니가 존재하는 계정입니다."),
+    NO_CART(HttpStatus.BAD_REQUEST, "장바구니가 없는 계정입니다."),
+    NO_MATCH_CART_OWNER(HttpStatus.NOT_FOUND, "장바구니의 사용자와 일치하지 않은 계정입니다."),
+
+    // CartProduct
+    CARTPRODUCT_NOT_FOUNT(HttpStatus.NOT_FOUND, "해당 장바구니 상품을 찾을 수 없습니다."),
+    NOT_VALID_CART_PRODUCT(HttpStatus.BAD_REQUEST, "해당 계정의 장바구니에 포함된 장바구니 상품이 아닙니다."),
+
 
     // 배송규칙
     NO_SHIPPING_POLICY(HttpStatus.NOT_FOUND, "활성화된 배송규칙이 없습니다."),
@@ -38,6 +48,7 @@ public enum ErrorCode {
     // 상품
     PRODUCT_NOT_FOUND(HttpStatus.NOT_FOUND, "해당 상품을 찾을 수 없습니다."),
     NOT_ADMIN(HttpStatus.FORBIDDEN, "관리자 권한이 없는 계정입니다."),
+    PRODUCT_ALREADY_MAIN(HttpStatus.BAD_REQUEST, "이미 메인으로 등록된 상품입니다."),
 
     //Image
     STORAGE_WRITE_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "s3에 이미지를 저장하는데 실패했습니다."),

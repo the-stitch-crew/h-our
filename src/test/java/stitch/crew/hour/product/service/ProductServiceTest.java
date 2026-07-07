@@ -33,6 +33,7 @@ import stitch.crew.hour.user.repository.UserRepository;
 import stitch.crew.hour.util.TestUtil;
 
 import java.time.LocalDate;
+import java.util.List;
 
 
 @SpringBootTest
@@ -414,6 +415,22 @@ class ProductServiceTest {
     @DisplayName("Describe : switchMain()에")
     class Describe_switchMain{
 
+        @BeforeEach
+        void setUp(){
+            for(int i = 1 ; i <= 10 ; i++){
+                Product save = productRepository.save(
+                        new Product(
+                                "테스트용 상품" + i,
+                                2000L,
+                                "상품요약" + i,
+                                "설명글" + i,
+                                testCategory
+                        )
+                );
+                save.setMain();
+            }
+        }
+
         @Nested
         @DisplayName("Context : 올바른 권한을 주는 경우")
         class Context_with_Valid_Authority{
@@ -425,31 +442,18 @@ class ProductServiceTest {
                 testUser.changeRole(Role.ADMIN);
                 SecurityContextHolder.getContext().setAuthentication(token);
 
-                Product product = productRepository.save(
-                        new Product(
-                                "테스트용 상품",
-                                2000L,
-                                "상품요약",
-                                "설명글",
-                                testCategory
-                        )
-                );
-                testProduct.setMain();
-
                 // when
                 productService.switchToMain(
                         testUser.getId(),
-                        product.getId()
+                        testProduct.getId()
                 );
 
-                em.flush();
-                em.clear();
+                // then
+                List<Product> mainProducts = productRepository.getMainProducts(testCategory.getId());
+                Assertions.assertThat(mainProducts.size()).isEqualTo(10);
 
                 Product foundedProduct = productRepository.findByIdOrThrow(testProduct.getId());
-
-                // then
-                Assertions.assertThat(product.getIsMain()).isEqualTo(true);
-                Assertions.assertThat(foundedProduct.getIsMain()).isEqualTo(false);
+                Assertions.assertThat(foundedProduct.getIsMain()).isEqualTo(true);
             }
         }
 

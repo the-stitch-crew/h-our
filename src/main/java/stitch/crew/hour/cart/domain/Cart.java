@@ -23,12 +23,22 @@ public class Cart {
     @JoinColumn(name="user_id", nullable = false)
     private User user;
 
-    @OneToMany(mappedBy = "cart")
+    @OneToMany(
+            mappedBy = "cart",
+            cascade = CascadeType.ALL,
+            orphanRemoval = true
+    )
     private List<CartProduct> cartProducts = new ArrayList<>();
 
     public Cart(
             User user
     ){
         this.user = user;
+        user.addCart(this);
     }
+
+    public void addCart(CartProduct cartProduct){
+        this.cartProducts.add(cartProduct);
+    }
+    public void removeCart(CartProduct cartProduct){this.cartProducts.remove(cartProduct); }
 }

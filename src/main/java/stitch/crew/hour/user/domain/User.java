@@ -4,20 +4,14 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
+import jakarta.persistence.*;
 import org.apache.logging.log4j.util.Strings;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.OneToMany;
-import jakarta.persistence.Table;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import stitch.crew.hour.cart.domain.Cart;
+import stitch.crew.hour.category.domain.Category;
 import stitch.crew.hour.common.domain.BaseEntity;
 import stitch.crew.hour.order.domain.Order;
 import stitch.crew.hour.user.constant.Gender;
@@ -67,6 +61,9 @@ public class User extends BaseEntity {
 
 	@Column(nullable = false)
 	private Boolean idBlack;
+
+	@OneToOne(mappedBy = "user")
+	private Cart cart;
 
 	@OneToMany(mappedBy = "orderer")
 	private List<Order> orders = new ArrayList<>();
@@ -133,4 +130,9 @@ public class User extends BaseEntity {
 		this.orders.add(order);
 	}
 
+	public void addCart(Cart cart){ this.cart = cart;}
+
+	public void setNoCart(){
+		this.cart = null;
+	}
 }
