@@ -5,13 +5,18 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import stitch.crew.hour.common.exception.ErrorCode;
+import stitch.crew.hour.common.util.PreConditions;
 import stitch.crew.hour.order.domain.Order;
-import stitch.crew.hour.order.dto.OrderCreateRequest;
-import stitch.crew.hour.order.dto.OrderCreateResponse;
+import stitch.crew.hour.order.dto.*;
 import stitch.crew.hour.order.repository.OrderBoundaryRepository;
 import stitch.crew.hour.orderproduct.domain.OrderProduct;
+import stitch.crew.hour.orderproduct.dto.OrderProductCreateRequest;
+import stitch.crew.hour.product.domain.Product;
+import stitch.crew.hour.product.repository.ProductRepository;
 import stitch.crew.hour.shippingpolicy.domain.ShippingPolicy;
 import stitch.crew.hour.shippingpolicy.repository.ShippingPolicyRepository;
+import stitch.crew.hour.user.constant.Role;
 import stitch.crew.hour.user.domain.User;
 import stitch.crew.hour.user.repository.UserRepository;
 
@@ -25,12 +30,53 @@ public class OrderService {
     private final UserRepository userRepository;
     private final OrderBoundaryRepository orderBoundaryRepository;
     private final ShippingPolicyRepository shippingPolicyRepository;
+    private final ProductRepository productRepository;
+
+    @Transactional
+    @PreAuthorize("isAuthenticated() && #userId == authentication.principal.id")
+    public OrderCreateResponse createSingleOrder(
+        Long userId,
+        OrderCreateFromProductRequest request
+    ){
+        User foundedUser = userRepository.findByIdOrthrow(userId);
+
+        ShippingPolicy activeOrThrow = shippingPolicyRepository.findActiveOrThrow();
+
+        Order savedOrder = orderBoundaryRepository.saveOrder(
+                new Order(
+                        foundedUser,
+                        activeOrThrow.getDeliveryFee(),
+                        request.address(),
+                        request.postalCode(),
+                        request.receiverName(),
+                        request.request(),
+                        request.receiverPhoneNumber()
+                )
+        );
+
+        Product foundedProduct = productRepository.findByIdOrThrow(request.productId());
+
+        OrderProduct savedOrderProduct = orderBoundaryRepository.saveOrderProduct(
+                new OrderProduct(
+                        foundedProduct.getName(),
+                        request.amount(),
+                        foundedProduct.getPrice(),
+                        foundedProduct.getId(),
+                        request.option(),
+                        savedOrder
+                )
+        );
+
+        savedOrder.setOrderProduct(savedOrderProduct);
+
+        return OrderCreateResponse.from(savedOrder);
+    }
 
     @Transactional
     @PreAuthorize("isAuthenticated() && #userId == authentication.principal.id")
     public OrderCreateResponse createOrder(
-        Long userId,
-        OrderCreateRequest request
+            Long userId,
+            OrderCreateFromProductRequest request
     ){
         User foundedUser = userRepository.findByIdOrthrow(userId);
 
@@ -43,24 +89,24 @@ public class OrderService {
                         request.address(),
                         request.postalCode(),
                         request.receiverName(),
-                        request.phoneNumber(),
                         request.request(),
-                        request.ordererName(),
                         request.receiverPhoneNumber()
                 )
         );
 
 
+
+
         List<OrderProduct> orderProducts = request.requests().stream().map(
                 (orderProductCreateRequest) -> orderBoundaryRepository.saveOrderProduct(
-                            new OrderProduct(
-                                    orderProductCreateRequest.productName(),
-                                    orderProductCreateRequest.amount(),
-                                    orderProductCreateRequest.price(),
-                                    orderProductCreateRequest.productId(),
-                                    orderProductCreateRequest.option(),
-                                    order
-                            )
+                        new OrderProduct(
+                                orderProductCreateRequest.productName(),
+                                orderProductCreateRequest.amount(),
+                                orderProductCreateRequest.price(),
+                                orderProductCreateRequest.productId(),
+                                orderProductCreateRequest.option(),
+                                order
+                        )
                 )
         ).toList();
 
@@ -68,4 +114,30 @@ public class OrderService {
 
         return OrderCreateResponse.from(order);
     }
+
+    @PreAuthorize("isAuthenticated() && #userId == authentication.principal.id")
+    public OrderDetailResponse getOrderDetail(
+            Long userId,
+            Long orderId
+    ){
+        User foundedUser = userRepository.findByIdOrthrow(userId);
+        Order foundedOrder = orderBoundaryRepository.findOrderById(orderId);
+
+        PreConditions.validate(
+                validateAuthority(foundedUser,foundedOrder),
+                ErrorCode.NO_AUTHORITY_ON_ORDER
+        );
+
+        return OrderDetailResponse.from(foundedOrder);
+    }
+
+
+    private Boolean validateAuthority(User user, Order order){
+        if ( user.getRole().equals(Role.ADMIN) ) return true;
+
+        if ( order.getOrderer().getId().equals(user.getId()) ) return true;
+
+        return false;
+    }
+
 }

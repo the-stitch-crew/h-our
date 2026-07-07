@@ -23,4 +23,9 @@ public class OrderBoundaryRepositoryImpl implements OrderBoundaryRepository {
     public OrderProduct saveOrderProduct(OrderProduct orderProduct) {
         return orderProductRepository.save(orderProduct);
     }
+
+    @Override
+    public Order findOrderById(Long orderId) {
+        return orderRepository.findByIdOrThrow(orderId);
+    }
 }

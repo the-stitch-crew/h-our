@@ -99,9 +99,7 @@ class OrderControllerTest {
                     "원주시",
                     "26421312",
                     "이정수",
-                    "0107615022313619",
                     "요청이에용",
-                    "이름",
                     "01041245512"
             );
         }
@@ -126,7 +124,7 @@ class OrderControllerTest {
                         // then
                         .andExpect(MockMvcResultMatchers.status().isCreated())
                         .andExpect(jsonPath("$.success").value(true))
-                        .andExpect(jsonPath("$.data.ordererName").value(testOrderRequest.ordererName()));
+                        .andExpect(jsonPath("$.data.receiverName").value(testOrderRequest.receiverName()));
             }
 
             @ParameterizedTest
@@ -140,10 +138,8 @@ class OrderControllerTest {
                         orderProducts,
                         "원주시",
                         "26421312",
-                        name,
-                        "0107615022313619",
+                        "",
                         "요청이에용",
-                        "이정수",
                         "01041245512"
                 );
 
@@ -158,7 +154,7 @@ class OrderControllerTest {
                         // then
                         .andExpect(MockMvcResultMatchers.status().isCreated())
                         .andExpect(jsonPath("$.success").value(true))
-                        .andExpect(jsonPath("$.data.receiverName").value(testOrderRequest.ordererName()));
+                        .andExpect(jsonPath("$.data.ordererName").value(testUser.getUserName()));
             }
         }
     }

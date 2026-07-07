@@ -10,4 +10,6 @@ public interface OrderBoundaryRepository {
     Order saveOrder(Order order);
 
     OrderProduct saveOrderProduct(OrderProduct orderProduct);
+
+    Order findOrderById(Long orderId);
 }

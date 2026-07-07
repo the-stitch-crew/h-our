@@ -1,7 +1,7 @@
 package stitch.crew.hour.order.dto;
 
 import stitch.crew.hour.order.domain.Order;
-import stitch.crew.hour.orderproduct.dto.OrderProductCreateResponse;
+import stitch.crew.hour.orderproduct.dto.OrderProductDetailResponse;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -9,7 +9,7 @@ import java.util.UUID;
 
 public record OrderCreateResponse(
     UUID orderNumber,
-    List<OrderProductCreateResponse> orderProducts,
+    List<OrderProductDetailResponse> orderProducts,
     Integer totalPrice,
     Long deliveryFee,
     String address,
@@ -25,7 +25,7 @@ public record OrderCreateResponse(
         return new OrderCreateResponse(
             order.getOrderNumber(),
             order.getOrderProduct().stream().map(
-                    orderProduct -> OrderProductCreateResponse
+                    orderProduct -> OrderProductDetailResponse
                             .from(orderProduct)
             ).toList(),
             order.getTotalPrice(),

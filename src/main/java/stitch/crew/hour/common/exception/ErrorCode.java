@@ -30,6 +30,9 @@ public enum ErrorCode {
     CATEGORY_NOT_FOUND(HttpStatus.NOT_FOUND, "카테고리를 찾을 수 없습니다."),
 
 
+    // 주문
+    ORDER_NOT_FOUND(HttpStatus.NOT_FOUND, "주문을 찾을 수 없습니다."),
+    NO_AUTHORITY_ON_ORDER(HttpStatus.FORBIDDEN, "주문 조회에 필요한 권한이 없습니다."),
 
 
     // 배송규칙
@@ -38,6 +41,7 @@ public enum ErrorCode {
     // 상품
     PRODUCT_NOT_FOUND(HttpStatus.NOT_FOUND, "해당 상품을 찾을 수 없습니다."),
     NOT_ADMIN(HttpStatus.FORBIDDEN, "관리자 권한이 없는 계정입니다."),
+    PRODUCT_ALREADY_MAIN(HttpStatus.BAD_REQUEST, "이미 메인으로 등록된 상품입니다."),
 
     //Image
     STORAGE_WRITE_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "s3에 이미지를 저장하는데 실패했습니다."),
