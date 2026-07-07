@@ -20,6 +20,13 @@ public enum SuccessCode {
     AUTH_REFRESH_SUCCESS("토큰 갱신에 성공했습니다."),
     AUTH_LOGOUT_SUCCESS("로그아웃에 성공했습니다."),
 
+    // CART
+    CART_RETRIEVE_SUCCESS("장바구니 조회에 성공했습니다."),
+    CART_CREATED_SUCCESS("장바구니가 정상적으로 생성되었습니다."),
+    CART_ADDITION_SUCCESS("장바구니에 상품이 정상적으로 추가되었습니다."),
+    CART_UPDATE_SUCCESS("장바구니의 상품이 정상적으로 변경되었습니다."),
+    CART_DELETE_SUCCESS("장바구니가 정상적으로 삭제되었습니다."),
+
     // Order
     ORDER_CREATED_SUCCESS("주문이 정상적으로 생성되었습니다."),
 
@@ -29,6 +36,8 @@ public enum SuccessCode {
     PRODUCT_DELETE_SUCCESS("상품이 정상적으로 삭제되었습니다."),
     PRODUCT_UPDATE_SUCCESS("상품이 정상적으로 수정되었습니다."),
     PRODUCT_SWITCH_MAIN_SUCCESS("상품이 카테고리 메인 상품으로 수정되었습니다."),
+
+
     /*CATEGORY*/
     CATEGORY_CREATED("카테고리가 정상적으로 생성되었습니다."),
     CATEGORY_READ("카테고리가 정상적으로 조회되었습니다."),
