@@ -1,6 +1,7 @@
 package stitch.crew.hour.order.controller;
 
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.ExampleObject;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -9,13 +10,12 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.ServletRequest;
+import org.springframework.data.domain.Page;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import stitch.crew.hour.common.dto.Paging;
 import stitch.crew.hour.common.response.ApiResponses;
-import stitch.crew.hour.order.dto.OrderCreateFromCartRequest;
-import stitch.crew.hour.order.dto.OrderCreateFromProductRequest;
-import stitch.crew.hour.order.dto.OrderCreateResponse;
-import stitch.crew.hour.order.dto.OrderDetailResponse;
+import stitch.crew.hour.order.dto.*;
 import stitch.crew.hour.user.domain.CurrentUser;
 
 import java.util.UUID;
@@ -151,16 +151,6 @@ public interface OrderSwaggerSupporter {
             summary = "주문 조회",
             description = "주문을 조회하는 API"
     )
-    @RequestBody(
-            content = {
-                    @Content(
-                            mediaType = "application/json",
-                            schema = @Schema(
-                                    implementation = OrderCreateFromProductRequest.class
-                            )
-                    )
-            }
-    )
     @ApiResponse(
             responseCode = "200",
             description = "주문 조회 성공",
@@ -202,5 +192,91 @@ public interface OrderSwaggerSupporter {
     ResponseEntity<ApiResponses<OrderDetailResponse>> getOrderDetail(
             CurrentUser currentUser,
             UUID orderNumber
+    );
+
+    @Operation(
+            summary = "주문 다건 조회",
+            description = "주문을 다건 조회하는 API",
+            parameters = {
+                    @Parameter(name = "page", description = "조회할 데이터의 페이지"),
+                    @Parameter(name = "size", description = "페이지 내 조회할 데이터 수")
+            }
+    )
+    @ApiResponse(
+            responseCode = "200",
+            description = "주문 조회 성공",
+            content = {
+                    @Content(
+                            mediaType = MediaType.APPLICATION_JSON_VALUE,
+                            examples = @ExampleObject(
+                                    value = """
+            {
+                "success":true,
+                "code":"ORDER_READ_SUCCESS",
+                "message":"주문이 정상적으로 조회되었습니다.",
+                "data":{
+                    "content":[
+                        {
+                            "orderNumber":"db140232-1273-448c-9134-619fd550dd3b",
+                            "totalPrice":7500,
+                            "orderStatus":"ORDERED"
+                        },
+                        {   
+                            "orderNumber":"e44e1c4b-e28e-4d62-8bef-c33dee212901",
+                            "totalPrice":7500,
+                            "orderStatus":"ORDERED"
+                        },
+                        {
+                            "orderNumber":"63fe9d29-1382-46e4-87e6-d25c06d3c2a7",
+                            "totalPrice":7500,
+                            "orderStatus":"ORDERED"
+                        },
+                        {
+                            "orderNumber":"a932dbb9-3ace-40fb-93f7-87539112441a",
+                            "totalPrice":7500,
+                            "orderStatus":"ORDERED"
+                        },
+                        {
+                            "orderNumber":"5eaa01dc-3c56-42ae-b026-0d2ba61691ff",
+                            "totalPrice":7500,
+                            "orderStatus":"ORDERED"
+                        }
+                    ],
+                    "empty":false,
+                    "first":true,
+                    "last":false,
+                    "number":0,
+                    "numberOfElements":5,
+                    "pageable":{
+                        "offset":0,
+                        "pageNumber":0,
+                        "pageSize":5,
+                        "paged":true,
+                        "sort":{
+                            "empty":true,
+                            "sorted":false,
+                            "unsorted":true
+                        },
+                        "unpaged":false
+                    },
+                    "size":5,
+                    "sort":{
+                        "empty":true,
+                        "sorted":false,
+                        "unsorted":true
+                    },
+                    "totalElements":10,
+                    "totalPages":2
+                }
+            }
+                                            """
+                            )
+                    )
+            }
+    )
+    @SecurityRequirement(name = "Bearer Authentication")
+    ResponseEntity<ApiResponses<Page<OrderSearchResponse>>> getOrderSearches(
+            CurrentUser currentUser,
+            Paging paging
     );
 }

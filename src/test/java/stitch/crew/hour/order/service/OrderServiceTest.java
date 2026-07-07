@@ -7,6 +7,9 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.authentication.TestingAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.test.context.ActiveProfiles;
@@ -17,10 +20,7 @@ import stitch.crew.hour.cartproduct.domain.CartProduct;
 import stitch.crew.hour.cartproduct.repository.CartProductRepository;
 import stitch.crew.hour.category.domain.Category;
 import stitch.crew.hour.category.repository.CategoryRepository;
-import stitch.crew.hour.order.dto.OrderCreateFromCartRequest;
-import stitch.crew.hour.order.dto.OrderCreateFromProductRequest;
-import stitch.crew.hour.order.dto.OrderCreateResponse;
-import stitch.crew.hour.order.dto.OrderDetailResponse;
+import stitch.crew.hour.order.dto.*;
 import stitch.crew.hour.order.repository.OrderBoundaryRepository;
 import stitch.crew.hour.orderproduct.domain.OrderProduct;
 import stitch.crew.hour.orderproduct.dto.OrderProductCreateRequest;
@@ -295,6 +295,81 @@ class OrderServiceTest {
                 Assertions.assertThat(order.totalPrice()).isEqualTo(foundedOrder.totalPrice());
                 Assertions.assertThat(order.orderProducts().getFirst().productId())
                         .isEqualTo(foundedOrder.orderProducts().getFirst().productId());
+            }
+        }
+    }
+
+    @Nested
+    @DisplayName("Describe : getOrderSearches()는")
+    class Describe_getOrderSearches{
+        Category testCategory;
+        Product testProduct;
+        Cart testCart;
+        CartProduct testCartProduct;
+
+        @BeforeEach
+        void setUp(){
+
+            testCategory = categoryRepository.save(
+                    new Category("카테고리명")
+            );
+
+            testProduct = productRepository.save(
+                    new Product(
+                            "테스트용 상품",
+                            2000L,
+                            "상품요약",
+                            "설명글",
+                            testCategory
+                    )
+            );
+
+            testCart = cartRepository.save(new Cart(testUser));
+
+            testCartProduct = cartProductRepository.save(
+                    new CartProduct(
+                            testCart,
+                            testProduct,
+                            2L
+                    )
+            );
+        }
+
+        @Nested
+        @DisplayName("Context : 올바른 정보가 주어진 경우")
+        class Context_with_Valid_Data{
+
+
+            @Test
+            @DisplayName("It : 성공적으로 주문을 조회 및 200 코드 반환")
+            void it_성공적으로_주문_조회(){
+                // given
+                SecurityContextHolder.getContext().setAuthentication(token);
+
+                for(int i = 0 ; i < 10 ; i++){
+                    OrderCreateFromCartRequest requestFromCart = new OrderCreateFromCartRequest(
+                            "주소" + i,
+                            "26331",
+                            "이정수" + i,
+                            "요청사황",
+                            "01041245512"
+                    );
+                    orderService.createOrderFromCart(
+                            testUser.getId(),
+                            requestFromCart
+                    );
+                }
+
+                // when
+                Page<OrderSearchResponse> orderSearches = orderService.getOrderSearches(
+                        testUser.getId(),
+                        PageRequest.of(0, 5)
+                );
+
+                // then
+                Assertions.assertThat(orderSearches.getContent().size()).isEqualTo(5);
+                Assertions.assertThat(orderSearches.getTotalElements())
+                        .isEqualTo(10);
             }
         }
     }

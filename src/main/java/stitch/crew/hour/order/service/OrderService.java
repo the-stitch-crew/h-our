@@ -1,6 +1,8 @@
 package stitch.crew.hour.order.service;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.stereotype.Service;
@@ -145,5 +147,17 @@ public class OrderService {
 
         return false;
     }
+
+    @PreAuthorize("isAuthenticated()")
+    public Page<OrderSearchResponse> getOrderSearches(
+            Long userId,
+            Pageable pageable
+    ){
+        return orderBoundaryRepository.findOrderByUserId(
+                userId,
+                pageable
+        );
+    }
+
 
 }

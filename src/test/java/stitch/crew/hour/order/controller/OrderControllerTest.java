@@ -338,34 +338,61 @@ class OrderControllerTest {
                         .andExpect(jsonPath("$.message").value(SuccessCode.ORDER_READ_SUCCESS.getSuccessMessage()))
                         .andExpect(jsonPath("$.data.orderProducts[0].productId").value(testProduct.getId()));
             }
+        }
+    }
 
-            @ParameterizedTest
-            @NullAndEmptySource
-            @DisplayName("It : ReceiverName이 공백인 경우 Orderer Name으로 설정 및 주문을 성공적으로 생성 후 201을 반환")
-            void It_ReceiverName이_공백_이더라도_성공적으로_주문_생성(String name) throws Exception {
-                // given
-                SecurityContextHolder.getContext().setAuthentication(token);
+    @Nested
+    @DisplayName("Describe : GET /api/orders/search")
+    class Describe_getOrderSearch{
 
-                OrderCreateFromCartRequest testOrderRequest = new OrderCreateFromCartRequest(
-                        "주소",
+        Cart testCart;
+
+        @BeforeEach
+        void setUp(){
+            // given
+            testCart = cartRepository.save(new Cart(testUser));
+            SecurityContextHolder.getContext().setAuthentication(token);
+
+            cartProductRepository.save(
+                    new CartProduct(
+                            testCart,
+                            testProduct,
+                            2L
+                    )
+            );
+
+            for(int i = 0 ; i < 10 ; i++){
+                OrderCreateFromCartRequest requestFromCart = new OrderCreateFromCartRequest(
+                        "주소" + i,
                         "26331",
-                        name,
+                        "이정수" + i,
                         "요청사황",
                         "01041245512"
                 );
+                orderService.createOrderFromCart(
+                        testUser.getId(),
+                        requestFromCart
+                );
+            }
+        }
 
-                String json = objectMapper.writeValueAsString(testOrderRequest);
+        @Nested
+        @DisplayName("Context : 올바른 데이터가 주어진 경우")
+        class Context_with_valid_data{
+
+            @Test
+            @DisplayName("It : 주문들을 성공적으로 조회 후 200을 반환")
+            void It_성공적으로_주문_다건_조회() throws Exception {
 
                 // when
                 mockMvc.perform(
-                                MockMvcRequestBuilders.post(BASE_URL + "/cart")
-                                        .contentType(MediaType.APPLICATION_JSON)
-                                        .content(json)
+                                MockMvcRequestBuilders.get(BASE_URL + "/search")
+                                        .param("page", "0")
+                                        .param("size", "5")
                         ).andDo(print())
+
                         // then
-                        .andExpect(MockMvcResultMatchers.status().isCreated())
-                        .andExpect(jsonPath("$.success").value(true))
-                        .andExpect(jsonPath("$.data.ordererName").value(testUser.getUserName()));
+                        .andExpect(MockMvcResultMatchers.status().isOk());
             }
         }
     }

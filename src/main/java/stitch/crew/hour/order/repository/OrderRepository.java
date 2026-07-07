@@ -1,10 +1,13 @@
 package stitch.crew.hour.order.repository;
 
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import stitch.crew.hour.common.exception.BusinessException;
 import stitch.crew.hour.common.exception.ErrorCode;
 import stitch.crew.hour.order.domain.Order;
+import stitch.crew.hour.order.dto.OrderSearchResponse;
 
 import java.util.Optional;
 import java.util.UUID;
