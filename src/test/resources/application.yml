@@ -14,7 +14,7 @@ spring:
   cloud:
     aws:
       region:
-        static: ${S3_REGION}
+        static: ap-northeast-2
 
 
 custom:
@@ -22,6 +22,6 @@ custom:
     host: localhost
     port: 6379
   s3:
-    bucket-name: ${S3_BUCKET}
-    access-key: ${S3_ACCESS_KEY}
-    secret-key: ${S3_SECRET_KEY}
+    bucket-name: test
+    access-key: test
+    secret-key: test
