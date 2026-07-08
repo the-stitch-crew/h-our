@@ -1,9 +1,11 @@
 package stitch.crew.hour.policy.domain;
 
 import jakarta.persistence.*;
+import jakarta.validation.Valid;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import stitch.crew.hour.policy.dto.LessonPolicyRequest;
 import stitch.crew.hour.policy.dto.LessonPolicyResponse;
 
 import java.time.LocalTime;
@@ -60,5 +62,15 @@ public class LessonPolicy {
                 policy.getEndTime(),
                 policy.getRegularDays()
         );
+    }
+
+    public void update(@Valid LessonPolicyRequest request) {
+        this.reservationAvailableDays = request.reservationAvailableDays();
+        this.reservationDeadlineDays = request.reservationDeadlineDays();
+        this.cancelDeadlineDays = request.cancelDeadlineDays();
+        this.depositAmount = request.depositAmount();
+        this.startTime = request.startTime();
+        this.endTime = request.endTime();
+        this.regularDays = request.regularDays();
     }
 }
