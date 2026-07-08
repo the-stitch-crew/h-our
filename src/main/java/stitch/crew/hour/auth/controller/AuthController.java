@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.RestController;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import stitch.crew.hour.auth.dto.LoginRequest;
+import stitch.crew.hour.auth.dto.OAuthSignupRequest;
 import stitch.crew.hour.auth.service.AuthService;
 import stitch.crew.hour.auth.dto.KeyPair;
 import stitch.crew.hour.auth.dto.RefreshTokenRequest;
@@ -29,6 +30,14 @@ public class AuthController {
 	) {
 		KeyPair response = authService.login(request);
 		return ApiResult.ok(SuccessCode.AUTH_LOGIN_SUCCESS, response);
+	}
+
+	@PostMapping("/oauth/signup")
+	public ResponseEntity<ApiResponses<KeyPair>> oauthSignup(
+		@Valid @RequestBody OAuthSignupRequest request
+	) {
+		KeyPair response = authService.oauthSignup(request);
+		return ApiResult.created(SuccessCode.USER_CREATED, response);
 	}
 
 	@PostMapping("/refresh")
