@@ -36,4 +36,9 @@ public class LessonService {
         PreConditions.check(lessonRepository.existsByName(request.name()), ErrorCode.EXIST_LESSON);
         lesson.update(request);
     }
+
+    public LessonResponse getLesson(Long lessonId) {
+        Lesson lesson = lessonRepository.findById(lessonId).orElseThrow(() -> new BusinessException(ErrorCode.LESSON_NOT_FOUND));
+        return LessonResponse.from(lesson);
+    }
 }
