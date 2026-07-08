@@ -2,6 +2,7 @@ package stitch.crew.hour.auth.service;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.willThrow;
 import static org.mockito.Mockito.never;
@@ -14,6 +15,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -21,13 +23,14 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.util.ReflectionTestUtils;
 
 import stitch.crew.hour.auth.domain.RefreshToken;
+import stitch.crew.hour.auth.dto.KeyPair;
 import stitch.crew.hour.auth.dto.LoginRequest;
+import stitch.crew.hour.auth.dto.OAuthSignupRequest;
 import stitch.crew.hour.auth.dto.RefreshTokenRequest;
 import stitch.crew.hour.auth.dto.TokenBody;
 import stitch.crew.hour.auth.repository.RefreshTokenRepository;
 import stitch.crew.hour.common.exception.BusinessException;
 import stitch.crew.hour.common.exception.ErrorCode;
-import stitch.crew.hour.auth.dto.KeyPair;
 import stitch.crew.hour.user.constant.Gender;
 import stitch.crew.hour.user.constant.Role;
 import stitch.crew.hour.user.domain.User;
@@ -135,6 +138,108 @@ class AuthServiceTest {
 			// then
 			assertThat(exception.getErrorCode()).isEqualTo(ErrorCode.ALREADY_DELETED);
 			verify(jwtTokenProvider, never()).issueKeyPair(user.getEmail(), user.getRole());
+		}
+	}
+
+	@Nested
+	@DisplayName("Describe: oauthSignup 메서드는")
+	class Describe_oauthSignup {
+
+		@Test
+		@DisplayName("It: OAuth 추가정보가 유효하면 OAuth 회원을 생성하고 토큰 정보를 반환한다")
+		void it_creates_oauth_user_and_returns_tokens() {
+			// given
+			OAuthSignupRequest request = createOAuthSignupRequest();
+			KeyPair keyPair = new KeyPair("oauth-access-token", "oauth-refresh-token");
+
+			given(userRepository.existsByEmail(request.email())).willReturn(false);
+			given(userRepository.existsByPhoneNumber(request.phoneNumber())).willReturn(false);
+			given(passwordEncoder.encode(any(String.class))).willReturn("encoded-random-password");
+			given(userRepository.save(any(User.class))).willAnswer(invocation -> invocation.getArgument(0));
+			given(jwtTokenProvider.issueKeyPair(request.email(), Role.USER)).willReturn(keyPair);
+
+			// when
+			KeyPair response = authService.oauthSignup(request);
+
+			// then
+			assertThat(response.accessToken()).isEqualTo("oauth-access-token");
+			assertThat(response.refreshToken()).isEqualTo("oauth-refresh-token");
+
+			ArgumentCaptor<User> userCaptor = ArgumentCaptor.forClass(User.class);
+			verify(userRepository).save(userCaptor.capture());
+			User savedUser = userCaptor.getValue();
+
+			assertThat(savedUser.getEmail()).isEqualTo(request.email());
+			assertThat(savedUser.getUserName()).isEqualTo(request.userName());
+			assertThat(savedUser.getProvider()).isEqualTo("GOOGLE");
+			assertThat(savedUser.getIsAuthLinked()).isTrue();
+			assertThat(savedUser.getPassword()).isEqualTo("encoded-random-password");
+			assertThat(savedUser.getRole()).isEqualTo(Role.USER);
+		}
+
+		@Test
+		@DisplayName("It: 이미 가입된 이메일이면 USER_EMAIL_ALREADY_EXISTS 예외가 발생한다")
+		void it_throws_when_email_already_exists() {
+			// given
+			OAuthSignupRequest request = createOAuthSignupRequest();
+			given(userRepository.existsByEmail(request.email())).willReturn(true);
+
+			// when
+			BusinessException exception = assertThrows(
+				BusinessException.class,
+				() -> authService.oauthSignup(request)
+			);
+
+			// then
+			assertThat(exception.getErrorCode()).isEqualTo(ErrorCode.USER_EMAIL_ALREADY_EXISTS);
+			verify(userRepository, never()).save(any(User.class));
+			verify(jwtTokenProvider, never()).issueKeyPair(request.email(), Role.USER);
+		}
+
+		@Test
+		@DisplayName("It: 이미 가입된 전화번호이면 USER_PHONE_ALREADY_EXISTS 예외가 발생한다")
+		void it_throws_when_phone_number_already_exists() {
+			// given
+			OAuthSignupRequest request = createOAuthSignupRequest();
+			given(userRepository.existsByEmail(request.email())).willReturn(false);
+			given(userRepository.existsByPhoneNumber(request.phoneNumber())).willReturn(true);
+
+			// when
+			BusinessException exception = assertThrows(
+				BusinessException.class,
+				() -> authService.oauthSignup(request)
+			);
+
+			// then
+			assertThat(exception.getErrorCode()).isEqualTo(ErrorCode.USER_PHONE_ALREADY_EXISTS);
+			verify(userRepository, never()).save(any(User.class));
+			verify(jwtTokenProvider, never()).issueKeyPair(request.email(), Role.USER);
+		}
+
+		@Test
+		@DisplayName("It: Google이 아닌 provider이면 VALIDATION_FAILED 예외가 발생한다")
+		void it_throws_when_provider_is_not_google() {
+			// given
+			OAuthSignupRequest request = new OAuthSignupRequest(
+				"oauth@google.com",
+				"OAuth User",
+				"KAKAO",
+				LocalDate.of(2000, 1, 1),
+				Gender.MALE,
+				"010-9999-8888",
+				"KOREA"
+			);
+
+			// when
+			BusinessException exception = assertThrows(
+				BusinessException.class,
+				() -> authService.oauthSignup(request)
+			);
+
+			// then
+			assertThat(exception.getErrorCode()).isEqualTo(ErrorCode.VALIDATION_FAILED);
+			verify(userRepository, never()).existsByEmail(request.email());
+			verify(userRepository, never()).save(any(User.class));
 		}
 	}
 
@@ -279,6 +384,18 @@ class AuthServiceTest {
 		return new LoginRequest(
 			"legend@naver.com",
 			"password123"
+		);
+	}
+
+	private OAuthSignupRequest createOAuthSignupRequest() {
+		return new OAuthSignupRequest(
+			"oauth@google.com",
+			"OAuth User",
+			"GOOGLE",
+			LocalDate.of(2000, 1, 1),
+			Gender.MALE,
+			"010-9999-8888",
+			"KOREA"
 		);
 	}
 

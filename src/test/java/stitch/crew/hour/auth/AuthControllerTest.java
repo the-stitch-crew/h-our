@@ -20,6 +20,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import stitch.crew.hour.auth.controller.AuthController;
 import stitch.crew.hour.auth.dto.LoginRequest;
 import stitch.crew.hour.auth.dto.KeyPair;
+import stitch.crew.hour.auth.dto.OAuthSignupRequest;
 import stitch.crew.hour.auth.dto.RefreshTokenRequest;
 import stitch.crew.hour.auth.service.AuthService;
 import stitch.crew.hour.common.config.JwtAuthenticationFilter;
@@ -72,6 +73,56 @@ class AuthControllerTest {
 				.andExpect(jsonPath("$.message").value(SuccessCode.AUTH_LOGIN_SUCCESS.getSuccessMessage()))
 				.andExpect(jsonPath("$.data.accessToken").value("access-token"))
 				.andExpect(jsonPath("$.data.refreshToken").value("refresh-token"))
+				.andDo(print());
+		}
+	}
+
+	@Nested
+	@DisplayName("Describe: POST /api/auth/oauth/signup 엔드포인트는")
+	class Describe_oauthSignup {
+
+		@Test
+		@DisplayName("It: OAuth 회원가입 성공 시 201 상태와 토큰 정보를 반환한다")
+		void it_returns_201_created_and_tokens() throws Exception {
+			// given
+			OAuthSignupRequest request = new OAuthSignupRequest(
+				"oauth@google.com",
+				"OAuth User",
+				"GOOGLE",
+				java.time.LocalDate.of(2000, 1, 1),
+				stitch.crew.hour.user.constant.Gender.MALE,
+				"010-9999-8888",
+				"KOREA"
+			);
+			KeyPair response = new KeyPair(
+				"oauth-access-token",
+				"oauth-refresh-token"
+			);
+
+			given(authService.oauthSignup(request)).willReturn(response);
+
+			// when & then
+			mockMvc.perform(
+					post("/api/auth/oauth/signup")
+						.contentType(MediaType.APPLICATION_JSON)
+						.content("""
+							{
+							  "email": "oauth@google.com",
+							  "userName": "OAuth User",
+							  "provider": "GOOGLE",
+							  "birthDate": "2000-01-01",
+							  "gender": "MALE",
+							  "phoneNumber": "010-9999-8888",
+							  "nationality": "KOREA"
+							}
+							""")
+				)
+				.andExpect(status().isCreated())
+				.andExpect(content().contentType(MediaType.APPLICATION_JSON))
+				.andExpect(jsonPath("$.code").value(SuccessCode.USER_CREATED.name()))
+				.andExpect(jsonPath("$.message").value(SuccessCode.USER_CREATED.getSuccessMessage()))
+				.andExpect(jsonPath("$.data.accessToken").value("oauth-access-token"))
+				.andExpect(jsonPath("$.data.refreshToken").value("oauth-refresh-token"))
 				.andDo(print());
 		}
 	}
