@@ -2,6 +2,8 @@ package stitch.crew.hour.common.config;
 
 
 import java.time.LocalDate;
+import java.time.LocalTime;
+import java.util.Set;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -12,7 +14,10 @@ import org.springframework.core.env.Environment;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
+import stitch.crew.hour.policy.domain.LessonPolicy;
 import stitch.crew.hour.policy.domain.ShippingPolicy;
+import stitch.crew.hour.policy.domain.WeekDay;
+import stitch.crew.hour.policy.repository.LessonPolicyRepository;
 import stitch.crew.hour.policy.repository.ShippingPolicyRepository;
 import stitch.crew.hour.user.constant.Gender;
 import stitch.crew.hour.user.constant.Role;
@@ -24,6 +29,7 @@ import stitch.crew.hour.user.repository.UserRepository;
 @Slf4j
 public class DataInitConfig {
     private final ShippingPolicyRepository shippingPolicyRepository;
+    private final LessonPolicyRepository lessonPolicyRepository;
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final Environment environment;
@@ -31,13 +37,22 @@ public class DataInitConfig {
     @Bean
     @Transactional
     CommandLineRunner init() {
-        return args -> {
+        return _ -> {
             shippingPolicyRepository.save(
                     new ShippingPolicy(
                             3_500L,
                             2_000L,
                             true
                     )
+            );
+            lessonPolicyRepository.save(
+                    new LessonPolicy(21,
+                            3,
+                            1,
+                            10000,
+                            LocalTime.of(9,0),
+                            LocalTime.of(9,0),
+                            Set.of(WeekDay.SAT, WeekDay.SUN))
             );
 
             if (userRepository.count() < 1) {
