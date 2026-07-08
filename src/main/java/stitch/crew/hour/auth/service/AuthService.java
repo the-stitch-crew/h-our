@@ -1,5 +1,8 @@
 package stitch.crew.hour.auth.service;
 
+import java.util.Locale;
+import java.util.UUID;
+
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -7,6 +10,7 @@ import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 import stitch.crew.hour.auth.domain.RefreshToken;
 import stitch.crew.hour.auth.dto.LoginRequest;
+import stitch.crew.hour.auth.dto.OAuthSignupRequest;
 import stitch.crew.hour.auth.dto.RefreshTokenRequest;
 import stitch.crew.hour.auth.dto.TokenBody;
 import stitch.crew.hour.auth.repository.RefreshTokenRepository;
@@ -14,6 +18,7 @@ import stitch.crew.hour.common.exception.BusinessException;
 import stitch.crew.hour.common.exception.ErrorCode;
 import stitch.crew.hour.auth.dto.KeyPair;
 import stitch.crew.hour.common.util.PreConditions;
+import stitch.crew.hour.user.constant.Role;
 import stitch.crew.hour.user.domain.User;
 import stitch.crew.hour.user.repository.UserRepository;
 
@@ -43,6 +48,44 @@ public class AuthService {
 		);
 
 		return jwtTokenProvider.issueKeyPair(user.getEmail(), user.getRole());
+	}
+
+	@Transactional
+	public KeyPair oauthSignup(OAuthSignupRequest request) {
+		String provider = request.provider().toUpperCase(Locale.ROOT);
+
+		PreConditions.validate(
+			provider.equals("GOOGLE"),
+			ErrorCode.VALIDATION_FAILED
+		);
+
+		//필터체인에서 기존 회원이 있으면 이 메서드를 실행시키지 않음. 신규회원의 상황인데 이메일이 있으면 안되니까 예외.
+		PreConditions.validate(
+			!userRepository.existsByEmail(request.email()),
+			ErrorCode.USER_EMAIL_ALREADY_EXISTS
+		);
+
+		PreConditions.validate(
+			!userRepository.existsByPhoneNumber(request.phoneNumber()),
+			ErrorCode.USER_PHONE_ALREADY_EXISTS
+		);
+
+		User user = new User(
+			request.userName(),
+			request.email(),
+			passwordEncoder.encode(UUID.randomUUID().toString()),
+			request.birthDate(),
+			Role.USER,
+			request.gender(),
+			provider,
+			request.phoneNumber(),
+			request.nationality(),
+			true,
+			false
+		);
+
+		User savedUser = userRepository.save(user);
+		return jwtTokenProvider.issueKeyPair(savedUser.getEmail(), savedUser.getRole());
 	}
 
 	@Transactional

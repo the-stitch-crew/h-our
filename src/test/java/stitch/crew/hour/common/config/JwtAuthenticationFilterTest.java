@@ -1,7 +1,6 @@
 package stitch.crew.hour.common.config;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
-import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.never;
@@ -97,8 +96,8 @@ class JwtAuthenticationFilterTest {
 		}
 
 		@Test
-		@DisplayName("It: 토큰 검증에 실패하면 인증 정보를 만들지 않는다")
-		void it_does_not_set_authentication_when_token_validation_fails() {
+		@DisplayName("It: 토큰 검증에 실패하면 401 응답을 반환하고 인증 정보를 만들지 않는다")
+		void it_returns_401_when_token_validation_fails() throws Exception {
 			// given
 			JwtAuthenticationFilter filter = new JwtAuthenticationFilter(jwtTokenProvider, userService);
 			MockHttpServletRequest request = new MockHttpServletRequest();
@@ -111,11 +110,38 @@ class JwtAuthenticationFilterTest {
 				.willThrow(new BusinessException(ErrorCode.ERROR_FROM_TOKEN));
 
 			// when
-			assertThatThrownBy(() -> filter.doFilter(request, response, filterChain))
-				.isInstanceOf(BusinessException.class)
-				.hasMessage(ErrorCode.ERROR_FROM_TOKEN.getMessage());
+			filter.doFilter(request, response, filterChain);
 
 			// then
+			assertThat(response.getStatus()).isEqualTo(ErrorCode.ERROR_FROM_TOKEN.getStatus().value());
+			assertThat(response.getContentAsString()).contains(ErrorCode.ERROR_FROM_TOKEN.name());
+			assertThat(response.getContentAsString()).contains(ErrorCode.ERROR_FROM_TOKEN.getMessage());
+			assertThat(SecurityContextHolder.getContext().getAuthentication()).isNull();
+			verify(jwtTokenProvider, never()).parseJwt(token);
+			verify(userService, never()).loadCurrentUserByEmail(anyString());
+		}
+
+		@Test
+		@DisplayName("It: 만료된 토큰이면 401 응답을 반환하고 인증 정보를 만들지 않는다")
+		void it_returns_401_when_token_is_expired() throws Exception {
+			// given
+			JwtAuthenticationFilter filter = new JwtAuthenticationFilter(jwtTokenProvider, userService);
+			MockHttpServletRequest request = new MockHttpServletRequest();
+			MockHttpServletResponse response = new MockHttpServletResponse();
+			MockFilterChain filterChain = new MockFilterChain();
+			String token = "expired-token";
+
+			request.addHeader("Authorization", "Bearer " + token);
+			given(jwtTokenProvider.validate(token))
+				.willThrow(new BusinessException(ErrorCode.EXPIRED_TOKEN));
+
+			// when
+			filter.doFilter(request, response, filterChain);
+
+			// then
+			assertThat(response.getStatus()).isEqualTo(ErrorCode.EXPIRED_TOKEN.getStatus().value());
+			assertThat(response.getContentAsString()).contains(ErrorCode.EXPIRED_TOKEN.name());
+			assertThat(response.getContentAsString()).contains(ErrorCode.EXPIRED_TOKEN.getMessage());
 			assertThat(SecurityContextHolder.getContext().getAuthentication()).isNull();
 			verify(jwtTokenProvider, never()).parseJwt(token);
 			verify(userService, never()).loadCurrentUserByEmail(anyString());

@@ -118,6 +118,18 @@ public class User extends BaseEntity {
 		}
 	}
 
+	public void setOAuth(String provider) {
+		if (Strings.isNotBlank(provider)) {
+			this.provider = provider;
+		}
+		this.isAuthLinked = true;
+	}
+
+	public void unsetOAuth(String provider) {
+		this.provider = null;
+		this.isAuthLinked = false;
+	}
+
 	public void changePassword(String password) {
 		this.password = password;
 	}
