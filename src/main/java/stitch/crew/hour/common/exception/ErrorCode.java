@@ -68,6 +68,7 @@ public enum ErrorCode {
 
 
 
+    EXIST_LESSON(HttpStatus.CONFLICT, "중복된 수업 이름입니다."),
 
     ALREADY_DELETED(HttpStatus.BAD_REQUEST, "이미 삭제된 객체입니다."),
     VALIDATION_FAILED(HttpStatus.BAD_REQUEST, "검증에 실패했습니다."),

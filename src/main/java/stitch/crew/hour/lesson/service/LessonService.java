@@ -4,9 +4,14 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import stitch.crew.hour.common.exception.ErrorCode;
+import stitch.crew.hour.common.util.PreConditions;
 import stitch.crew.hour.lesson.domain.Lesson;
 import stitch.crew.hour.lesson.dto.LessonRequest;
+import stitch.crew.hour.lesson.dto.LessonResponse;
 import stitch.crew.hour.lesson.repository.LessonRepository;
+
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -15,7 +20,13 @@ public class LessonService {
 
     @Transactional
     public void saveLesson(@Valid LessonRequest request) {
+        PreConditions.check(lessonRepository.existsByName(request.name()), ErrorCode.EXIST_LESSON);
         Lesson lesson = new Lesson(request.name(), request.price(),  request.duration());
         lessonRepository.save(lesson);
+    }
+
+    public List<LessonResponse> getLessons() {
+        List<Lesson> lessons = lessonRepository.findAll();
+        return lessons.stream().map(LessonResponse::from).toList();
     }
 }
