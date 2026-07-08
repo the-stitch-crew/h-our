@@ -9,6 +9,7 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.MediaType;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
@@ -36,6 +37,9 @@ public class OAuth2LoginSuccessHandler implements AuthenticationSuccessHandler {
 	private final UserRepository userRepository;
 	private final JwtTokenProvider jwtTokenProvider;
 	private final ObjectMapper objectMapper;
+
+	@Value("${app.frontend.base-url}")
+	private String frontendBaseUrl;
 
 	@Override
 	public void onAuthenticationSuccess(
@@ -104,7 +108,7 @@ public class OAuth2LoginSuccessHandler implements AuthenticationSuccessHandler {
 		String name,
 		String provider
 	) {
-		return UriComponentsBuilder.fromUriString("http://localhost:5173/signup")
+		return UriComponentsBuilder.fromUriString(frontendBaseUrl+"/signup")
 			.queryParam("oauth", true)
 			.queryParam("email", email)
 			.queryParam("name", name)
