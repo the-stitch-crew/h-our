@@ -4,7 +4,6 @@ import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import org.hibernate.annotations.Check;
 import stitch.crew.hour.common.domain.BaseEntity;
 
 @Entity
@@ -20,7 +19,7 @@ public class Lesson extends BaseEntity {
     @Column(nullable = false, length = 50)
     private String name;
 
-    @Column(nullable = false, columnDefinition = "")
+    @Column(nullable = false)
     private Integer price;
 
     @Column(nullable = false)
