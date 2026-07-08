@@ -19,12 +19,11 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import stitch.crew.hour.auth.controller.AuthController;
 import stitch.crew.hour.auth.dto.LoginRequest;
-import stitch.crew.hour.auth.dto.LoginResponse;
+import stitch.crew.hour.auth.dto.KeyPair;
 import stitch.crew.hour.auth.dto.RefreshTokenRequest;
 import stitch.crew.hour.auth.service.AuthService;
-import stitch.crew.hour.auth.service.JwtTokenProvider;
+import stitch.crew.hour.common.config.JwtAuthenticationFilter;
 import stitch.crew.hour.common.response.SuccessCode;
-import stitch.crew.hour.user.repository.UserRepository;
 
 @WebMvcTest(AuthController.class)
 @AutoConfigureMockMvc(addFilters = false)
@@ -38,10 +37,7 @@ class AuthControllerTest {
 	private AuthService authService;
 
 	@MockitoBean
-	private JwtTokenProvider jwtTokenProvider;
-
-	@MockitoBean
-	private UserRepository userRepository;
+	private JwtAuthenticationFilter jwtAuthenticationFilter;
 
 	@Nested
 	@DisplayName("Describe: POST /api/auth/login 엔드포인트는")
@@ -52,7 +48,7 @@ class AuthControllerTest {
 		void it_returns_200_ok_and_tokens() throws Exception {
 			// given
 			LoginRequest request = new LoginRequest("legend@naver.com", "password123");
-			LoginResponse response = new LoginResponse(
+			KeyPair response = new KeyPair(
 				"access-token",
 				"refresh-token"
 			);
@@ -89,7 +85,7 @@ class AuthControllerTest {
 		void it_returns_200_ok_and_new_tokens() throws Exception {
 			// given
 			RefreshTokenRequest request = new RefreshTokenRequest("refresh-token");
-			LoginResponse response = new LoginResponse(
+			KeyPair response = new KeyPair(
 				"new-access-token",
 				"new-refresh-token"
 			);

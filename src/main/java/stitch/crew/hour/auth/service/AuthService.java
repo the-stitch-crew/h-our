@@ -12,7 +12,7 @@ import stitch.crew.hour.auth.dto.TokenBody;
 import stitch.crew.hour.auth.repository.RefreshTokenRepository;
 import stitch.crew.hour.common.exception.BusinessException;
 import stitch.crew.hour.common.exception.ErrorCode;
-import stitch.crew.hour.auth.dto.LoginResponse;
+import stitch.crew.hour.auth.dto.KeyPair;
 import stitch.crew.hour.common.util.PreConditions;
 import stitch.crew.hour.user.domain.User;
 import stitch.crew.hour.user.repository.UserRepository;
@@ -28,7 +28,7 @@ public class AuthService {
 	private final RefreshTokenRepository refreshTokenRepository;
 
 	@Transactional
-	public LoginResponse login(LoginRequest request) {
+	public KeyPair login(LoginRequest request) {
 		User user = userRepository.findByEmail(request.email())
 			.orElseThrow(() -> new BusinessException(ErrorCode.LOGIN_FAILED));
 
@@ -46,7 +46,7 @@ public class AuthService {
 	}
 
 	@Transactional
-	public LoginResponse refresh(RefreshTokenRequest request) {
+	public KeyPair refresh(RefreshTokenRequest request) {
 		String requestRefreshToken = request.refreshToken();
 		jwtTokenProvider.validateRefreshToken(requestRefreshToken);
 

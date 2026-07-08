@@ -18,11 +18,18 @@ import org.springframework.test.web.servlet.MockMvc;
 import stitch.crew.hour.auth.service.JwtTokenProvider;
 import stitch.crew.hour.common.config.JwtAuthenticationFilter;
 import stitch.crew.hour.common.config.SecurityConfig;
+import stitch.crew.hour.common.config.entrypoint.JwtAccessDeniedHandler;
+import stitch.crew.hour.common.config.entrypoint.JwtAuthenticationEntryPoint;
 import stitch.crew.hour.user.repository.UserRepository;
 import stitch.crew.hour.user.service.UserService;
 
 @WebMvcTest(UserController.class)
-@Import({SecurityConfig.class, JwtAuthenticationFilter.class})
+@Import({
+	SecurityConfig.class,
+	JwtAuthenticationFilter.class,
+	JwtAuthenticationEntryPoint.class,
+	JwtAccessDeniedHandler.class
+})
 @AutoConfigureMockMvc
 @DisplayName("UserController 보안 설정은")
 class UserControllerSecurityTest {
@@ -40,25 +47,32 @@ class UserControllerSecurityTest {
 	private UserRepository userRepository;
 
 	@Test
-	@DisplayName("GET /api/users/me 요청에 인증이 없으면 차단한다")
+	@DisplayName("GET /api/users/me 요청에 인증이 없으면 예외발생")
 	void it_rejects_get_my_info_without_authentication() throws Exception {
 		mockMvc.perform(get("/api/users/me"))
-			.andExpect(status().is4xxClientError());
+			.andExpect(status().isUnauthorized());
 	}
 
 	@Test
-	@DisplayName("PATCH /api/users/me 요청에 인증이 없으면 차단한다")
+	@DisplayName("GET /api/users/me/mypage 요청에 인증이 없으면 예외발생")
+	void it_rejects_get_my_page_without_authentication() throws Exception {
+		mockMvc.perform(get("/api/users/me/mypage"))
+			.andExpect(status().isUnauthorized());
+	}
+
+	@Test
+	@DisplayName("PATCH /api/users/me 요청에 인증이 없으면 예외발생")
 	void it_rejects_update_my_info_without_authentication() throws Exception {
 		mockMvc.perform(
 				patch("/api/users/me")
 					.contentType(MediaType.APPLICATION_JSON)
 					.content("{}")
 			)
-			.andExpect(status().is4xxClientError());
+			.andExpect(status().isUnauthorized());
 	}
 
 	@Test
-	@DisplayName("PATCH /api/users/me/password 요청에 인증이 없으면 차단한다")
+	@DisplayName("PATCH /api/users/me/password 요청에 인증이 없으면 예외발생")
 	void it_rejects_change_password_without_authentication() throws Exception {
 		mockMvc.perform(
 				patch("/api/users/me/password")
@@ -70,13 +84,13 @@ class UserControllerSecurityTest {
 						}
 						""")
 			)
-			.andExpect(status().is4xxClientError());
+			.andExpect(status().isUnauthorized());
 	}
 
 	@Test
-	@DisplayName("DELETE /api/users/me 요청에 인증이 없으면 차단한다")
+	@DisplayName("DELETE /api/users/me 요청에 인증이 없으면 예외발생")
 	void it_rejects_delete_my_account_without_authentication() throws Exception {
 		mockMvc.perform(delete("/api/users/me"))
-			.andExpect(status().is4xxClientError());
+			.andExpect(status().isUnauthorized());
 	}
 }

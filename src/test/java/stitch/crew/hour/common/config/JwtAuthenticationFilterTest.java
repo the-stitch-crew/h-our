@@ -1,13 +1,11 @@
 package stitch.crew.hour.common.config;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
-
-import java.time.LocalDate;
-import java.util.Optional;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.DisplayName;
@@ -21,18 +19,13 @@ import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.test.util.ReflectionTestUtils;
-
-import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.Jws;
+import stitch.crew.hour.auth.dto.TokenBody;
 import stitch.crew.hour.auth.service.JwtTokenProvider;
 import stitch.crew.hour.common.exception.BusinessException;
 import stitch.crew.hour.common.exception.ErrorCode;
-import stitch.crew.hour.user.constant.Gender;
 import stitch.crew.hour.user.constant.Role;
 import stitch.crew.hour.user.domain.CurrentUser;
-import stitch.crew.hour.user.domain.User;
-import stitch.crew.hour.user.repository.UserRepository;
+import stitch.crew.hour.user.service.UserService;
 
 @ExtendWith(MockitoExtension.class)
 @DisplayName("JwtAuthenticationFilter의")
@@ -42,13 +35,7 @@ class JwtAuthenticationFilterTest {
 	private JwtTokenProvider jwtTokenProvider;
 
 	@Mock
-	private UserRepository userRepository;
-
-	@Mock
-	private Jws<Claims> claimsJws;
-
-	@Mock
-	private Claims claims;
+	private UserService userService;
 
 	@AfterEach
 	void tearDown() {
@@ -63,26 +50,29 @@ class JwtAuthenticationFilterTest {
 		@DisplayName("It: 유효한 Bearer 토큰이면 SecurityContext에 인증 정보를 저장한다")
 		void it_sets_authentication_when_token_is_valid() throws Exception {
 			// given
-			JwtAuthenticationFilter filter = new JwtAuthenticationFilter(jwtTokenProvider, userRepository);
+			JwtAuthenticationFilter filter = new JwtAuthenticationFilter(jwtTokenProvider, userService);
 			MockHttpServletRequest request = new MockHttpServletRequest();
 			MockHttpServletResponse response = new MockHttpServletResponse();
 			MockFilterChain filterChain = new MockFilterChain();
+
+
 			String token = "valid-token";
-			User user = createUser();
+			String email = "asdasd@asd.com";
+			CurrentUser currentUser = new CurrentUser(1L, email, Role.USER);
 
 			request.addHeader("Authorization", "Bearer " + token);
+
 			given(jwtTokenProvider.validate(token)).willReturn(true);
-			given(jwtTokenProvider.parseClaims(token)).willReturn(claimsJws);
-			given(claimsJws.getPayload()).willReturn(claims);
-			given(claims.get("email")).willReturn(user.getEmail());
-			given(userRepository.findByEmail(user.getEmail())).willReturn(Optional.of(user));
+			given(jwtTokenProvider.parseJwt(token)).willReturn(new TokenBody(email));
+			given(userService.loadCurrentUserByEmail(email)).willReturn(currentUser);
 
 			// when
 			filter.doFilter(request, response, filterChain);
 
 			// then
 			Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-			assertThat(authentication.getName()).isEqualTo("legend@naver.com");
+
+			assertThat(authentication.getName()).isEqualTo(email);
 			assertThat(authentication.getPrincipal()).isInstanceOf(CurrentUser.class);
 			assertThat(((CurrentUser)authentication.getPrincipal()).getId()).isEqualTo(1L);
 			assertThat(authentication.getAuthorities().iterator().next().getAuthority()).isEqualTo("ROLE_USER");
@@ -92,7 +82,7 @@ class JwtAuthenticationFilterTest {
 		@DisplayName("It: Authorization 헤더가 없으면 인증 정보를 만들지 않는다")
 		void it_does_not_set_authentication_without_authorization_header() throws Exception {
 			// given
-			JwtAuthenticationFilter filter = new JwtAuthenticationFilter(jwtTokenProvider, userRepository);
+			JwtAuthenticationFilter filter = new JwtAuthenticationFilter(jwtTokenProvider, userService);
 			MockHttpServletRequest request = new MockHttpServletRequest();
 			MockHttpServletResponse response = new MockHttpServletResponse();
 			MockFilterChain filterChain = new MockFilterChain();
@@ -103,14 +93,14 @@ class JwtAuthenticationFilterTest {
 			// then
 			assertThat(SecurityContextHolder.getContext().getAuthentication()).isNull();
 			verify(jwtTokenProvider, never()).validate("valid-token");
-			verify(userRepository, never()).findByEmail("legend@naver.com");
+			verify(userService, never()).loadCurrentUserByEmail(anyString());
 		}
 
 		@Test
-		@DisplayName("It: 잘못된 토큰이면 예외가 발생하고 인증 정보를 만들지 않는다")
-		void it_throws_exception_when_token_is_invalid() {
+		@DisplayName("It: 토큰 검증에 실패하면 인증 정보를 만들지 않는다")
+		void it_does_not_set_authentication_when_token_validation_fails() {
 			// given
-			JwtAuthenticationFilter filter = new JwtAuthenticationFilter(jwtTokenProvider, userRepository);
+			JwtAuthenticationFilter filter = new JwtAuthenticationFilter(jwtTokenProvider, userService);
 			MockHttpServletRequest request = new MockHttpServletRequest();
 			MockHttpServletResponse response = new MockHttpServletResponse();
 			MockFilterChain filterChain = new MockFilterChain();
@@ -121,33 +111,14 @@ class JwtAuthenticationFilterTest {
 				.willThrow(new BusinessException(ErrorCode.ERROR_FROM_TOKEN));
 
 			// when
-			BusinessException exception = assertThrows(
-				BusinessException.class,
-				() -> filter.doFilter(request, response, filterChain)
-			);
+			assertThatThrownBy(() -> filter.doFilter(request, response, filterChain))
+				.isInstanceOf(BusinessException.class)
+				.hasMessage(ErrorCode.ERROR_FROM_TOKEN.getMessage());
 
 			// then
-			assertThat(exception.getErrorCode()).isEqualTo(ErrorCode.ERROR_FROM_TOKEN);
 			assertThat(SecurityContextHolder.getContext().getAuthentication()).isNull();
-			verify(userRepository, never()).findByEmail("legend@naver.com");
+			verify(jwtTokenProvider, never()).parseJwt(token);
+			verify(userService, never()).loadCurrentUserByEmail(anyString());
 		}
-	}
-
-	private User createUser() {
-		User user = new User(
-			"대정수",
-			"legend@naver.com",
-			"encodedPassword",
-			LocalDate.of(2000, 1, 1),
-			Role.USER,
-			Gender.MALE,
-			null,
-			"010-1234-5678",
-			"KOREA",
-			false,
-			false
-		);
-		ReflectionTestUtils.setField(user, "id", 1L);
-		return user;
 	}
 }

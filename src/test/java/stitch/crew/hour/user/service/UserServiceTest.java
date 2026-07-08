@@ -8,6 +8,7 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 
 import java.time.LocalDate;
+import java.util.List;
 import java.util.Optional;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -22,12 +23,15 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.util.ReflectionTestUtils;
 
+import stitch.crew.hour.address.domain.Address;
+import stitch.crew.hour.address.repository.AddressRepository;
 import stitch.crew.hour.auth.repository.RefreshTokenRepository;
 import stitch.crew.hour.common.exception.BusinessException;
 import stitch.crew.hour.common.exception.ErrorCode;
 import stitch.crew.hour.user.constant.Gender;
 import stitch.crew.hour.user.constant.Role;
 import stitch.crew.hour.user.domain.User;
+import stitch.crew.hour.user.dto.MyPageResponse;
 import stitch.crew.hour.user.dto.PasswordChangeRequest;
 import stitch.crew.hour.user.dto.SignupRequest;
 import stitch.crew.hour.user.dto.SignupResponse;
@@ -51,6 +55,9 @@ class UserServiceTest {
 
 	@Mock
 	private RefreshTokenRepository refreshTokenRepository;
+
+	@Mock
+	private AddressRepository addressRepository;
 
 	@Nested
 	@DisplayName("Describe: signup 메서드는")
@@ -213,6 +220,36 @@ class UserServiceTest {
 
 			// then
 			assertThat(exception.getErrorCode()).isEqualTo(ErrorCode.USER_DONT_EXISTS);
+		}
+	}
+
+	@Nested
+	@DisplayName("Describe: getMyPage 메서드는")
+	class Describe_getMyPage {
+
+		@Test
+		@DisplayName("It: 회원 정보와 주소 목록을 함께 반환한다")
+		void it_returns_user_info_and_addresses() {
+			// given
+			User user = createUser();
+			Address mainAddress = createAddress(user, 1L, true);
+			Address subAddress = createAddress(user, 2L, false);
+
+			given(userRepository.findByEmail(user.getEmail())).willReturn(Optional.of(user));
+			given(addressRepository.findAllByUserIdAndDeletedAtIsNullOrderByIsMainDescCreatedAtDesc(user.getId()))
+				.willReturn(List.of(mainAddress, subAddress));
+
+			// when
+			MyPageResponse response = userService.getMyPage(user.getEmail());
+
+			// then
+			assertThat(response.userInfo().userId()).isEqualTo(user.getId());
+			assertThat(response.userInfo().email()).isEqualTo(user.getEmail());
+			assertThat(response.addresses().size()).isEqualTo(2);
+			assertThat(response.addresses().get(0).id()).isEqualTo(1L);
+			assertThat(response.addresses().get(0).isMain()).isTrue();
+			assertThat(response.addresses().get(1).id()).isEqualTo(2L);
+			assertThat(response.addresses().get(1).isMain()).isFalse();
 		}
 	}
 
@@ -570,5 +607,18 @@ class UserServiceTest {
 		);
 		ReflectionTestUtils.setField(user, "id", 1L);
 		return user;
+	}
+
+	private Address createAddress(User user, Long id, Boolean isMain) {
+		Address address = new Address(
+			user,
+			"12345",
+			"서울시 강남구 역삼동",
+			"서울시 강남구 테헤란로 1",
+			"101호",
+			isMain
+		);
+		ReflectionTestUtils.setField(address, "id", id);
+		return address;
 	}
 }
