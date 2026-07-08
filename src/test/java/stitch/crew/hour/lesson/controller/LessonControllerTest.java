@@ -19,10 +19,14 @@ import stitch.crew.hour.common.exception.ErrorCode;
 import stitch.crew.hour.common.response.SuccessCode;
 import stitch.crew.hour.lesson.dto.LessonResponse;
 import stitch.crew.hour.lesson.service.LessonService;
+import stitch.crew.hour.policy.domain.WeekDay;
+import stitch.crew.hour.policy.dto.LessonPolicyResponse;
+import stitch.crew.hour.policy.service.LessonPolicyService;
 import stitch.crew.hour.util.TestUtil;
-import tools.jackson.databind.ObjectMapper;
 
+import java.time.LocalTime;
 import java.util.Arrays;
+import java.util.Set;
 
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.doThrow;
@@ -39,6 +43,9 @@ class LessonControllerTest {
 
     @MockitoBean
     private LessonService lessonService;
+
+    @MockitoBean
+    private LessonPolicyService policyService;
 
     @MockitoBean
     JwtAccessDeniedHandler jwtAccessDeniedHandler;
@@ -157,6 +164,55 @@ class LessonControllerTest {
                         .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                         .andExpect(jsonPath("$.code").value(ErrorCode.LESSON_NOT_FOUND.name()))
                         .andExpect(jsonPath("$.message").value(ErrorCode.LESSON_NOT_FOUND.getMessage()))
+                        .andDo(print());
+            }
+        }
+    }
+    @Nested
+    @DisplayName("Discribe: GET /policy 엔드포인트는")
+    class getLessonPolicy {
+
+        Integer reservationAvailableDays = 21;
+        Integer reservationDeadlineDays = 4;
+        Integer cancelDeadlineDays = 1;
+        Integer depositAmount = 10000;
+        LocalTime startTime = LocalTime.of(9,0);
+        LocalTime endTime = LocalTime.of(18,0);
+        Set<WeekDay> regularDays = Set.of(WeekDay.SAT, WeekDay.SUN);
+
+        LessonPolicyResponse response;
+
+        @Nested
+        @DisplayName("Context: 올바른 데이터가 주어지면")
+        class Context_with_available_data {
+            @BeforeEach
+            void setUp() {
+                response = new LessonPolicyResponse(
+                        reservationAvailableDays,
+                        reservationDeadlineDays,
+                        cancelDeadlineDays,
+                        depositAmount,
+                        startTime,
+                        endTime,
+                        regularDays
+                );
+            }
+
+            @Test
+            @DisplayName("It : 200 상태와 성공 메시지를 반환한다")
+            void it_return_200_ok_and_success_message() throws Exception {
+                //given
+                given(policyService.getLessonPolicy()).willReturn(response);
+
+                //when-then
+                mockMvc.perform(
+                                get("/api/lessons/policy")
+                                        .with(csrf())
+                        )
+                        .andExpect(status().isOk())
+                        .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                        .andExpect(jsonPath("$.code").value(SuccessCode.LESSON_POLICY_READ.name()))
+                        .andExpect(jsonPath("$.message").value(SuccessCode.LESSON_POLICY_READ.getSuccessMessage()))
                         .andDo(print());
             }
         }

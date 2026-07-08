@@ -19,9 +19,14 @@ import stitch.crew.hour.common.exception.ErrorCode;
 import stitch.crew.hour.common.response.SuccessCode;
 import stitch.crew.hour.lesson.dto.LessonRequest;
 import stitch.crew.hour.lesson.service.LessonService;
+import stitch.crew.hour.policy.domain.WeekDay;
+import stitch.crew.hour.policy.dto.LessonPolicyRequest;
 import stitch.crew.hour.policy.service.LessonPolicyService;
 import stitch.crew.hour.util.TestUtil;
 import tools.jackson.databind.ObjectMapper;
+
+import java.time.LocalTime;
+import java.util.Set;
 
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doNothing;
@@ -307,7 +312,7 @@ class LessonAdminControllerTest {
     }
     @Nested
     @DisplayName("Discribe: PUT /{lessonId} 엔드포인트는")
-    class updateCategory {
+    class updateLesson {
         LessonRequest request;
 
         @Nested
@@ -443,6 +448,93 @@ class LessonAdminControllerTest {
                         .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                         .andExpect(jsonPath("$.code").value(ErrorCode.LESSON_NOT_FOUND.name()))
                         .andExpect(jsonPath("$.message").value(ErrorCode.LESSON_NOT_FOUND.getMessage()))
+                        .andDo(print());
+            }
+        }
+    }
+    @Nested
+    @DisplayName("Discribe: PUT /{lessonId} 엔드포인트는")
+    class updateLessonPolicy {
+        Integer reservationAvailableDays = 21;
+        Integer reservationAvailableDays2 = 28;
+        Integer reservationDeadlineDays = 4;
+        Integer cancelDeadlineDays = 1;
+        Integer depositAmount = 10000;
+        LocalTime startTime = LocalTime.of(9,0);
+        LocalTime endTime = LocalTime.of(18,0);
+        Set<WeekDay> regularDays = Set.of(WeekDay.SAT, WeekDay.SUN);
+
+        LessonPolicyRequest request;
+
+        @Nested
+        @DisplayName("Context: 올바른 데이터가 주어지면")
+        class Context_with_available_data {
+            @BeforeEach
+            void setUp() {
+                request = new LessonPolicyRequest(
+                        reservationAvailableDays2,
+                        reservationDeadlineDays,
+                        cancelDeadlineDays,
+                        depositAmount,
+                        startTime,
+                        endTime,
+                        regularDays
+                );
+            }
+
+            @Test
+            @DisplayName("It : 200 상태와 성공 메시지를 반환한다")
+            void it_return_200_ok_and_success_message() throws Exception {
+                //given
+                doNothing().when(policyService).updateLessonPolicy(request);
+
+                //when-then
+                mockMvc.perform(
+                                put("/api/admin/lessons/policy")
+                                        .with(csrf())
+                                        .contentType(MediaType.APPLICATION_JSON)
+                                        .content(om.writeValueAsString(request))
+                        )
+                        .andExpect(status().isOk())
+                        .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                        .andExpect(jsonPath("$.code").value(SuccessCode.LESSON_POLICY_UPDATED.name()))
+                        .andExpect(jsonPath("$.message").value(SuccessCode.LESSON_POLICY_UPDATED.getSuccessMessage()))
+                        .andDo(print());
+            }
+        }
+        @Nested
+        @DisplayName("Context: 올바르지 않은 request가 주어지면")
+        class Context_with_request_error {
+            @BeforeEach
+            void setUp() {
+            }
+            @Test
+            @DisplayName("(값중 하나가 null일때)It : 400 상태와 검증 실패 이유를 반환한다")
+            void it_return_400_badRequest_and_depositAmount_not_nullable() throws Exception {
+                //given
+                request = new LessonPolicyRequest(
+                        reservationAvailableDays,
+                        reservationDeadlineDays,
+                        cancelDeadlineDays,
+                        null,
+                        startTime,
+                        endTime,
+                        regularDays
+                );
+
+
+                //when-then
+                mockMvc.perform(
+                                put("/api/admin/lessons/policy")
+                                        .with(csrf())
+                                        .principal(adminAuthentication)
+                                        .contentType(MediaType.APPLICATION_JSON)
+                                        .content(om.writeValueAsString(request))
+                        )
+                        .andExpect(status().isBadRequest())
+                        .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                        .andExpect(jsonPath("$.code").value(ErrorCode.VALIDATION_FAILED.name()))
+                        .andExpect(jsonPath("$.message").value("예약금액은 필수값입니다."))
                         .andDo(print());
             }
         }

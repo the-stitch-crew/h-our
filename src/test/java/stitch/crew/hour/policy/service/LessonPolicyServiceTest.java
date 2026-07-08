@@ -6,13 +6,6 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.test.util.ReflectionTestUtils;
-import stitch.crew.hour.common.exception.BusinessException;
-import stitch.crew.hour.common.exception.ErrorCode;
-import stitch.crew.hour.lesson.domain.Lesson;
-import stitch.crew.hour.lesson.dto.LessonRequest;
-import stitch.crew.hour.lesson.dto.LessonResponse;
-import stitch.crew.hour.lesson.repository.LessonRepository;
-import stitch.crew.hour.lesson.service.LessonService;
 import stitch.crew.hour.policy.domain.LessonPolicy;
 import stitch.crew.hour.policy.domain.WeekDay;
 import stitch.crew.hour.policy.dto.LessonPolicyRequest;
@@ -24,7 +17,6 @@ import java.util.Optional;
 import java.util.Set;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
-import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.BDDMockito.given;
 
 @ExtendWith(MockitoExtension.class)
