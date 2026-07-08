@@ -70,9 +70,9 @@ public enum ErrorCode {
     /*lesson*/
     EXIST_LESSON(HttpStatus.CONFLICT, "중복된 수업 이름입니다."),
     LESSON_NOT_FOUND(HttpStatus.NOT_FOUND, "수업을 찾을 수 없습니다."),
+    NO_LESSON_POLICY(HttpStatus.NOT_FOUND, "저장된 수업규칙이 없습니다."),
 
     /*Reservation*/
-    NO_LESSON_POLICY(HttpStatus.NOT_FOUND, "저장된 수업규칙이 없습니다."),
 
 
     ALREADY_DELETED(HttpStatus.BAD_REQUEST, "이미 삭제된 객체입니다."),

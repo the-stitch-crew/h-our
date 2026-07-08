@@ -63,10 +63,10 @@ public enum SuccessCode {
     LESSON_READ("수업이 정상적으로 조회되었습니다."),
     LESSON_UPDATED("수업이 정상적으로 수정되었습니다."),
     LESSON_DELETED("수업이 정상적으로 삭제되었습니다."),
-
-    /*RESERVATION*/
     LESSON_POLICY_READ("수업정책이 정상적으로 조회되었습니다."),
     LESSON_POLICY_UPDATED("수업정책이 정상적으로 수정되었습니다."),
+
+    /*RESERVATION*/
 
 
     BUSINESS_SUCCESS("정상적으로 작성되었습니다.");
