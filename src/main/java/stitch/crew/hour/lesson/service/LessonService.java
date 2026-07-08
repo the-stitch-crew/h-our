@@ -38,6 +38,7 @@ public class LessonService {
     @Transactional
     public void updateLesson(Long lessonId, LessonRequest request) {
         Lesson lesson = lessonRepository.findById(lessonId).orElseThrow(() -> new BusinessException(ErrorCode.LESSON_NOT_FOUND));
+        PreConditions.check(!request.name().equals(lesson.getName())&&lessonRepository.existsByName(request.name()), ErrorCode.EXIST_LESSON);
         lesson.update(request);
     }
 

@@ -53,7 +53,7 @@ class LessonServiceTest {
                 ReflectionTestUtils.setField(lesson, "id", lessonId);
             }
             @Test
-            @DisplayName("(썸네일 없을때)It : Lesson 저장 성공")
+            @DisplayName("It : Lesson 저장 성공")
             void it_success_category_save_without_thumbnail() {
                 //given
                 given(lessonRepository.existsByName(name)).willReturn(false);
@@ -180,7 +180,7 @@ class LessonServiceTest {
     @DisplayName("Discribe: updateLesson 메서드는")
     class Describe_with_updateCategory{
 
-    }
+
         String name2 = "키링수업";
         Integer price2 = 30000;
         Integer duration2 = 2;
@@ -210,22 +210,47 @@ class LessonServiceTest {
                 assertThat(lesson.getDuration()).isEqualTo(duration2);
             }
         }
-    @Nested
-    @DisplayName("Context: 입력된 id가 유효하지 않는다면")
-    class Context_with_unavailable_id {
-        @BeforeEach
-        void setup() {
-            request = new LessonRequest(name, price, duration);
+        @Nested
+        @DisplayName("Context: 입력된 id가 유효하지 않는다면")
+        class Context_with_unavailable_id {
+            @BeforeEach
+            void setup() {
+                request = new LessonRequest(name, price, duration);
+                lesson = new Lesson(name, price, duration);
+                ReflectionTestUtils.setField(lesson, "id", lessonId);
+            }
+            @Test
+            @DisplayName("It : LESSON_NOT_FOUND 오류 발생 ")
+            void it_throws_not_found_category() {
+                //given
+                given(lessonRepository.findById(lessonId)).willReturn(Optional.empty());
+                //when&then
+                BusinessException exception = assertThrows(
+                        BusinessException.class, () -> lessonService.updateLesson(lessonId, request));
+            assertThat(exception.getMessage()).isEqualTo(ErrorCode.LESSON_NOT_FOUND.getMessage());
+            }
         }
-        @Test
-        @DisplayName("It : LESSON_NOT_FOUND 오류 발생 ")
-        void it_throws_not_found_category() {
-            //given
-            given(lessonRepository.findById(lessonId)).willReturn(Optional.empty());
-            //when&then
-            BusinessException exception = assertThrows(
-                    BusinessException.class, () -> lessonService.updateLesson(lessonId, request));
-        assertThat(exception.getMessage()).isEqualTo(ErrorCode.LESSON_NOT_FOUND.getMessage());
+        @Nested
+        @DisplayName("Context: 이름을 수정하는데 이미 존재하는 이름의 데이터가 주어지면")
+        class Context_with_existing_name {
+            @BeforeEach
+            void setup() {
+                request = new LessonRequest(name2, price, duration);
+                lesson = new Lesson(name, price, duration);
+                ReflectionTestUtils.setField(lesson, "id", lessonId);
+            }
+            @Test
+            @DisplayName("It : EXIST_LESSON 오류 발생 ")
+            void it_throws_not_found_lesson() {
+                //given
+                given(lessonRepository.findById(lessonId)).willReturn(Optional.of(lesson));
+                given(lessonRepository.existsByName(name2)).willReturn(true);
+
+                //when&then
+                BusinessException exception = assertThrows(
+                        BusinessException.class, () -> lessonService.updateLesson(lessonId, request));
+                assertThat(exception.getMessage()).isEqualTo(ErrorCode.EXIST_LESSON .getMessage());
+            }
         }
     }
 
