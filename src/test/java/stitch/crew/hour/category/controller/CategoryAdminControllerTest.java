@@ -15,18 +15,19 @@ import org.springframework.test.web.servlet.MockMvc;
 import stitch.crew.hour.category.dto.CategoryRequest;
 import stitch.crew.hour.category.service.CategoryService;
 import stitch.crew.hour.common.config.JwtAuthenticationFilter;
+import stitch.crew.hour.common.config.entrypoint.JwtAccessDeniedHandler;
+import stitch.crew.hour.common.config.entrypoint.JwtAuthenticationEntryPoint;
 import stitch.crew.hour.common.exception.BusinessException;
 import stitch.crew.hour.common.exception.ErrorCode;
 import stitch.crew.hour.common.response.SuccessCode;
 import stitch.crew.hour.util.TestUtil;
 import tools.jackson.databind.ObjectMapper;
 
-
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doThrow;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -45,6 +46,13 @@ class CategoryAdminControllerTest {
 
     @MockitoBean
     JwtAuthenticationFilter jwtAuthenticationFilter;
+
+    @MockitoBean
+    JwtAccessDeniedHandler jwtAccessDeniedHandler;
+
+    @MockitoBean
+    JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint;
+
 
     String name;
     String thumbnail;
