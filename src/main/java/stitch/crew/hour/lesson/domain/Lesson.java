@@ -5,6 +5,7 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import stitch.crew.hour.common.domain.BaseEntity;
+import stitch.crew.hour.lesson.dto.LessonRequest;
 
 @Entity
 @Getter
@@ -25,9 +26,15 @@ public class Lesson extends BaseEntity {
     @Column(nullable = false)
     private Integer duration;
 
-    public  Lesson(String name, Integer price, Integer duration) {
+    public Lesson(String name, Integer price, Integer duration) {
         this.name = name;
         this.price = price;
         this.duration = duration;
+    }
+
+    public void update(LessonRequest request) {
+        this.name = request.name();
+        this.price = request.price();
+        this.duration = request.duration();
     }
 }

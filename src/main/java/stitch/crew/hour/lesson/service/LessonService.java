@@ -1,9 +1,9 @@
 package stitch.crew.hour.lesson.service;
 
-import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import stitch.crew.hour.common.exception.BusinessException;
 import stitch.crew.hour.common.exception.ErrorCode;
 import stitch.crew.hour.common.util.PreConditions;
 import stitch.crew.hour.lesson.domain.Lesson;
@@ -19,7 +19,7 @@ public class LessonService {
     private final LessonRepository lessonRepository;
 
     @Transactional
-    public void saveLesson(@Valid LessonRequest request) {
+    public void saveLesson(LessonRequest request) {
         PreConditions.check(lessonRepository.existsByName(request.name()), ErrorCode.EXIST_LESSON);
         Lesson lesson = new Lesson(request.name(), request.price(),  request.duration());
         lessonRepository.save(lesson);
@@ -28,5 +28,12 @@ public class LessonService {
     public List<LessonResponse> getLessons() {
         List<Lesson> lessons = lessonRepository.findAll();
         return lessons.stream().map(LessonResponse::from).toList();
+    }
+
+    @Transactional
+    public void updateLesson(Long lessonId, LessonRequest request) {
+        Lesson lesson = lessonRepository.findById(lessonId).orElseThrow(() -> new BusinessException(ErrorCode.LESSON_NOT_FOUND));
+        PreConditions.check(lessonRepository.existsByName(request.name()), ErrorCode.EXIST_LESSON);
+        lesson.update(request);
     }
 }
