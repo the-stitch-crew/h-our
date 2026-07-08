@@ -47,12 +47,11 @@ public class OAuth2LoginSuccessHandler implements AuthenticationSuccessHandler {
 		OAuth2AuthenticationToken oauthToken = (OAuth2AuthenticationToken) authentication;
 		OAuth2User oauthUser = oauthToken.getPrincipal();
 
-		String provider = oauthToken.getAuthorizedClientRegistrationId();
-		String providerId = oauthUser.getAttribute("sub");
+		String provider = oauthToken.getAuthorizedClientRegistrationId().toUpperCase(Locale.ROOT);
 		String email = oauthUser.getAttribute("email");
 		String name = oauthUser.getAttribute("name");
 
-		if (providerId == null || email == null) {
+		if (email == null) {
 			throw new BusinessException(ErrorCode.UNAUTHORIZED, "OAuth2 사용자 정보에 필수 값이 없습니다.");
 		}
 
@@ -75,7 +74,7 @@ public class OAuth2LoginSuccessHandler implements AuthenticationSuccessHandler {
 		User user,
 		String provider
 	) {
-		user.setOAuth(provider.toUpperCase(Locale.ROOT));
+		user.setOAuth(provider);
 		userRepository.save(user);
 		return jwtTokenProvider.issueKeyPair(user.getEmail(), user.getRole());
 	}
@@ -105,11 +104,11 @@ public class OAuth2LoginSuccessHandler implements AuthenticationSuccessHandler {
 		String name,
 		String provider
 	) {
-		return UriComponentsBuilder.fromPath("/sign")
+		return UriComponentsBuilder.fromUriString("http://localhost:5173/signup")
 			.queryParam("oauth", true)
 			.queryParam("email", email)
 			.queryParam("name", name)
-			.queryParam("provider", provider.toUpperCase(Locale.ROOT))
+			.queryParam("provider", provider)
 			.build()
 			.encode()
 			.toUriString();
