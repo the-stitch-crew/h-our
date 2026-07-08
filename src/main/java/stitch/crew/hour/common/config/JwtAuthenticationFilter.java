@@ -1,8 +1,10 @@
 package stitch.crew.hour.common.config;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
@@ -15,6 +17,8 @@ import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import stitch.crew.hour.auth.dto.TokenBody;
 import stitch.crew.hour.auth.service.JwtTokenProvider;
+import stitch.crew.hour.common.exception.BusinessException;
+import stitch.crew.hour.common.exception.ErrorCode;
 import stitch.crew.hour.user.domain.CurrentUser;
 import stitch.crew.hour.user.service.UserService;
 
@@ -39,22 +43,46 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 			return;
 		}
 
-		if (jwtTokenProvider.validate(extractedToken)) {
-			TokenBody tokenBody = jwtTokenProvider.parseJwt(extractedToken);
-			CurrentUser currentUser = userService.loadCurrentUserByEmail(tokenBody.getEmail());
-			UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
-				currentUser,
-				null,
-				currentUser.getAuthorities()
-			);
-			SecurityContextHolder.getContext().setAuthentication(authentication);
+		try {
+			if (jwtTokenProvider.validate(extractedToken)) {
+				TokenBody tokenBody = jwtTokenProvider.parseJwt(extractedToken);
+				CurrentUser currentUser = userService.loadCurrentUserByEmail(tokenBody.getEmail());
+				UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
+					currentUser,
+					null,
+					currentUser.getAuthorities()
+				);
+				SecurityContextHolder.getContext().setAuthentication(authentication);
+			}
+		} catch (BusinessException exception) {
+			SecurityContextHolder.clearContext();
+			writeErrorResponse(response, exception.getErrorCode());
+			return;
 		}
 
 		filterChain.doFilter(request,response);
 	}
-		public String extractToken(HttpServletRequest request){
-			String bearerToken = request.getHeader(HttpHeaders.AUTHORIZATION);
-			if(bearerToken != null && bearerToken.startsWith("Bearer ")) return bearerToken.substring(7);
-			return null;
-		}
+
+	private void writeErrorResponse(
+		HttpServletResponse response,
+		ErrorCode errorCode
+	) throws IOException {
+		response.setStatus(errorCode.getStatus().value());
+		response.setContentType(MediaType.APPLICATION_JSON_VALUE);
+		response.setCharacterEncoding(StandardCharsets.UTF_8.name());
+		response.getWriter().write("""
+			{
+			  "success": false,
+			  "code": "%s",
+			  "message": "%s",
+			  "data": null
+			}
+			""".formatted(errorCode.name(), errorCode.getMessage()));
+	}
+
+	public String extractToken(HttpServletRequest request){
+		String bearerToken = request.getHeader(HttpHeaders.AUTHORIZATION);
+		if(bearerToken != null && bearerToken.startsWith("Bearer ")) return bearerToken.substring(7);
+		return null;
+	}
 }
