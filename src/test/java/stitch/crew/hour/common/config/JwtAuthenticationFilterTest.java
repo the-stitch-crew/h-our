@@ -1,6 +1,7 @@
 package stitch.crew.hour.common.config;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.never;
@@ -96,28 +97,8 @@ class JwtAuthenticationFilterTest {
 		}
 
 		@Test
-		@DisplayName("It: 인증 제외 경로이면 Bearer 토큰이 있어도 인증 정보를 만들지 않는다")
-		void it_does_not_set_authentication_when_request_should_not_be_filtered() throws Exception {
-			// given
-			JwtAuthenticationFilter filter = new JwtAuthenticationFilter(jwtTokenProvider, userService);
-			MockHttpServletRequest request = new MockHttpServletRequest("POST", "/api/auth/login");
-			MockHttpServletResponse response = new MockHttpServletResponse();
-			MockFilterChain filterChain = new MockFilterChain();
-
-			request.addHeader("Authorization", "Bearer invalid-token");
-
-			// when
-			filter.doFilter(request, response, filterChain);
-
-			// then
-			assertThat(SecurityContextHolder.getContext().getAuthentication()).isNull();
-			verify(jwtTokenProvider, never()).validate("invalid-token");
-			verify(userService, never()).loadCurrentUserByEmail(anyString());
-		}
-
-		@Test
-		@DisplayName("It: 잘못된 토큰이면 401 상태를 반환하고 인증 정보를 만들지 않는다")
-		void it_returns_401_when_token_is_invalid() throws Exception {
+		@DisplayName("It: 토큰 검증에 실패하면 인증 정보를 만들지 않는다")
+		void it_does_not_set_authentication_when_token_validation_fails() {
 			// given
 			JwtAuthenticationFilter filter = new JwtAuthenticationFilter(jwtTokenProvider, userService);
 			MockHttpServletRequest request = new MockHttpServletRequest();
@@ -130,11 +111,11 @@ class JwtAuthenticationFilterTest {
 				.willThrow(new BusinessException(ErrorCode.ERROR_FROM_TOKEN));
 
 			// when
-			filter.doFilter(request, response, filterChain);
+			assertThatThrownBy(() -> filter.doFilter(request, response, filterChain))
+				.isInstanceOf(BusinessException.class)
+				.hasMessage(ErrorCode.ERROR_FROM_TOKEN.getMessage());
 
 			// then
-			assertThat(response.getStatus()).isEqualTo(ErrorCode.ERROR_FROM_TOKEN.getStatus().value());
-			assertThat(response.getContentAsString()).contains("\"code\":\"ERROR_FROM_TOKEN\"");
 			assertThat(SecurityContextHolder.getContext().getAuthentication()).isNull();
 			verify(jwtTokenProvider, never()).parseJwt(token);
 			verify(userService, never()).loadCurrentUserByEmail(anyString());

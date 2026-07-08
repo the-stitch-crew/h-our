@@ -22,9 +22,8 @@ import stitch.crew.hour.auth.dto.LoginRequest;
 import stitch.crew.hour.auth.dto.KeyPair;
 import stitch.crew.hour.auth.dto.RefreshTokenRequest;
 import stitch.crew.hour.auth.service.AuthService;
-import stitch.crew.hour.auth.service.JwtTokenProvider;
+import stitch.crew.hour.common.config.JwtAuthenticationFilter;
 import stitch.crew.hour.common.response.SuccessCode;
-import stitch.crew.hour.user.repository.UserRepository;
 
 @WebMvcTest(AuthController.class)
 @AutoConfigureMockMvc(addFilters = false)
@@ -38,10 +37,7 @@ class AuthControllerTest {
 	private AuthService authService;
 
 	@MockitoBean
-	private JwtTokenProvider jwtTokenProvider;
-
-	@MockitoBean
-	private UserRepository userRepository;
+	private JwtAuthenticationFilter jwtAuthenticationFilter;
 
 	@Nested
 	@DisplayName("Describe: POST /api/auth/login 엔드포인트는")
