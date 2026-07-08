@@ -28,4 +28,10 @@ public class LessonAdminController {
         lessonService.updateLesson(lessonId, request);
         return ApiResult.ok(SuccessCode.LESSON_UPDATED);
     }
+
+    @DeleteMapping("/{lessonId}")
+    public ResponseEntity<ApiResponses<Void>> deleteLesson(@PathVariable Long lessonId) {
+        lessonService.deleteLesson(lessonId);
+        return ApiResult.ok(SuccessCode.LESSON_DELETED);
+    }
 }

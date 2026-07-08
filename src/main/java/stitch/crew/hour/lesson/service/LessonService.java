@@ -30,6 +30,11 @@ public class LessonService {
         return lessons.stream().map(LessonResponse::from).toList();
     }
 
+    public LessonResponse getLesson(Long lessonId) {
+        Lesson lesson = lessonRepository.findById(lessonId).orElseThrow(() -> new BusinessException(ErrorCode.LESSON_NOT_FOUND));
+        return LessonResponse.from(lesson);
+    }
+
     @Transactional
     public void updateLesson(Long lessonId, LessonRequest request) {
         Lesson lesson = lessonRepository.findById(lessonId).orElseThrow(() -> new BusinessException(ErrorCode.LESSON_NOT_FOUND));
@@ -37,8 +42,10 @@ public class LessonService {
         lesson.update(request);
     }
 
-    public LessonResponse getLesson(Long lessonId) {
+
+    @Transactional
+    public void deleteLesson(Long lessonId) {
         Lesson lesson = lessonRepository.findById(lessonId).orElseThrow(() -> new BusinessException(ErrorCode.LESSON_NOT_FOUND));
-        return LessonResponse.from(lesson);
+        lessonRepository.delete(lesson);
     }
 }
