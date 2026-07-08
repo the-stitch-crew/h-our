@@ -14,6 +14,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import java.time.LocalDate;
+import java.util.List;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.DisplayName;
@@ -28,11 +29,13 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
+import stitch.crew.hour.address.dto.AddressResponse;
 import stitch.crew.hour.auth.service.JwtTokenProvider;
 import stitch.crew.hour.common.response.SuccessCode;
 import stitch.crew.hour.user.constant.Gender;
 import stitch.crew.hour.user.constant.Role;
 import stitch.crew.hour.user.domain.CurrentUser;
+import stitch.crew.hour.user.dto.MyPageResponse;
 import stitch.crew.hour.user.dto.PasswordChangeRequest;
 import stitch.crew.hour.user.dto.UserInfoResponse;
 import stitch.crew.hour.user.dto.UserUpdateRequest;
@@ -107,6 +110,61 @@ class UserControllerTest {
 				.andDo(print());
 
 			verify(userService).getMyInfo(email);
+		}
+	}
+
+	@Nested
+	@DisplayName("Describe: GET /api/users/me/mypage 엔드포인트는")
+	class Describe_getMyPage {
+
+		@Test
+		@DisplayName("It: 인증된 사용자의 정보와 주소 목록을 반환한다")
+		void it_returns_my_page_info() throws Exception {
+			// given
+			String email = "legend@naver.com";
+			UserInfoResponse userInfo = new UserInfoResponse(
+				1L,
+				"대정수",
+				email,
+				LocalDate.of(2000, 1, 1),
+				Gender.MALE,
+				Role.USER,
+				"010-1234-5678",
+				"KOREA",
+				false
+			);
+			AddressResponse address = new AddressResponse(
+				1L,
+				"12345",
+				"서울시 강남구 역삼동",
+				"서울시 강남구 테헤란로 1",
+				"101호",
+				true
+			);
+			MyPageResponse response = new MyPageResponse(userInfo, List.of(address));
+			TestingAuthenticationToken authentication = createAuthentication(email);
+			SecurityContextHolder.getContext().setAuthentication(authentication);
+
+			given(userService.getMyPage(email)).willReturn(response);
+
+			// when & then
+			mockMvc.perform(
+					get("/api/users/me/mypage")
+						.principal(authentication)
+				)
+				.andExpect(status().isOk())
+				.andExpect(content().contentType(MediaType.APPLICATION_JSON))
+				.andExpect(jsonPath("$.code").value(SuccessCode.USER_READ.name()))
+				.andExpect(jsonPath("$.message").value(SuccessCode.USER_READ.getSuccessMessage()))
+				.andExpect(jsonPath("$.data.userInfo.userId").value(1L))
+				.andExpect(jsonPath("$.data.userInfo.email").value(email))
+				.andExpect(jsonPath("$.data.addresses[0].id").value(1L))
+				.andExpect(jsonPath("$.data.addresses[0].zipCode").value("12345"))
+				.andExpect(jsonPath("$.data.addresses[0].roadAddress").value("서울시 강남구 테헤란로 1"))
+				.andExpect(jsonPath("$.data.addresses[0].isMain").value(true))
+				.andDo(print());
+
+			verify(userService).getMyPage(email);
 		}
 	}
 

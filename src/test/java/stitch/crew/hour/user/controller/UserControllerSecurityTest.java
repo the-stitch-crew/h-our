@@ -54,6 +54,13 @@ class UserControllerSecurityTest {
 	}
 
 	@Test
+	@DisplayName("GET /api/users/me/mypage 요청에 인증이 없으면 예외발생")
+	void it_rejects_get_my_page_without_authentication() throws Exception {
+		mockMvc.perform(get("/api/users/me/mypage"))
+			.andExpect(status().isUnauthorized());
+	}
+
+	@Test
 	@DisplayName("PATCH /api/users/me 요청에 인증이 없으면 예외발생")
 	void it_rejects_update_my_info_without_authentication() throws Exception {
 		mockMvc.perform(
