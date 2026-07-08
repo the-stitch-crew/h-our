@@ -17,8 +17,6 @@ import org.springframework.security.web.authentication.AuthenticationSuccessHand
 import org.springframework.stereotype.Component;
 import org.springframework.web.util.UriComponentsBuilder;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import stitch.crew.hour.auth.dto.KeyPair;
@@ -28,6 +26,7 @@ import stitch.crew.hour.common.response.ApiResponses;
 import stitch.crew.hour.common.response.SuccessCode;
 import stitch.crew.hour.user.domain.User;
 import stitch.crew.hour.user.repository.UserRepository;
+import tools.jackson.databind.ObjectMapper;
 
 @Slf4j
 @Component
@@ -62,7 +61,7 @@ public class OAuth2LoginSuccessHandler implements AuthenticationSuccessHandler {
 			.filter(foundUser -> foundUser.getDeletedAt() == null);
 
 		if (user.isPresent()) {
-			KeyPair keyPair = issueToken(user.get());
+			KeyPair keyPair = setOAuthAndIssueToken(user.get(), provider);
 			writeLoginResponse(response, keyPair);
 			return;
 		}
@@ -71,8 +70,13 @@ public class OAuth2LoginSuccessHandler implements AuthenticationSuccessHandler {
 
 	}
 
-	// 기존 회원일때 실행할 메서드 (토큰 발행)
-	private KeyPair issueToken(User user) {
+	// 기존 회원일때 실행할 메서드 (토큰 발행, DB수정)
+	private KeyPair setOAuthAndIssueToken(
+		User user,
+		String provider
+	) {
+		user.setOAuth(provider.toUpperCase(Locale.ROOT));
+		userRepository.save(user);
 		return jwtTokenProvider.issueKeyPair(user.getEmail(), user.getRole());
 	}
 
@@ -101,7 +105,7 @@ public class OAuth2LoginSuccessHandler implements AuthenticationSuccessHandler {
 		String name,
 		String provider
 	) {
-		return UriComponentsBuilder.fromPath("/signup")
+		return UriComponentsBuilder.fromPath("/sign")
 			.queryParam("oauth", true)
 			.queryParam("email", email)
 			.queryParam("name", name)
