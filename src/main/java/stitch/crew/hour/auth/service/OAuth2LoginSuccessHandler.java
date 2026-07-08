@@ -38,7 +38,7 @@ public class OAuth2LoginSuccessHandler implements AuthenticationSuccessHandler {
 	private final JwtTokenProvider jwtTokenProvider;
 	private final ObjectMapper objectMapper;
 
-	@Value("${app.frontend.base-url}")
+	@Value("${app.frontend.base-url:http://localhost:5173}")
 	private String frontendBaseUrl;
 
 	@Override
