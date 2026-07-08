@@ -19,6 +19,7 @@ import stitch.crew.hour.common.exception.ErrorCode;
 import stitch.crew.hour.common.response.SuccessCode;
 import stitch.crew.hour.lesson.dto.LessonRequest;
 import stitch.crew.hour.lesson.service.LessonService;
+import stitch.crew.hour.policy.service.LessonPolicyService;
 import stitch.crew.hour.util.TestUtil;
 import tools.jackson.databind.ObjectMapper;
 
@@ -42,6 +43,9 @@ class LessonAdminControllerTest {
 
     @MockitoBean
     private LessonService lessonService;
+
+    @MockitoBean
+    private LessonPolicyService policyService;
 
     @MockitoBean
     JwtAccessDeniedHandler jwtAccessDeniedHandler;
@@ -302,7 +306,7 @@ class LessonAdminControllerTest {
 
     }
     @Nested
-    @DisplayName("Discribe: PATCH /{lessonId} 엔드포인트는")
+    @DisplayName("Discribe: PUT /{lessonId} 엔드포인트는")
     class updateCategory {
         LessonRequest request;
 
@@ -322,7 +326,7 @@ class LessonAdminControllerTest {
 
                 //when-then
                 mockMvc.perform(
-                                patch("/api/admin/lessons/" + lessonId)
+                                put("/api/admin/lessons/" + lessonId)
                                         .with(csrf())
                                         .contentType(MediaType.APPLICATION_JSON)
                                         .content(om.writeValueAsString(request))
@@ -351,7 +355,7 @@ class LessonAdminControllerTest {
                         .updateLesson(eq(lessonId), eq(request));
                 //when-then
                 mockMvc.perform(
-                                patch("/api/admin/lessons/" + lessonId)
+                                put("/api/admin/lessons/" + lessonId)
                                         .with(csrf())
                                         .principal(adminAuthentication)
                                         .contentType(MediaType.APPLICATION_JSON)
@@ -372,7 +376,7 @@ class LessonAdminControllerTest {
                         .updateLesson(eq(lessonId), eq(request));
                 //when-then
                 mockMvc.perform(
-                                patch("/api/admin/lessons/" + lessonId)
+                                put("/api/admin/lessons/" + lessonId)
                                         .with(csrf())
                                         .principal(adminAuthentication)
                                         .contentType(MediaType.APPLICATION_JSON)
