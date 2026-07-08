@@ -25,7 +25,7 @@ public class LessonAdminController {
         return ApiResult.created(SuccessCode.LESSON_CREATED);
     }
 
-    @PatchMapping("/{lessonId}")
+    @PutMapping("/{lessonId}")
     public ResponseEntity<ApiResponses<Void>> updateLesson(@PathVariable Long lessonId,
                                                            @RequestBody @Valid LessonRequest request) {
         lessonService.updateLesson(lessonId, request);
