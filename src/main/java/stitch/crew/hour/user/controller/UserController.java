@@ -17,6 +17,7 @@ import stitch.crew.hour.common.response.ApiResponses;
 import stitch.crew.hour.common.response.ApiResult;
 import stitch.crew.hour.common.response.SuccessCode;
 import stitch.crew.hour.user.domain.CurrentUser;
+import stitch.crew.hour.user.dto.MyPageResponse;
 import stitch.crew.hour.user.dto.PasswordChangeRequest;
 import stitch.crew.hour.user.dto.SignupRequest;
 import stitch.crew.hour.user.dto.SignupResponse;
@@ -47,6 +48,15 @@ public class UserController {
 		UserInfoResponse response = userService.getMyInfo(currentUser.getEmail());
 		return ApiResult.ok(SuccessCode.USER_READ, response);
 	}
+
+	@GetMapping("/me/mypage")
+	public ResponseEntity<ApiResponses<MyPageResponse>> getMyPage(
+		@AuthenticationPrincipal CurrentUser currentUser
+	) {
+		MyPageResponse response = userService.getMyPage(currentUser.getEmail());
+		return ApiResult.ok(SuccessCode.USER_READ, response);
+	}
+
 
 	@PatchMapping("/me")
 	public ResponseEntity<ApiResponses<UserInfoResponse>> updateMyInfo(

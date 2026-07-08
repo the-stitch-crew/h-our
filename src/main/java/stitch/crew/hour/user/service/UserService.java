@@ -5,10 +5,12 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import lombok.RequiredArgsConstructor;
+import stitch.crew.hour.address.repository.AddressRepository;
 import stitch.crew.hour.auth.repository.RefreshTokenRepository;
 import stitch.crew.hour.common.exception.BusinessException;
 import stitch.crew.hour.common.util.PreConditions;
 import stitch.crew.hour.user.domain.CurrentUser;
+import stitch.crew.hour.user.dto.MyPageResponse;
 import stitch.crew.hour.user.dto.PasswordChangeRequest;
 import stitch.crew.hour.user.dto.SignupRequest;
 import stitch.crew.hour.common.exception.ErrorCode;
@@ -28,6 +30,7 @@ public class UserService {
 	private final UserRepository userRepository;
 	private final PasswordEncoder passwordEncoder;
 	private final RefreshTokenRepository refreshTokenRepository;
+	private final AddressRepository addressRepository;
 
 	@Transactional
 	public SignupResponse signup(SignupRequest request){
@@ -63,6 +66,14 @@ public class UserService {
 
 	public UserInfoResponse getMyInfo(String email) {
 		return UserInfoResponse.from(getActiveUser(email));
+	}
+
+	public MyPageResponse getMyPage(String email) {
+		User user = getActiveUser(email);
+		return MyPageResponse.from(
+			user,
+			addressRepository.findAllByUserIdAndDeletedAtIsNullOrderByIsMainDescCreatedAtDesc(user.getId())
+		);
 	}
 
 	public UserInfoResponse getUserInfo(Long userId) {

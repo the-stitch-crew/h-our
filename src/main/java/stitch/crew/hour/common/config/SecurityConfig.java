@@ -33,7 +33,7 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth ->auth
                     .requestMatchers(HttpMethod.POST, "/api/users/signup").permitAll()
                     .requestMatchers("/api/auth/**").permitAll()
-                    .requestMatchers("/api/users/me", "/api/users/me/password").authenticated()
+                    .requestMatchers("/api/users/me", "/api/users/me/**").authenticated()
                     .requestMatchers("/api/addresses", "/api/addresses/**").authenticated()
                     .requestMatchers("/api/admin/**").hasRole("ADMIN")
                     .anyRequest().permitAll()
