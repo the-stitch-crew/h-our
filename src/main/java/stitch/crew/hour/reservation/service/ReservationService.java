@@ -10,6 +10,7 @@ import stitch.crew.hour.lesson.service.LessonService;
 import stitch.crew.hour.policy.domain.LessonPolicy;
 import stitch.crew.hour.policy.service.LessonPolicyService;
 import stitch.crew.hour.reservation.domain.Reservation;
+import stitch.crew.hour.reservation.dto.ExistReservationResponse;
 import stitch.crew.hour.reservation.dto.ReservationRequest;
 import stitch.crew.hour.reservation.repository.ReservationRepository;
 import stitch.crew.hour.user.domain.CurrentUser;
@@ -20,6 +21,7 @@ import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.temporal.ChronoUnit;
+import java.util.List;
 import java.util.Objects;
 
 @Service
@@ -30,6 +32,7 @@ public class ReservationService {
     private final LessonPolicyService lessonPolicyService;
     private final LessonService lessonService;
 
+    // 손님이 예약
     @Transactional
     public void saveReservation(CurrentUser currentUser, ReservationRequest request) {
         User user = userService.getActiveUserFromCurrentUser(currentUser);
@@ -39,6 +42,13 @@ public class ReservationService {
         validateReservation(request);
         Reservation reservation = new Reservation(request.date(), request.startTime(), request.endTime(), request.deposit(), request.price(), request.request(),user, lesson);
         reservationRepository.save(reservation);
+    }
+
+    //예약 전 기존 예약 확인
+    @Transactional(readOnly = true)
+    public List<ExistReservationResponse> getExistReservations(LocalDate fromDate, LocalDate toDate) {
+        List<Reservation> reservations = reservationRepository.findAllByDateBetween(fromDate, toDate);
+        return reservations.stream().map(r -> ExistReservationResponse.from(r)).toList();
     }
 
     //정책에 어긋나지 않는지 체크

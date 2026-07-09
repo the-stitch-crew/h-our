@@ -6,6 +6,7 @@ import stitch.crew.hour.reservation.domain.Reservation;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.util.List;
 
 public interface ReservationRepository extends JpaRepository<Reservation, Long> {
     @Query("""
@@ -16,4 +17,6 @@ public interface ReservationRepository extends JpaRepository<Reservation, Long> 
         or r.endTime < :startTime)
     """)
     boolean existsByDateAndTimeOverlap(LocalDate date, LocalTime startTime,  LocalTime endTime);
+
+    List<Reservation> findAllByDateBetween(LocalDate dateAfter, LocalDate dateBefore);
 }
