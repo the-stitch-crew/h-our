@@ -30,6 +30,7 @@ import java.time.temporal.ChronoUnit;
 import java.time.temporal.TemporalAdjusters;
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 import java.util.UUID;
 
 @Service
@@ -137,6 +138,19 @@ public class ReservationService {
     public Reservation getReservationWithNumber(UUID reservationNumber) {
         return reservationRepository.findByReservationNumber(reservationNumber)
                 .orElseThrow(() -> new BusinessException(ErrorCode.RESERVATION_NOT_FOUND));
+    }
+
+    //관리자가 예약을 완료 또는 노쇼로 변경할 경우
+    @Transactional
+    public void upateAdminStatus(Long reservationId, ReservationStatus status) {
+        //id가 유효하지 않을 경우 에러
+        Reservation reservation = reservationRepository.findById(reservationId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.RESERVATION_NOT_FOUND));
+        //변경할 상태값이 완료 또는 노쇼가 아닐 경우 에러
+        PreConditions.check(!Set.of(ReservationStatus.COMPLETED, ReservationStatus.NO_SHOW).contains(status),ErrorCode.RESERVATION_NOT_DONE);
+        //기존 상태가 APPROVE가 아니라면 에러
+        PreConditions.check(reservation.getStatus() != ReservationStatus.APPROVED,ErrorCode.RESERVATION_NOT_APPROVE);
+        reservation.setStatus(status);
     }
 
     //그 주의 일요일과 토요일 날짜 구하기

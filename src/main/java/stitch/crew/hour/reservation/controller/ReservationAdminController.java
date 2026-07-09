@@ -10,6 +10,7 @@ import stitch.crew.hour.common.exception.ErrorCode;
 import stitch.crew.hour.common.response.ApiResponses;
 import stitch.crew.hour.common.response.ApiResult;
 import stitch.crew.hour.common.response.SuccessCode;
+import stitch.crew.hour.reservation.domain.ReservationStatus;
 import stitch.crew.hour.reservation.dto.ReservationAdminResponse;
 import stitch.crew.hour.reservation.dto.ReservationWeekRequest;
 import stitch.crew.hour.reservation.service.ReservationService;
@@ -39,5 +40,12 @@ public class ReservationAdminController {
         }
         Page<ReservationAdminResponse> response = reservationService.getAdminReservations(isDate, date, request, status, page);
         return ApiResult.ok(SuccessCode.RESERVATION_READ,  response);
+    }
+
+    @PatchMapping("/status/{reservationId}")
+    public ResponseEntity<ApiResponses<Void>> updateStatus(@PathVariable Long reservationId,
+                                                           @RequestParam ReservationStatus status) {
+        reservationService.upateAdminStatus(reservationId, status);
+        return ApiResult.ok(SuccessCode.RESERVATION_UPDATED);
     }
 }

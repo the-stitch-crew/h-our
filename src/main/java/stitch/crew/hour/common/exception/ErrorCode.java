@@ -89,6 +89,8 @@ public enum ErrorCode {
     INVALID_DATE(HttpStatus.BAD_REQUEST, "검색 날짜가 존재하지 않습니다."),
     INVALID_RESERVATION_STATUS(HttpStatus.BAD_REQUEST, "해당하는 예약 상태가 존재하지 않습니다."),
     RESERVATION_NOT_PENDING(HttpStatus.CONFLICT, "해당하는 예약이 결제 준비 상태가 아닙니다."),
+    RESERVATION_NOT_DONE(HttpStatus.BAD_REQUEST, "변경 상태가 완료 또는 노쇼가 아닙니다."),
+    RESERVATION_NOT_APPROVE(HttpStatus.CONFLICT, "해당하는 예약이 예약 승인 상태가 아닙니다."),
 
 
 

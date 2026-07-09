@@ -3,6 +3,7 @@ package stitch.crew.hour.reservation.domain;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 import stitch.crew.hour.common.domain.BaseEntity;
 import stitch.crew.hour.lesson.domain.Lesson;
 import stitch.crew.hour.user.domain.User;
@@ -40,6 +41,7 @@ public class Reservation extends BaseEntity {
     @Column(nullable = false)
     private UUID reservationNumber;
 
+    @Setter
     @Column(nullable = false, length = 10)
     @Enumerated(EnumType.STRING)
     private ReservationStatus status;
