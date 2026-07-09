@@ -7,6 +7,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import stitch.crew.hour.common.exception.BusinessException;
 import stitch.crew.hour.common.exception.ErrorCode;
 import stitch.crew.hour.common.util.PreConditions;
 import stitch.crew.hour.lesson.domain.Lesson;
@@ -57,6 +58,7 @@ public class ReservationService {
         return reservations.stream().map(ExistReservationResponse::from).toList();
     }
 
+    //예약자가 예약 목록 확인
     @Transactional(readOnly = true)
     public Page<ReservationResponse> getMyReservations(CurrentUser currentUser, Boolean isOngoing, Integer page) {
         Sort sort = Sort.by(Sort.Direction.DESC, "date");
@@ -70,6 +72,14 @@ public class ReservationService {
         }
         return reservations.map(ReservationResponse::from);
 
+    }
+
+    //예약자가 예약 상세 확인
+    @Transactional(readOnly = true)
+    public ReservationResponse getMyReservation(CurrentUser currentUser, Long reservationId) {
+        Reservation reservation = reservationRepository.findById(reservationId).orElseThrow(() -> new BusinessException(ErrorCode.RESERVATION_NOT_FOUND));
+        PreConditions.check(!Objects.equals(reservation.getUser().getId(), currentUser.getId()), ErrorCode.RESERVATION_NOT_CLIENT);
+        return ReservationResponse.from(reservation);
     }
 
     //정책에 어긋나지 않는지 체크

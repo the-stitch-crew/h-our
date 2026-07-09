@@ -84,8 +84,8 @@ public enum ErrorCode {
     PRICE_NOT_MATCH(HttpStatus.BAD_REQUEST, "수업의 금액과 예약의 금액이 일치하지 않습니다."),
     INVALID_TIME(HttpStatus.BAD_REQUEST, "불가능한 형식의 시간입니다."),
     RESERVATION_OVERLAP(HttpStatus.CONFLICT, "이미 예약된 시간입니다."),
-    FROM_DATE_REQUIRED(HttpStatus.BAD_REQUEST, "시작 날짜는 필수값입니다."),
-    TO_DATE_REQUIRED(HttpStatus.BAD_REQUEST, "종료 날짜는 필수값입니다."),
+    RESERVATION_NOT_FOUND(HttpStatus.NOT_FOUND, "해당 예약을 찾을 수 없습니다."),
+    RESERVATION_NOT_CLIENT(HttpStatus.FORBIDDEN, "예약의 당사자가 아닙니다."),
 
 
 
