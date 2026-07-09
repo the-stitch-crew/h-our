@@ -8,7 +8,11 @@ public record ProductSearchResponse(
         Long price,
         String thumbnail,
         String productStatus,
-        String summary
+        String summary,
+        String categoryName,
+        Boolean isMain,
+        Long viewCount,
+        Integer salesCount
 ) {
     @QueryProjection
     public ProductSearchResponse{

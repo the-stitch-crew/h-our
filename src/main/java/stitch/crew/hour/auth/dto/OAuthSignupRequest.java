@@ -2,26 +2,16 @@ package stitch.crew.hour.auth.dto;
 
 import java.time.LocalDate;
 
-import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Past;
 import jakarta.validation.constraints.Pattern;
-import jakarta.validation.constraints.Size;
 import stitch.crew.hour.user.constant.Gender;
 
 public record OAuthSignupRequest(
 
-	@Email(message = "올바른 이메일 형식이 아닙니다.")
-	@NotBlank(message = "이메일은 필수입니다.")
-	String email,
-
-	@NotBlank(message = "이름은 필수입니다.")
-	@Size(max = 50, message = "이름은 최대 50자까지 가능합니다.")
-	String userName,
-
-	@NotBlank(message = "OAuth 제공자는 필수입니다.")
-	String provider,
+	@NotBlank(message = "회원가입 토큰은 필수입니다.")
+	String signupToken,
 
 	@NotNull(message = "생년월일은 필수입니다.")
 	@Past(message = "생년월일은 과거 날짜여야 합니다.")

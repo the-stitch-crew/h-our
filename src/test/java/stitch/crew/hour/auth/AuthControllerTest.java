@@ -1,6 +1,7 @@
 package stitch.crew.hour.auth;
 
 import static org.mockito.BDDMockito.given;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
@@ -20,6 +21,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import stitch.crew.hour.auth.controller.AuthController;
 import stitch.crew.hour.auth.dto.LoginRequest;
 import stitch.crew.hour.auth.dto.KeyPair;
+import stitch.crew.hour.auth.dto.OAuthSignupInfoResponse;
 import stitch.crew.hour.auth.dto.OAuthSignupRequest;
 import stitch.crew.hour.auth.dto.RefreshTokenRequest;
 import stitch.crew.hour.auth.service.AuthService;
@@ -86,9 +88,7 @@ class AuthControllerTest {
 		void it_returns_201_created_and_tokens() throws Exception {
 			// given
 			OAuthSignupRequest request = new OAuthSignupRequest(
-				"oauth@google.com",
-				"OAuth User",
-				"GOOGLE",
+				"signup-token",
 				java.time.LocalDate.of(2000, 1, 1),
 				stitch.crew.hour.user.constant.Gender.MALE,
 				"010-9999-8888",
@@ -107,9 +107,7 @@ class AuthControllerTest {
 						.contentType(MediaType.APPLICATION_JSON)
 						.content("""
 							{
-							  "email": "oauth@google.com",
-							  "userName": "OAuth User",
-							  "provider": "GOOGLE",
+							  "signupToken": "signup-token",
 							  "birthDate": "2000-01-01",
 							  "gender": "MALE",
 							  "phoneNumber": "010-9999-8888",
@@ -123,6 +121,39 @@ class AuthControllerTest {
 				.andExpect(jsonPath("$.message").value(SuccessCode.USER_CREATED.getSuccessMessage()))
 				.andExpect(jsonPath("$.data.accessToken").value("oauth-access-token"))
 				.andExpect(jsonPath("$.data.refreshToken").value("oauth-refresh-token"))
+				.andDo(print());
+		}
+	}
+
+	@Nested
+	@DisplayName("Describe: GET /api/auth/oauth/signup 엔드포인트는")
+	class Describe_getOAuthSignupInfo {
+
+		@Test
+		@DisplayName("It: signupToken으로 OAuth 회원가입 고정 정보를 조회한다")
+		void it_returns_200_ok_and_oauth_signup_info() throws Exception {
+			// given
+			OAuthSignupInfoResponse response = new OAuthSignupInfoResponse(
+				"hello@google.com",
+				"Google User",
+				"GOOGLE"
+			);
+
+			given(authService.getOAuthSignupInfo("signup-token")).willReturn(response);
+
+			// when & then
+			mockMvc.perform(
+					get("/api/auth/oauth/signup")
+						.param("signupToken", "signup-token")
+				)
+				.andExpect(status().isOk())
+				.andExpect(content().contentType(MediaType.APPLICATION_JSON))
+				.andExpect(jsonPath("$.code").value(SuccessCode.USER_READ.name()))
+				.andExpect(jsonPath("$.message").value(SuccessCode.USER_READ.getSuccessMessage()))
+				.andExpect(jsonPath("$.data.email").value("hello@google.com"))
+				.andExpect(jsonPath("$.data.userName").value("Google User"))
+				.andExpect(jsonPath("$.data.provider").value("GOOGLE"))
+				.andExpect(jsonPath("$.data.password").doesNotExist())
 				.andDo(print());
 		}
 	}
