@@ -1,5 +1,6 @@
 package stitch.crew.hour.reservation.service;
 
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -16,9 +17,7 @@ import stitch.crew.hour.policy.domain.LessonPolicy;
 import stitch.crew.hour.policy.service.LessonPolicyService;
 import stitch.crew.hour.reservation.domain.Reservation;
 import stitch.crew.hour.reservation.domain.ReservationStatus;
-import stitch.crew.hour.reservation.dto.ExistReservationResponse;
-import stitch.crew.hour.reservation.dto.ReservationRequest;
-import stitch.crew.hour.reservation.dto.ReservationResponse;
+import stitch.crew.hour.reservation.dto.*;
 import stitch.crew.hour.reservation.repository.ReservationRepository;
 import stitch.crew.hour.user.domain.CurrentUser;
 import stitch.crew.hour.user.domain.User;
@@ -28,6 +27,7 @@ import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.temporal.ChronoUnit;
+import java.time.temporal.TemporalAdjusters;
 import java.util.List;
 import java.util.Objects;
 
@@ -80,6 +80,58 @@ public class ReservationService {
         Reservation reservation = reservationRepository.findById(reservationId).orElseThrow(() -> new BusinessException(ErrorCode.RESERVATION_NOT_FOUND));
         PreConditions.check(!Objects.equals(reservation.getUser().getId(), currentUser.getId()), ErrorCode.RESERVATION_NOT_CLIENT);
         return ReservationResponse.from(reservation);
+    }
+
+    //관리자가 예약 목록 확인
+    @Transactional(readOnly = true)
+    public Page<ReservationAdminResponse> getAdminReservations(Boolean isDate, LocalDate date, @Valid ReservationWeekRequest request, String status, Integer page) {
+        Sort sort;
+        Pageable pageable;
+        Page<Reservation> reservations;
+        if (isDate) {
+            sort = Sort.by(Sort.Direction.ASC, "startTime");
+            pageable = PageRequest.of(page-1, 10, sort);
+            if (status.equals("ALL")) {
+                reservations = reservationRepository.findAllByDateEquals(date,  pageable);
+            } else {
+                ReservationStatus rStatus = ReservationStatus.of(status);
+                reservations = reservationRepository.findAllByDateEqualsAndStatusEquals(date, rStatus, pageable);
+            }
+        }
+        else {
+            LocalDate[] weekRange = getWeekRange(request);
+            sort = Sort.by(new Sort.Order(Sort.Direction.ASC, "date"), new Sort.Order(Sort.Direction.ASC, "startTime"));
+            pageable = PageRequest.of(page-1, 10, sort);
+            if (status.equals("ALL")) {
+                reservations = reservationRepository.findAllByDateBetween(weekRange[0], weekRange[1], pageable);
+            } else {
+                ReservationStatus rStatus = ReservationStatus.of(status);
+                reservations = reservationRepository.findAllByDateBetweenAndStatusEquals(weekRange[0], weekRange[1], rStatus, pageable);
+            }
+        }
+        return reservations.map(r-> {
+            User user = r.getUser();
+            int reservationCount = reservationRepository.countByUserId(user.getId());
+            int visitCount = reservationRepository.countByUserIdAndStatusEquals(user.getId(),  ReservationStatus.COMPLETED);
+            LocalDate lastVisitDate = visitCount==0? null: reservationRepository.findLastByUserIdAndStatusEquals(user.getId(), ReservationStatus.COMPLETED).getDate();
+            CustomerSummaryResponse customer = CustomerSummaryResponse.from(user,  reservationCount, visitCount, lastVisitDate);
+            return ReservationAdminResponse.from(r, customer, r.getLesson());
+        });
+    }
+
+    //그 주의 일요일과 토요일 날짜 구하기
+    private LocalDate[] getWeekRange(ReservationWeekRequest request) {
+        //그 달의 첫번째 날 찾기
+        LocalDate firstDay = LocalDate.of(request.year(), request.month(), 1);
+        //해당 월의 첫 번째 일요일
+        LocalDate firstSunday = firstDay.with(
+                TemporalAdjusters.nextOrSame(DayOfWeek.SUNDAY)
+        );
+        //원하는 주차 시작일
+        LocalDate startDate = firstSunday.plusWeeks(request.week() - 1);
+        //토요일
+        LocalDate endDate = startDate.plusDays(6);
+        return new LocalDate[]{startDate, endDate};
     }
 
     //정책에 어긋나지 않는지 체크

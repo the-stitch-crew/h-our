@@ -86,6 +86,8 @@ public enum ErrorCode {
     RESERVATION_OVERLAP(HttpStatus.CONFLICT, "이미 예약된 시간입니다."),
     RESERVATION_NOT_FOUND(HttpStatus.NOT_FOUND, "해당 예약을 찾을 수 없습니다."),
     RESERVATION_NOT_CLIENT(HttpStatus.FORBIDDEN, "예약의 당사자가 아닙니다."),
+    INVALID_DATE(HttpStatus.BAD_REQUEST, "검색 날짜가 존재하지 않습니다."),
+    INVALID_RESERVATION_STATUS(HttpStatus.BAD_REQUEST, "해당하는 예약 상태가 존재하지 않습니다."),
 
 
 

@@ -10,20 +10,20 @@ public record CustomerSummaryResponse(
 	String email,
 	String phoneNumber,
 	String nationality,
-	Integer visitCount,
 	Integer reservationCount,
+	Integer visitCount,
 	LocalDate lastVisitDate
 ) {
 
-	public static CustomerSummaryResponse from(User user, int visitCount, int reservationCount, LocalDate lastVisitDate) {
+	public static CustomerSummaryResponse from(User user,  int reservationCount, int visitCount,LocalDate lastVisitDate) {
 		return new CustomerSummaryResponse(
 			user.getId(),
 			user.getUserName(),
 			user.getEmail(),
 			user.getPhoneNumber(),
 			user.getNationality(),
-			visitCount,
 			reservationCount,
+			visitCount,
 			lastVisitDate
 		);
 	}

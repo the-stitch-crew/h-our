@@ -28,4 +28,15 @@ public interface ReservationRepository extends JpaRepository<Reservation, Long> 
 
     Page<Reservation> findAllByUserIdAndStatusInOrderByDateDescStartTimeDesc(Long userId, List<ReservationStatus> statuses, Pageable pageable);
 
+    Page<Reservation> findAllByDateEquals(LocalDate date, Pageable pageable);
+    Page<Reservation> findAllByDateEqualsAndStatusEquals(LocalDate date, ReservationStatus status, Pageable pageable);
+
+    Page<Reservation> findAllByDateBetween(LocalDate dateAfter, LocalDate dateBefore,  Pageable pageable);
+    Page<Reservation> findAllByDateBetweenAndStatusEquals(LocalDate dateAfter, LocalDate dateBefore,  ReservationStatus status, Pageable pageable);
+
+    int countByUserId(Long userId);
+    int countByUserIdAndStatusEquals(Long userId, ReservationStatus status);
+    Reservation findLastByUserIdAndStatusEquals(Long userId, ReservationStatus status);
+
+
 }
