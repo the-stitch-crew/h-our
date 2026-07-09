@@ -43,6 +43,9 @@ dependencies {
     implementation 'software.amazon.awssdk:s3:2.45.1'
     implementation 'io.awspring.cloud:spring-cloud-aws-starter-s3:4.0.2'
 
+    //Spring cache
+    implementation 'org.springframework.boot:spring-boot-starter-cache'
+
     compileOnly 'org.projectlombok:lombok'
     runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.12.6'
     runtimeOnly 'io.jsonwebtoken:jjwt-jackson:0.12.6'

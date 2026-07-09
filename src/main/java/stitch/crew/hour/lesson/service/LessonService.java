@@ -1,6 +1,7 @@
 package stitch.crew.hour.lesson.service;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import stitch.crew.hour.common.exception.BusinessException;
@@ -49,6 +50,7 @@ public class LessonService {
         lessonRepository.delete(lesson);
     }
 
+    @Cacheable(cacheNames = "lesson", key = "#lessonId",sync = true)
     @Transactional(readOnly = true)
     public Lesson getLessonById(Long lessonId) {
         return lessonRepository.findById(lessonId).orElseThrow(() -> new BusinessException(ErrorCode.LESSON_NOT_FOUND));
