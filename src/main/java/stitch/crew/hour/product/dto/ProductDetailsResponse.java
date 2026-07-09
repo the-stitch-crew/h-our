@@ -17,11 +17,18 @@ public record ProductDetailsResponse(
     public static ProductDetailsResponse from(
             Product product
     ){
+        return from(product, product.getThumbnail());
+    }
+
+    public static ProductDetailsResponse from(
+            Product product,
+            String thumbnail
+    ){
         return new ProductDetailsResponse(
                 product.getId(),
                 product.getName(),
                 product.getPrice(),
-                product.getThumbnail(),
+                thumbnail,
                 product.getStatus().name(),
                 product.getSummary(),
                 product.getDescription(),

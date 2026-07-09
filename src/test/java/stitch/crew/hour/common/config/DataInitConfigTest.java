@@ -14,6 +14,7 @@ import stitch.crew.hour.policy.domain.ShippingPolicy;
 import stitch.crew.hour.policy.repository.LessonPolicyRepository;
 import stitch.crew.hour.policy.repository.ShippingPolicyRepository;
 import stitch.crew.hour.product.repository.ProductRepository;
+import stitch.crew.hour.user.domain.User;
 import stitch.crew.hour.user.repository.UserRepository;
 
 import java.util.Optional;
@@ -65,12 +66,41 @@ class DataInitConfigTest {
         );
         given(shippingPolicyRepository.findActive())
                 .willReturn(Optional.of(new ShippingPolicy(3500L, 2000L, true)));
-        given(userRepository.count()).willReturn(1L);
         given(environment.matchesProfiles("dev")).willReturn(false);
 
         CommandLineRunner runner = dataInitConfig.init();
         runner.run();
 
         verify(shippingPolicyRepository, never()).save(any(ShippingPolicy.class));
+    }
+
+    @Test
+    @DisplayName("init 메서드는 설정된 초기 어드민 이메일이 없으면 기존 유저 수와 무관하게 어드민을 생성한다")
+    void initCreatesConfiguredAdminWhenEmailDoesNotExist() throws Exception {
+        DataInitConfig dataInitConfig = new DataInitConfig(
+                shippingPolicyRepository,
+                lessonPolicyRepository,
+                userRepository,
+                categoryRepository,
+                productRepository,
+                orderBoundaryRepository,
+                passwordEncoder,
+                environment
+        );
+        given(shippingPolicyRepository.findActive())
+                .willReturn(Optional.of(new ShippingPolicy(3500L, 2000L, true)));
+        given(environment.getProperty("INITIAL_ADMIN_EMAIL")).willReturn("admin@naver.com");
+        given(environment.getProperty("INITIAL_ADMIN_PASSWORD")).willReturn("password1234");
+        given(environment.getProperty("INITIAL_ADMIN_USER_NAME", "Initial Admin")).willReturn("FirstAdmin");
+        given(environment.getProperty("INITIAL_ADMIN_PHONE_NUMBER")).willReturn("010-1234-5678");
+        given(environment.getProperty("INITIAL_ADMIN_NATIONALITY", "KOREA")).willReturn("KOREA");
+        given(userRepository.existsByEmail("admin@naver.com")).willReturn(false);
+        given(passwordEncoder.encode("password1234")).willReturn("encoded-password");
+        given(environment.matchesProfiles("dev")).willReturn(false);
+
+        CommandLineRunner runner = dataInitConfig.init();
+        runner.run();
+
+        verify(userRepository).save(any(User.class));
     }
 }

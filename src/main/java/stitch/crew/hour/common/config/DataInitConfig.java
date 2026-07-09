@@ -74,9 +74,7 @@ public class DataInitConfig {
                             Set.of(DayOfWeek.SATURDAY, DayOfWeek.SUNDAY))
             );
 
-            if (userRepository.count() < 1) {
-                createInitialAdminIfConfigured();
-            }
+            createInitialAdminIfConfigured();
 
             if (environment.matchesProfiles("dev")) {
                 createSampleOrderData();
@@ -203,6 +201,10 @@ public class DataInitConfig {
                         || !StringUtils.hasText(nationality)
         ) {
             log.warn("초기 어드민 생성 패쓰.");
+            return;
+        }
+
+        if (userRepository.existsByEmail(email)) {
             return;
         }
 

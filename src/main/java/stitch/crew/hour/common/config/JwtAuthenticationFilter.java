@@ -56,11 +56,18 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 			}
 		} catch (BusinessException exception) {
 			SecurityContextHolder.clearContext();
-			writeErrorResponse(response, exception.getErrorCode());
+			writeErrorResponse(response, resolveAuthenticationErrorCode(exception.getErrorCode()));
 			return;
 		}
 
 		filterChain.doFilter(request,response);
+	}
+
+	private ErrorCode resolveAuthenticationErrorCode(ErrorCode errorCode) {
+		if (errorCode == ErrorCode.USER_DONT_EXISTS) {
+			return ErrorCode.UNAUTHORIZED;
+		}
+		return errorCode;
 	}
 
 	private void writeErrorResponse(
