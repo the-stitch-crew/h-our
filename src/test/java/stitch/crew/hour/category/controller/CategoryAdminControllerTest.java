@@ -9,11 +9,13 @@ import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.security.authentication.TestingAuthenticationToken;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import stitch.crew.hour.category.dto.AdminCategoryDetailResponse;
 import stitch.crew.hour.category.dto.AdminCategorySearchResponse;
 import stitch.crew.hour.category.dto.CategoryRequest;
@@ -91,7 +93,7 @@ class CategoryAdminControllerTest {
             given(categoryAdminService.getCategories(0, 20, null, false)).willReturn(response);
 
             // when & then
-            mockMvc.perform(get("/api/admin/categories"))
+            mockMvc.perform(MockMvcRequestBuilders.request(HttpMethod.GET, "/api/admin/categories"))
                     .andExpect(status().isOk())
                     .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                     .andExpect(jsonPath("$.code").value(SuccessCode.CATEGORY_READ.name()))
@@ -119,7 +121,7 @@ class CategoryAdminControllerTest {
             given(categoryAdminService.getCategory(categoryId)).willReturn(detailResponse());
 
             // when & then
-            mockMvc.perform(get("/api/admin/categories/{categoryId}", categoryId))
+            mockMvc.perform(MockMvcRequestBuilders.request(HttpMethod.GET, "/api/admin/categories/{categoryId}", categoryId))
                     .andExpect(status().isOk())
                     .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                     .andExpect(jsonPath("$.code").value(SuccessCode.CATEGORY_READ.name()))
@@ -143,7 +145,7 @@ class CategoryAdminControllerTest {
                     .getCategory(categoryId);
 
             // when & then
-            mockMvc.perform(get("/api/admin/categories/{categoryId}", categoryId))
+            mockMvc.perform(MockMvcRequestBuilders.request(HttpMethod.GET, "/api/admin/categories/{categoryId}", categoryId))
                     .andExpect(status().isNotFound())
                     .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                     .andExpect(jsonPath("$.code").value(ErrorCode.CATEGORY_NOT_FOUND.name()))
@@ -204,7 +206,7 @@ class CategoryAdminControllerTest {
 
             // when & then
             mockMvc.perform(
-                            delete("/api/admin/categories/{categoryId}", categoryId)
+                            MockMvcRequestBuilders.request(HttpMethod.DELETE, "/api/admin/categories/{categoryId}", categoryId)
                                     .with(csrf())
                                     .principal(adminAuthentication)
                     )
