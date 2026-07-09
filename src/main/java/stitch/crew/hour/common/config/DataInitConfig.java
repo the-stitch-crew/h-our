@@ -6,6 +6,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Profile;
 import org.springframework.core.env.Environment;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -37,6 +38,7 @@ import java.util.Set;
 @Configuration
 @RequiredArgsConstructor
 @Slf4j
+@Profile("!test")
 public class DataInitConfig {
     private static final String SAMPLE_USER_EMAIL = "payment-test@hour.test";
     private static final String SAMPLE_USER_PASSWORD = "password1234!";
