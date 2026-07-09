@@ -12,16 +12,12 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.RestTemplate;
 import stitch.crew.hour.common.dto.Paging;
 import stitch.crew.hour.common.response.ApiResponses;
 import stitch.crew.hour.common.response.ApiResult;
 import stitch.crew.hour.common.response.SuccessCode;
-import stitch.crew.hour.order.dto.OrderDetailResponse;
-import stitch.crew.hour.order.service.OrderService;
 import stitch.crew.hour.payment.domain.Payment;
 import stitch.crew.hour.payment.dto.CancelResponse;
 import stitch.crew.hour.payment.dto.PaymentDetailResponse;
@@ -37,7 +33,7 @@ import java.util.Base64;
 import java.util.Map;
 import java.util.UUID;
 
-@Controller
+@RestController
 @Slf4j
 @RequiredArgsConstructor
 @RequestMapping("/api/payments")
@@ -50,39 +46,10 @@ public class PaymentController implements PaymentSwaggerSupporter{
     private String baseUrl;
 
     private final PaymentService paymentService;
-    private final OrderService orderService;
 
     private final ObjectMapper om = new ObjectMapper();
 
     @PreAuthorize("isAuthenticated()")
-    @GetMapping("/orders/{orderNumber}")
-    public String showIndex(
-            @AuthenticationPrincipal CurrentUser currentUser,
-            @PathVariable UUID orderNumber,
-            Model model
-    ) {
-        OrderDetailResponse order = orderService.getOrderDetailFromPurchase(
-                currentUser.getId(),
-                orderNumber
-        );
-
-        model.addAttribute("order", order);
-        model.addAttribute("orderName", getOrderName(order));
-        return "index";
-    }
-
-    @GetMapping("/success")
-    public String showSuccess() {
-        return "success";
-    }
-
-    @GetMapping("/fail")
-    public String showFail() {
-        return "fail";
-    }
-
-    @PreAuthorize("isAuthenticated()")
-    @ResponseBody
     @PostMapping("/confirm")
     public String confirm(
             @AuthenticationPrincipal CurrentUser currentUser,
@@ -143,21 +110,6 @@ public class PaymentController implements PaymentSwaggerSupporter{
         return "Basic " + new String(encode);
     }
 
-    private String getOrderName(OrderDetailResponse order) {
-        if (order.orderProducts().isEmpty()) {
-            return "Order items";
-        }
-
-        String firstProductName = order.orderProducts().getFirst().name();
-        int remainingProductCount = order.orderProducts().size() - 1;
-
-        if (remainingProductCount == 0) {
-            return firstProductName;
-        }
-
-        return "%s and %d more".formatted(firstProductName, remainingProductCount);
-    }
-
     public ResponseEntity<String> requestConfirm(
             PaymentRequestBody requestBody,
             UUID idempotencyKey
@@ -208,7 +160,6 @@ public class PaymentController implements PaymentSwaggerSupporter{
     }
 
     @GetMapping("/{paymentId}")
-    @ResponseBody
     public ResponseEntity<ApiResponses<PaymentDetailResponse>> getPaymentDetail(
             @AuthenticationPrincipal CurrentUser currentUser,
             @PathVariable Long paymentId
@@ -223,7 +174,6 @@ public class PaymentController implements PaymentSwaggerSupporter{
     }
 
     @GetMapping("/orders/{orderNumber}/detail")
-    @ResponseBody
     public ResponseEntity<ApiResponses<PaymentDetailResponse>> getPaymentDetailByOrderNumber(
             @AuthenticationPrincipal CurrentUser currentUser,
             @PathVariable UUID orderNumber
@@ -239,7 +189,6 @@ public class PaymentController implements PaymentSwaggerSupporter{
 
 
     @GetMapping
-    @ResponseBody
     public ResponseEntity<ApiResponses<Page<PaymentDetailResponse>>> getPaymentSearch(
             @AuthenticationPrincipal CurrentUser currentUser,
             Paging paging
@@ -254,23 +203,23 @@ public class PaymentController implements PaymentSwaggerSupporter{
     }
 
     @GetMapping("/{paymentId}/receipt")
-    public String getReceiptUrl(
+    public ResponseEntity<ApiResponses<PaymentDetailResponse>> getReceipt(
             @AuthenticationPrincipal CurrentUser currentUser,
-            @PathVariable Long paymentId,
-            Model model
+            @PathVariable Long paymentId
     ){
         PaymentDetailResponse payment = paymentService.getReceipt(
                 currentUser.getId(),
                 paymentId
         );
 
-        model.addAttribute("payment", payment);
-        return "receipt";
+        return ApiResult.ok(
+                SuccessCode.PAYMENT_READ_SUCCESS,
+                payment
+        );
     }
 
 
     @DeleteMapping("/{paymentId}")
-    @ResponseBody
     public ResponseEntity<ApiResponses<Void>> cancelPayment(
             @AuthenticationPrincipal CurrentUser currentUser,
             @PathVariable Long paymentId

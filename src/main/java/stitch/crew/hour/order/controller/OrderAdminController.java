@@ -20,8 +20,6 @@ public class OrderAdminController implements OrderAdminSwaggerSupporter {
 
     private final OrderService orderService;
 
-
-
     @Override
     @PatchMapping("/{orderNumber}/indelivery")
     public ResponseEntity<ApiResponses<Void>> setOrderInDelivery(

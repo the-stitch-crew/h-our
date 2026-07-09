@@ -556,7 +556,7 @@ class PaymentServiceTest {
             @Test
             @DisplayName("It : 정상적으로 환불 성공")
             void It_단건_조회_성공(){
-
+                testPayment.switchPaymentStatus(PaymentStatus.COMPLETED);
                 // when
                 paymentService.refundPaymentByPaymentId(
                         testUser.getId(),
@@ -578,6 +578,7 @@ class PaymentServiceTest {
             @DisplayName("It : 다른 사용자가 환불 시 차단")
             void It_환불_실패__다른_사용자(){
                 // given
+                testPayment.switchPaymentStatus(PaymentStatus.COMPLETED);
 
                 User userTester = userRepository.save(
                         new User(
