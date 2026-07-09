@@ -33,8 +33,11 @@ public class Payment {
     @Column(nullable = false, length = 255)
     private String tossPaymentKey;
 
-    @Column(nullable = false)
+    @Column
     private UUID orderNumber;
+
+    @Column
+    private UUID reservationNumber;
 
     @Column(nullable = false, length = 50)
     @Enumerated(value = EnumType.STRING)
@@ -76,7 +79,6 @@ public class Payment {
         this.tossPaymentKey = requestBody.paymentKey();
         this.tossOrderId = UUID.fromString(requestBody.orderId());
 
-        this.orderNumber = UUID.fromString(requestBody.orderNumber());
         this.idempotencyKey = UUID.randomUUID();
         this.paymentStatus = PaymentStatus.PENDING;
         this.paymentMethod = paymentMethod;
@@ -85,10 +87,12 @@ public class Payment {
 
         if (paymentType.equals(PaymentType.ORDER)) {
             this.order = order;
+            this.orderNumber = UUID.fromString(requestBody.orderNumber());
             this.totalPrice = order.getTotalPrice().longValue();
         } else {
             this.reservation = reservation;
-            this.totalPrice = requestBody.amount();
+            this.reservationNumber = UUID.fromString(requestBody.reservationNumber());
+            this.totalPrice = reservation.getDeposit().longValue();
         }
     }
 

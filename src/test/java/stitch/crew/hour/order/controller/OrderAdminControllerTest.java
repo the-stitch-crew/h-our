@@ -28,6 +28,8 @@ import stitch.crew.hour.order.dto.OrderCreateFromCartRequest;
 import stitch.crew.hour.order.dto.OrderCreateResponse;
 import stitch.crew.hour.order.repository.OrderBoundaryRepository;
 import stitch.crew.hour.order.service.OrderService;
+import stitch.crew.hour.policy.domain.ShippingPolicy;
+import stitch.crew.hour.policy.repository.ShippingPolicyRepository;
 import stitch.crew.hour.product.domain.Product;
 import stitch.crew.hour.product.repository.ProductRepository;
 import stitch.crew.hour.user.constant.Gender;
@@ -78,6 +80,9 @@ class OrderAdminControllerTest {
     Category testCategory;
     Product testProduct;
 
+    @Autowired
+    ShippingPolicyRepository shippingPolicyRepository;
+
     @BeforeEach
     void setUp() {
         testUser = userRepository.save(
@@ -93,6 +98,14 @@ class OrderAdminControllerTest {
                         "?",
                         false,
                         false
+                )
+        );
+        shippingPolicyRepository.deleteAll();
+        shippingPolicyRepository.save(
+                new ShippingPolicy(
+                        4000L,
+                        3000L,
+                        true
                 )
         );
 

@@ -1,6 +1,7 @@
 package stitch.crew.hour.policy.repository;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import stitch.crew.hour.common.exception.BusinessException;
 import stitch.crew.hour.common.exception.ErrorCode;
@@ -23,4 +24,13 @@ public interface ShippingPolicyRepository extends JpaRepository<ShippingPolicy, 
                 ()-> new BusinessException(ErrorCode.NO_SHIPPING_POLICY)
         );
     }
+
+    @Modifying
+    @Query(
+            """
+            UPDATE ShippingPolicy sp
+               SET sp.isActive = false
+            """
+    )
+    void setAllUnActive();
 }

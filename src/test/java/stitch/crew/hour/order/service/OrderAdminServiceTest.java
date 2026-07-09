@@ -25,6 +25,8 @@ import stitch.crew.hour.order.dto.AdminOrderSearchResponse;
 import stitch.crew.hour.order.repository.OrderRepository;
 import stitch.crew.hour.orderproduct.domain.OrderProduct;
 import stitch.crew.hour.orderproduct.repository.OrderProductRepository;
+import stitch.crew.hour.policy.domain.ShippingPolicy;
+import stitch.crew.hour.policy.repository.ShippingPolicyRepository;
 import stitch.crew.hour.product.domain.Product;
 import stitch.crew.hour.product.repository.ProductRepository;
 import stitch.crew.hour.user.constant.Gender;
@@ -59,6 +61,9 @@ class OrderAdminServiceTest {
     OrderRepository orderRepository;
 
     @Autowired
+    ShippingPolicyRepository shippingPolicyRepository;
+
+    @Autowired
     OrderProductRepository orderProductRepository;
 
     @Autowired
@@ -75,7 +80,13 @@ class OrderAdminServiceTest {
         Category testCategory = categoryRepository.save(
                 new Category("관리자 주문")
         );
-
+        shippingPolicyRepository.save(
+                new ShippingPolicy(
+                        4000L,
+                        3000L,
+                        true
+                )
+        );
         testProduct = productRepository.save(
                 new Product(
                         "테스트 상품",
