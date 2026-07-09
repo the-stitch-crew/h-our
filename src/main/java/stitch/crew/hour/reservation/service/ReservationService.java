@@ -133,6 +133,12 @@ public class ReservationService {
         return reservation.getReservationNumber();
     }
 
+    @Transactional(readOnly = true)
+    public Reservation getReservationWithNumber(UUID reservationNumber) {
+        return reservationRepository.findByReservationNumber(reservationNumber)
+                .orElseThrow(() -> new BusinessException(ErrorCode.RESERVATION_NOT_FOUND));
+    }
+
     //그 주의 일요일과 토요일 날짜 구하기
     private LocalDate[] getWeekRange(ReservationWeekRequest request) {
         //그 달의 첫번째 날 찾기

@@ -10,6 +10,8 @@ import stitch.crew.hour.reservation.domain.ReservationStatus;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
 
 public interface ReservationRepository extends JpaRepository<Reservation, Long> {
     @Query("""
@@ -37,6 +39,8 @@ public interface ReservationRepository extends JpaRepository<Reservation, Long> 
     int countByUserId(Long userId);
     int countByUserIdAndStatusEquals(Long userId, ReservationStatus status);
     Reservation findLastByUserIdAndStatusEquals(Long userId, ReservationStatus status);
+
+    Optional<Reservation> findByReservationNumber(UUID number);
 
 
 }
