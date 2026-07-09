@@ -1,6 +1,10 @@
 package stitch.crew.hour.reservation.service;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import stitch.crew.hour.common.exception.ErrorCode;
@@ -10,8 +14,10 @@ import stitch.crew.hour.lesson.service.LessonService;
 import stitch.crew.hour.policy.domain.LessonPolicy;
 import stitch.crew.hour.policy.service.LessonPolicyService;
 import stitch.crew.hour.reservation.domain.Reservation;
+import stitch.crew.hour.reservation.domain.ReservationStatus;
 import stitch.crew.hour.reservation.dto.ExistReservationResponse;
 import stitch.crew.hour.reservation.dto.ReservationRequest;
+import stitch.crew.hour.reservation.dto.ReservationResponse;
 import stitch.crew.hour.reservation.repository.ReservationRepository;
 import stitch.crew.hour.user.domain.CurrentUser;
 import stitch.crew.hour.user.domain.User;
@@ -47,8 +53,23 @@ public class ReservationService {
     //예약 전 기존 예약 확인
     @Transactional(readOnly = true)
     public List<ExistReservationResponse> getExistReservations(LocalDate fromDate, LocalDate toDate) {
-        List<Reservation> reservations = reservationRepository.findAllByDateBetween(fromDate, toDate);
-        return reservations.stream().map(r -> ExistReservationResponse.from(r)).toList();
+        List<Reservation> reservations = reservationRepository.findAllByDateBetweenAndStatusNotOrderByDateAscStartTimeAsc(fromDate, toDate, ReservationStatus.CANCELED);
+        return reservations.stream().map(ExistReservationResponse::from).toList();
+    }
+
+    @Transactional(readOnly = true)
+    public Page<ReservationResponse> getMyReservations(CurrentUser currentUser, Boolean isOngoing, Integer page) {
+        Sort sort = Sort.by(Sort.Direction.DESC, "date");
+        Pageable pageable = PageRequest.of(page-1, 10, sort);
+        Page<Reservation> reservations;
+        if (isOngoing) {
+            reservations = reservationRepository.findAllByUserIdAndStatusInOrderByDateDescStartTimeDesc(currentUser.getId(), List.of(ReservationStatus.PENDING, ReservationStatus.APPROVED), pageable);
+        }
+        else {
+            reservations = reservationRepository.findAllByUserIdOrderByDateDescStartTimeDesc(currentUser.getId(), pageable);
+        }
+        return reservations.map(ReservationResponse::from);
+
     }
 
     //정책에 어긋나지 않는지 체크
@@ -92,7 +113,7 @@ public class ReservationService {
 
     //기존의 예약과 겹치지 않은지 체크
     private void validateReservation(ReservationRequest request) {
-        boolean existReservation = reservationRepository.existsByDateAndTimeOverlap(request.date(), request.startTime(), request.endTime());
-        PreConditions.check(existReservation,ErrorCode.RESERVATION_OVERLAP );
+        boolean existReservation = reservationRepository.existsByDateAndTimeOverlap(request.date(), request.startTime(), request.endTime(), ReservationStatus.CANCELED);
+        PreConditions.check(existReservation,ErrorCode.RESERVATION_OVERLAP);
     }
 }

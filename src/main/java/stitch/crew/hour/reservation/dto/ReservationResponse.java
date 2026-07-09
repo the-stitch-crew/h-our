@@ -1,7 +1,8 @@
 package stitch.crew.hour.reservation.dto;
 
 import stitch.crew.hour.lesson.dto.LessonResponse;
-import stitch.crew.hour.reservation.domain.ReservationState;
+import stitch.crew.hour.reservation.domain.Reservation;
+import stitch.crew.hour.reservation.domain.ReservationStatus;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
@@ -16,8 +17,12 @@ public record ReservationResponse(
         Integer price,
         String request,
         UUID reservationNumber,
-        ReservationState state,
+        ReservationStatus status,
         LessonResponse lesson
 
 ) {
+    public static ReservationResponse from(Reservation r) {
+        return new ReservationResponse(r.getId(), r.getDate(), r.getStartTime(), r.getEndTime(), r.getDeposit(), r.getPrice(),
+                r.getRequest(), r.getReservationNumber(), r.getStatus(), LessonResponse.from(r.getLesson()));
+    }
 }

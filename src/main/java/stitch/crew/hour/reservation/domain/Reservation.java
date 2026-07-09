@@ -42,7 +42,7 @@ public class Reservation extends BaseEntity {
 
     @Column(nullable = false, length = 10)
     @Enumerated(EnumType.STRING)
-    private ReservationState state;
+    private ReservationStatus status;
 
     @ManyToOne
 //    @JoinColumn(name = "client_id", nullable = false)
@@ -61,7 +61,7 @@ public class Reservation extends BaseEntity {
         this.price = price;
         this.request = request;
         this.reservationNumber = UUID.randomUUID();
-        this.state = ReservationState.PENDING;
+        this.status = ReservationStatus.PENDING;
         this.user = user;
         this.lesson = lesson;
     }

@@ -1,8 +1,11 @@
 package stitch.crew.hour.reservation.repository;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import stitch.crew.hour.reservation.domain.Reservation;
+import stitch.crew.hour.reservation.domain.ReservationStatus;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
@@ -13,10 +16,16 @@ public interface ReservationRepository extends JpaRepository<Reservation, Long> 
         select count(r)>0
         from Reservation r
         where r.date = :date
+        and r.status <> :status
         and (r.startTime < :endTime
         or r.endTime < :startTime)
     """)
-    boolean existsByDateAndTimeOverlap(LocalDate date, LocalTime startTime,  LocalTime endTime);
+    boolean existsByDateAndTimeOverlap(LocalDate date, LocalTime startTime,  LocalTime endTime,  ReservationStatus status);
 
-    List<Reservation> findAllByDateBetween(LocalDate dateAfter, LocalDate dateBefore);
+    List<Reservation> findAllByDateBetweenAndStatusNotOrderByDateAscStartTimeAsc(LocalDate dateAfter, LocalDate dateBefore, ReservationStatus status);
+
+    Page<Reservation> findAllByUserIdOrderByDateDescStartTimeDesc(Long userId, Pageable pageable);
+
+    Page<Reservation> findAllByUserIdAndStatusInOrderByDateDescStartTimeDesc(Long userId, List<ReservationStatus> statuses, Pageable pageable);
+
 }

@@ -2,6 +2,7 @@ package stitch.crew.hour.reservation.controller;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
@@ -12,6 +13,7 @@ import stitch.crew.hour.common.response.SuccessCode;
 import stitch.crew.hour.common.util.PreConditions;
 import stitch.crew.hour.reservation.dto.ExistReservationResponse;
 import stitch.crew.hour.reservation.dto.ReservationRequest;
+import stitch.crew.hour.reservation.dto.ReservationResponse;
 import stitch.crew.hour.reservation.service.ReservationService;
 import stitch.crew.hour.user.domain.CurrentUser;
 
@@ -41,6 +43,13 @@ public class ReservationController {
         return ApiResult.ok(SuccessCode.RESERVATION_READ,  response);
     }
 
-    //예약자가 예약 명단 확인
+    //예약자가 예약 목록 확인
+    @GetMapping("/my/reservations")
+    public ResponseEntity<ApiResponses<Page<ReservationResponse>>> getExistReservations(@AuthenticationPrincipal CurrentUser currentUser,
+                                                                                        @RequestParam(required = false, defaultValue = "true") Boolean isOngoing,
+                                                                                        @RequestParam(required = false, defaultValue = "1") Integer page ) {
+        Page<ReservationResponse> response = reservationService.getMyReservations(currentUser, isOngoing, page);
+        return ApiResult.ok(SuccessCode.RESERVATION_READ,  response);
+    }
     //예약자가 예약 상세 확인
 }
