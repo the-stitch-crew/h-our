@@ -30,6 +30,7 @@ import stitch.crew.hour.common.exception.BusinessException;
 import stitch.crew.hour.common.exception.ErrorCode;
 import stitch.crew.hour.user.constant.Gender;
 import stitch.crew.hour.user.constant.Role;
+import stitch.crew.hour.user.domain.CurrentUser;
 import stitch.crew.hour.user.domain.User;
 import stitch.crew.hour.user.dto.MyPageResponse;
 import stitch.crew.hour.user.dto.PasswordChangeRequest;
@@ -572,6 +573,76 @@ class UserServiceTest {
 			// then
 			assertThat(exception.getErrorCode()).isEqualTo(ErrorCode.USER_DONT_EXISTS);
 			verify(refreshTokenRepository, never()).deleteByEmail(user.getEmail());
+		}
+	}
+
+	@Nested
+	@DisplayName("Describe: getActiveUserFromCurrentUser 메서드는")
+	class Describe_getActiveUserFromCurrentUser {
+
+		@Test
+		@DisplayName("It: CurrentUser의 id에 해당하는 활성 회원을 반환한다")
+		void it_returns_active_user_by_current_user_id() {
+			// given
+			User user = createUser();
+			CurrentUser currentUser = CurrentUser.from(user);
+			given(userRepository.findById(user.getId())).willReturn(Optional.of(user));
+
+			// when
+			User foundUser = userService.getActiveUserFromCurrentUser(currentUser);
+
+			// then
+			assertThat(foundUser).isEqualTo(user);
+		}
+
+		@Test
+		@DisplayName("It: CurrentUser의 id에 해당하는 회원이 없으면 USER_DONT_EXISTS 예외가 발생한다")
+		void it_throws_user_dont_exists_when_user_does_not_exist() {
+			// given
+			CurrentUser currentUser = new CurrentUser(1L, "legend@naver.com", Role.USER);
+			given(userRepository.findById(currentUser.getId())).willReturn(Optional.empty());
+
+			// when
+			BusinessException exception = assertThrows(
+				BusinessException.class,
+				() -> userService.getActiveUserFromCurrentUser(currentUser)
+			);
+
+			// then
+			assertThat(exception.getErrorCode()).isEqualTo(ErrorCode.USER_DONT_EXISTS);
+		}
+
+		@Test
+		@DisplayName("It: CurrentUser가 없으면 UNAUTHORIZED 예외가 발생한다")
+		void it_throws_unauthorized_when_current_user_is_null() {
+			// when
+			BusinessException exception = assertThrows(
+				BusinessException.class,
+				() -> userService.getActiveUserFromCurrentUser(null)
+			);
+
+			// then
+			assertThat(exception.getErrorCode()).isEqualTo(ErrorCode.UNAUTHORIZED);
+			verify(userRepository, never()).findById(any());
+		}
+
+		@Test
+		@DisplayName("It: CurrentUser의 id에 해당하는 회원이 삭제된 회원이면 USER_DONT_EXISTS 예외가 발생한다")
+		void it_throws_user_dont_exists_when_user_is_deleted() {
+			// given
+			User user = createUser();
+			user.delete();
+			CurrentUser currentUser = CurrentUser.from(user);
+			given(userRepository.findById(user.getId())).willReturn(Optional.of(user));
+
+			// when
+			BusinessException exception = assertThrows(
+				BusinessException.class,
+				() -> userService.getActiveUserFromCurrentUser(currentUser)
+			);
+
+			// then
+			assertThat(exception.getErrorCode()).isEqualTo(ErrorCode.USER_DONT_EXISTS);
 		}
 	}
 
