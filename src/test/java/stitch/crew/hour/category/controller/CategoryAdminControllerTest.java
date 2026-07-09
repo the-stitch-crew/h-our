@@ -20,6 +20,8 @@ import stitch.crew.hour.category.dto.CategoryRequest;
 import stitch.crew.hour.category.service.CategoryAdminService;
 import stitch.crew.hour.category.service.CategoryService;
 import stitch.crew.hour.common.config.JwtAuthenticationFilter;
+import stitch.crew.hour.common.config.entrypoint.JwtAccessDeniedHandler;
+import stitch.crew.hour.common.config.entrypoint.JwtAuthenticationEntryPoint;
 import stitch.crew.hour.common.exception.BusinessException;
 import stitch.crew.hour.common.exception.ErrorCode;
 import stitch.crew.hour.common.response.SuccessCode;
@@ -57,6 +59,12 @@ class CategoryAdminControllerTest {
 
     @MockitoBean
     JwtAuthenticationFilter jwtAuthenticationFilter;
+
+    @MockitoBean
+    JwtAccessDeniedHandler jwtAccessDeniedHandler;
+
+    @MockitoBean
+    JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint;
 
     String name;
     String thumbnail;
