@@ -16,32 +16,32 @@ import stitch.crew.hour.user.constant.Role;
 @RequiredArgsConstructor
 public class CurrentUser implements UserDetails {
 
-	private final Long id;
-	private final String email;
-	private final Role role;
+    private final Long id;
+    private final String email;
+    private final Role role;
 
-	public static CurrentUser from(User user) {
-		return new CurrentUser(
-			user.getId(),
-			user.getEmail(),
-			user.getRole()
-		);
-	}
+    public static CurrentUser from(User user) {
+        return new CurrentUser(
+                user.getId(),
+                user.getEmail(),
+                user.getRole()
+        );
+    }
 
-	@Override
-	public Collection<? extends GrantedAuthority> getAuthorities() {
-		return List.of(
-			new SimpleGrantedAuthority(role.getValue())
-		);
-	}
+    @Override
+    public Collection<? extends GrantedAuthority> getAuthorities() {
+        return List.of(
+                new SimpleGrantedAuthority(role.getValue())
+        );
+    }
 
-	@Override
-	public @Nullable String getPassword() {
-		return "";
-	}
+    @Override
+    public @Nullable String getPassword() {
+        return "";
+    }
 
-	@Override
-	public String getUsername() {
-		return email;
-	}
+    @Override
+    public String getUsername() {
+        return email;
+    }
 }

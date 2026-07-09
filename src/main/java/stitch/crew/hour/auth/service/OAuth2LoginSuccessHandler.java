@@ -1,7 +1,6 @@
 package stitch.crew.hour.auth.service;
 
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 import java.util.Locale;
 import java.util.Optional;
 
@@ -10,24 +9,22 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.MediaType;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
 import org.springframework.stereotype.Component;
+import org.springframework.util.StringUtils;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import stitch.crew.hour.auth.dto.KeyPair;
+import stitch.crew.hour.auth.dto.OAuthSignupPayload;
 import stitch.crew.hour.common.exception.BusinessException;
 import stitch.crew.hour.common.exception.ErrorCode;
-import stitch.crew.hour.common.response.ApiResponses;
-import stitch.crew.hour.common.response.SuccessCode;
 import stitch.crew.hour.user.domain.User;
 import stitch.crew.hour.user.repository.UserRepository;
-import tools.jackson.databind.ObjectMapper;
 
 @Slf4j
 @Component
@@ -36,9 +33,9 @@ public class OAuth2LoginSuccessHandler implements AuthenticationSuccessHandler {
 
 	private final UserRepository userRepository;
 	private final JwtTokenProvider jwtTokenProvider;
-	private final ObjectMapper objectMapper;
+	private final SignupTokenStore oauthSignupTokenStore;
 
-	@Value("${app.frontend.base-url:http://localhost:5173}")
+	@Value("${app.frontend.base-url}")
 	private String frontendBaseUrl;
 
 	@Override
@@ -55,7 +52,7 @@ public class OAuth2LoginSuccessHandler implements AuthenticationSuccessHandler {
 		String email = oauthUser.getAttribute("email");
 		String name = oauthUser.getAttribute("name");
 
-		if (email == null) {
+		if (!StringUtils.hasText(email) || !StringUtils.hasText(name)) {
 			throw new BusinessException(ErrorCode.UNAUTHORIZED, "OAuth2 사용자 정보에 필수 값이 없습니다.");
 		}
 
@@ -65,11 +62,14 @@ public class OAuth2LoginSuccessHandler implements AuthenticationSuccessHandler {
 
 		if (user.isPresent()) {
 			KeyPair keyPair = setOAuthAndIssueToken(user.get(), provider);
-			writeLoginResponse(response, keyPair);
+			response.sendRedirect(createOAuthLoginRedirectUrl(keyPair));
 			return;
 		}
 
-		response.sendRedirect(createOAuthSignupRedirectUrl(email, name, provider));
+		String signupToken = oauthSignupTokenStore.save(
+			new OAuthSignupPayload(email, name, provider)
+		);
+		response.sendRedirect(createOAuthSignupRedirectUrl(signupToken));
 
 	}
 
@@ -83,36 +83,21 @@ public class OAuth2LoginSuccessHandler implements AuthenticationSuccessHandler {
 		return jwtTokenProvider.issueKeyPair(user.getEmail(), user.getRole());
 	}
 
-	// 기존 회원일 시 로그인 응답 보내기
-	private void writeLoginResponse(
-		HttpServletResponse response,
-		KeyPair keyPair
-	) throws IOException {
-		ApiResponses<KeyPair> body = new ApiResponses<>(
-			true,
-			SuccessCode.AUTH_LOGIN_SUCCESS.name(),
-			SuccessCode.AUTH_LOGIN_SUCCESS.getSuccessMessage(),
-			keyPair
-		);
-
-		response.setStatus(HttpServletResponse.SC_OK);
-		response.setContentType(MediaType.APPLICATION_JSON_VALUE);
-		response.setCharacterEncoding(StandardCharsets.UTF_8.name());
-		objectMapper.writeValue(response.getWriter(), body);
-	}
-
-
-	// 신규회원
+	// 회원가입 페이지
 	private String createOAuthSignupRedirectUrl(
-		String email,
-		String name,
-		String provider
+		String signupToken
 	) {
 		return UriComponentsBuilder.fromUriString(frontendBaseUrl+"/signup")
-			.queryParam("oauth", true)
-			.queryParam("email", email)
-			.queryParam("name", name)
-			.queryParam("provider", provider)
+			.queryParam("signupToken", signupToken)
+			.build()
+			.encode()
+			.toUriString();
+	}
+
+	private String createOAuthLoginRedirectUrl(KeyPair keyPair) {
+		return UriComponentsBuilder.fromUriString(frontendBaseUrl + "/oauth/callback")
+			.queryParam("accessToken", keyPair.accessToken())
+			.queryParam("refreshToken", keyPair.refreshToken())
 			.build()
 			.encode()
 			.toUriString();
