@@ -51,7 +51,7 @@ custom:
     host: ${REDIS_HOST}
     port: ${REDIS_PORT}
   oauth:
-    signup-token-ttl-ms: ${OAUTH_SIGNUP_TOKEN_TTL_MS:600000}
+    signup-token-ttl-ms: ${OAUTH_SIGNUP_TOKEN_TTL_MS}
   s3:
     bucket-name: ${S3_BUCKET}
     access-key: ${S3_ACCESS_KEY}
