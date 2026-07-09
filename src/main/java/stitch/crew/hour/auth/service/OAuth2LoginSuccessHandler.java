@@ -16,11 +16,13 @@ import org.springframework.security.oauth2.client.authentication.OAuth2Authentic
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
 import org.springframework.stereotype.Component;
+import org.springframework.util.StringUtils;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import stitch.crew.hour.auth.dto.KeyPair;
+import stitch.crew.hour.auth.dto.OAuthSignupPayload;
 import stitch.crew.hour.common.exception.BusinessException;
 import stitch.crew.hour.common.exception.ErrorCode;
 import stitch.crew.hour.common.response.ApiResponses;
@@ -37,6 +39,7 @@ public class OAuth2LoginSuccessHandler implements AuthenticationSuccessHandler {
 	private final UserRepository userRepository;
 	private final JwtTokenProvider jwtTokenProvider;
 	private final ObjectMapper objectMapper;
+	private final SignupTokenStore oauthSignupTokenStore;
 
 	@Value("${app.frontend.base-url:http://localhost:5173}")
 	private String frontendBaseUrl;
@@ -55,7 +58,7 @@ public class OAuth2LoginSuccessHandler implements AuthenticationSuccessHandler {
 		String email = oauthUser.getAttribute("email");
 		String name = oauthUser.getAttribute("name");
 
-		if (email == null) {
+		if (!StringUtils.hasText(email) || !StringUtils.hasText(name)) {
 			throw new BusinessException(ErrorCode.UNAUTHORIZED, "OAuth2 사용자 정보에 필수 값이 없습니다.");
 		}
 
@@ -69,7 +72,10 @@ public class OAuth2LoginSuccessHandler implements AuthenticationSuccessHandler {
 			return;
 		}
 
-		response.sendRedirect(createOAuthSignupRedirectUrl(email, name, provider));
+		String signupToken = oauthSignupTokenStore.save(
+			new OAuthSignupPayload(email, name, provider)
+		);
+		response.sendRedirect(createOAuthSignupRedirectUrl(signupToken));
 
 	}
 
@@ -102,17 +108,12 @@ public class OAuth2LoginSuccessHandler implements AuthenticationSuccessHandler {
 	}
 
 
-	// 신규회원
+	// 회원가입 페이지
 	private String createOAuthSignupRedirectUrl(
-		String email,
-		String name,
-		String provider
+		String signupToken
 	) {
 		return UriComponentsBuilder.fromUriString(frontendBaseUrl+"/signup")
-			.queryParam("oauth", true)
-			.queryParam("email", email)
-			.queryParam("name", name)
-			.queryParam("provider", provider)
+			.queryParam("signupToken", signupToken)
 			.build()
 			.encode()
 			.toUriString();

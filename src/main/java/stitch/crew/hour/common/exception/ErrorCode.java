@@ -26,6 +26,7 @@ public enum ErrorCode {
     ABNORMAL_TOKEN(HttpStatus.UNAUTHORIZED, "비정상적인 토큰입니다."),
     ERROR_FROM_TOKEN(HttpStatus.UNAUTHORIZED, "토큰 처리 중 오류가 발생했습니다."),
     INVALID_REFRESH_TOKEN(HttpStatus.UNAUTHORIZED, "유효하지 않은 토큰입니다."),
+    INVALID_SIGNUP_TOKEN(HttpStatus.UNAUTHORIZED, "유효하지 않은 회원가입 토큰입니다."),
     TOKEN_CREATION_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "토큰 생성에 실패했습니다."),
     ACCESS_DENIED(HttpStatus.FORBIDDEN, "권한이 없습니다."),
 
