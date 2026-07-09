@@ -8,11 +8,14 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 import stitch.crew.hour.category.domain.Category;
 import stitch.crew.hour.category.repository.CategoryRepository;
 import stitch.crew.hour.common.exception.BusinessException;
 import stitch.crew.hour.common.exception.ErrorCode;
 import stitch.crew.hour.common.util.PreConditions;
+import stitch.crew.hour.image.domain.ThumbnailDomain;
+import stitch.crew.hour.image.service.ImageService;
 import stitch.crew.hour.product.constant.ProductStatus;
 import stitch.crew.hour.product.domain.Product;
 import stitch.crew.hour.product.dto.*;
@@ -31,6 +34,7 @@ public class ProductService {
     private final ProductRepository productRepository;
     private final UserRepository userRepository;
     private final CategoryRepository categoryRepository;
+    private final ImageService imageService;
 
     @Transactional
     @PreAuthorize("isAuthenticated()")
@@ -101,6 +105,7 @@ public class ProductService {
     public void updateProduct(
         Long userId,
         Long productId,
+        MultipartFile multipartFile,
         ProductUpdateRequest request
     ){
         User foundedUser = userRepository.findByIdOrthrow(userId);
@@ -114,9 +119,14 @@ public class ProductService {
 
         if (Strings.isNotBlank(request.name())) foundedProduct.setName(request.name());
         if (request.price() != null) foundedProduct.setPrice(request.price());
-        if (Strings.isNotBlank(request.thumbnail())) foundedProduct.setThumbnail(request.thumbnail());
         if (Strings.isNotBlank(request.summary())) foundedProduct.setSummary(request.summary());
         if (Strings.isNotBlank(request.description())) foundedProduct.setDescription(request.description());
+
+        if (multipartFile != null) {
+            if ( foundedProduct.getThumbnail() != null ) imageService.deleteThumbnail(foundedProduct.getThumbnail());
+            String newThumbnail = imageService.saveThumbnail(ThumbnailDomain.PRODUCT, productId, multipartFile);
+            foundedProduct.setThumbnail(newThumbnail);
+        }
     }
 
     @Transactional

@@ -6,8 +6,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.security.access.annotation.Secured;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import stitch.crew.hour.cart.domain.Cart;
@@ -19,11 +17,10 @@ import stitch.crew.hour.order.domain.Order;
 import stitch.crew.hour.order.dto.*;
 import stitch.crew.hour.order.repository.OrderBoundaryRepository;
 import stitch.crew.hour.orderproduct.domain.OrderProduct;
-import stitch.crew.hour.orderproduct.dto.OrderProductCreateRequest;
 import stitch.crew.hour.product.domain.Product;
 import stitch.crew.hour.product.repository.ProductRepository;
-import stitch.crew.hour.shippingpolicy.domain.ShippingPolicy;
-import stitch.crew.hour.shippingpolicy.repository.ShippingPolicyRepository;
+import stitch.crew.hour.policy.domain.ShippingPolicy;
+import stitch.crew.hour.policy.repository.ShippingPolicyRepository;
 import stitch.crew.hour.user.constant.Role;
 import stitch.crew.hour.user.domain.User;
 import stitch.crew.hour.user.repository.UserRepository;
@@ -112,13 +109,15 @@ public class OrderService {
         Cart cart = foundedUser.getCart();
 
         List<OrderProduct> orderProducts = cart.getCartProducts().stream().map(
-                (cartProduct) -> new OrderProduct(
-                        cartProduct.getProductName(),
-                        cartProduct.getAmount(),
-                        cartProduct.getProductPrice(),
-                        cartProduct.getProduct().getId(),
-                        cartProduct.getOption(),
-                        order
+                (cartProduct) -> orderBoundaryRepository.saveOrderProduct(
+                        new OrderProduct(
+                                cartProduct.getProductName(),
+                                cartProduct.getAmount(),
+                                cartProduct.getProductPrice(),
+                                cartProduct.getProduct().getId(),
+                                cartProduct.getOption(),
+                                order
+                        )
                 )
         ).toList();
 
@@ -138,6 +137,28 @@ public class OrderService {
         PreConditions.validate(
                 validateAuthority(foundedUser,foundedOrder),
                 ErrorCode.NO_AUTHORITY_ON_ORDER
+        );
+
+        return OrderDetailResponse.from(foundedOrder);
+    }
+
+    @PreAuthorize("isAuthenticated() && #userId == authentication.principal.id")
+    public OrderDetailResponse getOrderDetailFromPurchase(
+            Long userId,
+            UUID orderNumber
+    ){
+
+        User foundedUser = userRepository.findByIdOrthrow(userId);
+        Order foundedOrder = orderBoundaryRepository.findByOrderNumberOrThrow(orderNumber);
+
+        PreConditions.validate(
+                validateAuthority(foundedUser,foundedOrder),
+                ErrorCode.NO_AUTHORITY_ON_ORDER
+        );
+
+        PreConditions.validate(
+                foundedOrder.getOrderStatus().equals(OrderStatus.ORDERED),
+                ErrorCode.PAYMENT_ALREADY_PAYED
         );
 
         return OrderDetailResponse.from(foundedOrder);

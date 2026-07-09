@@ -1,0 +1,67 @@
+package stitch.crew.hour.payment.repository;
+
+import com.querydsl.jpa.impl.JPAQueryFactory;
+import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
+import org.springframework.stereotype.Repository;
+import stitch.crew.hour.order.domain.QOrder;
+import stitch.crew.hour.payment.domain.QPayment;
+import stitch.crew.hour.payment.dto.PaymentDetailResponse;
+import stitch.crew.hour.payment.dto.QPaymentDetailResponse;
+import stitch.crew.hour.user.domain.QUser;
+
+import java.util.List;
+
+@Repository
+@RequiredArgsConstructor
+public class PaymentRepositoryImpl implements PaymentCustomRepository{
+
+    private final JPAQueryFactory jpaQueryFactory;
+
+    private final QPayment qPayment = QPayment.payment;
+    private final QUser qUser = QUser.user;
+    private final QOrder qOrder = QOrder.order;
+
+    @Override
+    public Page<PaymentDetailResponse> getPaymentDetails(
+            Pageable pageable,
+            Long userId
+    ) {
+        List<PaymentDetailResponse> fetched = jpaQueryFactory.select(
+                        new QPaymentDetailResponse(
+                                qPayment.id,
+                                qPayment.orderNumber,
+                                qPayment.paymentStatus.stringValue(),
+                                qPayment.paymentMethod.stringValue(),
+                                qPayment.pgReceiptUrl,
+                                qPayment.requestedAt.stringValue(),
+                                qPayment.approvedAt.stringValue()
+                        )
+                ).from(qPayment)
+                .join(qOrder)
+                .on(qPayment.order.id.eq(qOrder.id))
+                .join(qUser)
+                .on(qUser.id.eq(qOrder.orderer.id))
+                .where(qUser.id.eq(userId))
+                .offset(pageable.getOffset())
+                .limit(pageable.getPageSize())
+                .fetch();
+
+        Long size = jpaQueryFactory.select(
+                        qPayment.count()
+                ).from(qPayment)
+                .join(qOrder)
+                .on(qPayment.order.id.eq(qOrder.id))
+                .join(qUser)
+                .on(qUser.id.eq(qOrder.orderer.id))
+                .where(qUser.id.eq(userId))
+                .fetchOne();
+        return new PageImpl<>(
+                fetched,
+                pageable,
+                size
+        );
+    }
+}

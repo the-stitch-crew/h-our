@@ -26,6 +26,10 @@ public enum SuccessCode {
     AUTH_LOGIN_SUCCESS("로그인에 성공했습니다."),
     AUTH_REFRESH_SUCCESS("토큰 갱신에 성공했습니다."),
     AUTH_LOGOUT_SUCCESS("로그아웃에 성공했습니다."),
+    
+    // PAYMENT
+    PAYMENT_READ_SUCCESS("결제 조회에 성공했습니다."),
+    PAYMENT_REFUND_COMPLETE("환불에 성공했습니다."),
 
     // CART
     CART_RETRIEVE_SUCCESS("장바구니 조회에 성공했습니다."),
@@ -65,6 +69,15 @@ public enum SuccessCode {
     LESSON_READ("수업이 정상적으로 조회되었습니다."),
     LESSON_UPDATED("수업이 정상적으로 수정되었습니다."),
     LESSON_DELETED("수업이 정상적으로 삭제되었습니다."),
+    LESSON_POLICY_READ("수업정책이 정상적으로 조회되었습니다."),
+    LESSON_POLICY_UPDATED("수업정책이 정상적으로 수정되었습니다."),
+
+    /*RESERVATION*/
+    RESERVATION_CREATED("예약이 정상적으로 생성되었습니다."),
+    RESERVATION_READ("예약이 정상적으로 조회되었습니다."),
+    RESERVATION_UPDATED("예약이 정상적으로 수정되었습니다."),
+    RESERVATION_DELETED("예약이 정상적으로 삭제되었습니다."),
+
 
     BUSINESS_SUCCESS("정상적으로 작성되었습니다.");
 
