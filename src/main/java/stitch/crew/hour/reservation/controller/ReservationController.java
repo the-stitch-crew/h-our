@@ -17,6 +17,7 @@ import stitch.crew.hour.user.domain.CurrentUser;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/reservations")
@@ -48,11 +49,19 @@ public class ReservationController {
         return ApiResult.ok(SuccessCode.RESERVATION_READ,  response);
     }
 
+    //예약자가 결제할때 필요한 예약 넘버 조회
+    @GetMapping("/payment/{reservationId}")
+    public ResponseEntity<ApiResponses<UUID>> getReservationNumber(@AuthenticationPrincipal CurrentUser currentUser,
+                                                                     @PathVariable Long reservationId) {
+        UUID number = reservationService.getReservationNumber(currentUser, reservationId);
+        return ApiResult.ok(SuccessCode.RESERVATION_READ, number);
+    }
+
     //예약자가 예약 상세 확인
     @GetMapping("/my/reservations/{reservationId}")
     public ResponseEntity<ApiResponses<ReservationResponse>> getReservation(@AuthenticationPrincipal CurrentUser currentUser,
                                                                             @PathVariable Long reservationId) {
         ReservationResponse response = reservationService.getMyReservation(currentUser, reservationId);
-        return ApiResult.ok(SuccessCode.BUSINESS_SUCCESS,  response);
+        return ApiResult.ok(SuccessCode.RESERVATION_READ,  response);
     }
 }

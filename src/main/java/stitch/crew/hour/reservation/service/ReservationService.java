@@ -30,6 +30,7 @@ import java.time.temporal.ChronoUnit;
 import java.time.temporal.TemporalAdjusters;
 import java.util.List;
 import java.util.Objects;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -117,6 +118,19 @@ public class ReservationService {
             CustomerSummaryResponse customer = CustomerSummaryResponse.from(user,  reservationCount, visitCount, lastVisitDate);
             return ReservationAdminResponse.from(r, customer, r.getLesson());
         });
+    }
+
+
+    //사용자가 결제를 위해 예약 번호 조회
+    @Transactional(readOnly = true)
+    public UUID getReservationNumber(CurrentUser currentUser, Long reservationId) {
+        Reservation reservation = reservationRepository.findById(reservationId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.RESERVATION_NOT_FOUND));
+        //예약의 당사자가 아니면 거부
+        PreConditions.check(!reservation.getUser().getId().equals(currentUser.getId()), ErrorCode.RESERVATION_NOT_CLIENT);
+        //결제 준비 상태가 아니라면 거부
+        PreConditions.check(reservation.getStatus() != ReservationStatus.PENDING,  ErrorCode.RESERVATION_NOT_PENDING);
+        return reservation.getReservationNumber();
     }
 
     //그 주의 일요일과 토요일 날짜 구하기
