@@ -19,11 +19,11 @@ import stitch.crew.hour.common.exception.ErrorCode;
 import stitch.crew.hour.common.response.SuccessCode;
 import stitch.crew.hour.lesson.dto.LessonResponse;
 import stitch.crew.hour.lesson.service.LessonService;
-import stitch.crew.hour.policy.domain.WeekDay;
 import stitch.crew.hour.policy.dto.LessonPolicyResponse;
 import stitch.crew.hour.policy.service.LessonPolicyService;
 import stitch.crew.hour.util.TestUtil;
 
+import java.time.DayOfWeek;
 import java.time.LocalTime;
 import java.util.Arrays;
 import java.util.Set;
@@ -178,7 +178,7 @@ class LessonControllerTest {
         Integer depositAmount = 10000;
         LocalTime startTime = LocalTime.of(9,0);
         LocalTime endTime = LocalTime.of(18,0);
-        Set<WeekDay> regularDays = Set.of(WeekDay.SAT, WeekDay.SUN);
+        Set<DayOfWeek> closedDays = Set.of(DayOfWeek.SATURDAY, DayOfWeek.SUNDAY);
 
         LessonPolicyResponse response;
 
@@ -194,7 +194,7 @@ class LessonControllerTest {
                         depositAmount,
                         startTime,
                         endTime,
-                        regularDays
+                        closedDays
                 );
             }
 

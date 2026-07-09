@@ -179,7 +179,7 @@ class CategoryAdminControllerTest {
                             multipart("/api/admin/categories/{categoryId}", categoryId)
                                     .file(requestPart)
                                     .with(servletRequest -> {
-                                        servletRequest.setMethod("PATCH");
+                                        servletRequest.setMethod("PUT");
                                         return servletRequest;
                                     })
                                     .with(csrf())
