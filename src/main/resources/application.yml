@@ -58,3 +58,8 @@ custom:
 app:
   frontend:
     base-url: ${FRONTEND_BASE_URL}
+
+payment:
+  baseUrl: ${TOSS_PAYMENT_BASE_URL}
+  clientKey: ${TOSS_PAYMENT_CLIENT_KEY}
+  secretKey: ${TOSS_PAYMENT_SECRET_KEY}

@@ -34,6 +34,12 @@ public enum ErrorCode {
     EXIST_CATEGORY(HttpStatus.CONFLICT, "중복된 카테고리 이름입니다."),
     CATEGORY_NOT_FOUND(HttpStatus.NOT_FOUND, "카테고리를 찾을 수 없습니다."),
 
+    // 결제
+    PAYMENT_NOT_FOUND(HttpStatus.NOT_FOUND, "해당 결제를 찾을 수 없습니다."),
+    PAYMENT_NOT_PAYED(HttpStatus.NOT_FOUND, "해당 주문이 결제되지 않거나 취소되었습니다."),
+    PAYMENT_ALREADY_PAYED(HttpStatus.BAD_REQUEST, "이미 결제된 주문입니다."),
+    PAYMENT_PERMISSION_DENY(HttpStatus.FORBIDDEN, "권한이 없어 작업에 실패 했습니다."),
+    NO_ACCESS_ON_RECEIPT(HttpStatus.BAD_REQUEST, "해당 결제건의 영수증을 조회할 수 없습니다."),
 
     // 주문
     ORDER_NOT_FOUND(HttpStatus.NOT_FOUND, "주문을 찾을 수 없습니다."),

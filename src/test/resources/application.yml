@@ -25,3 +25,9 @@ custom:
     bucket-name: test
     access-key: test
     secret-key: test
+
+
+payment:
+  baseUrl: https://api.tosspayments.com/v1/payments
+  clientKey: test_gck_docs_Ovk5rk1EwkEbP0W43n07xlzm
+  secretKey: test_gsk_docs_OaPz8L5KdmQXkzRz3y47BMw6
