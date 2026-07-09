@@ -577,16 +577,16 @@ class UserServiceTest {
 	}
 
 	@Nested
-	@DisplayName("Describe: getActiveUserFromCurrentUser 메서드는")
+	@DisplayName("Describe : getActiveUserFromCurrentUser 메서드는")
 	class Describe_getActiveUserFromCurrentUser {
 
 		@Test
-		@DisplayName("It: CurrentUser의 id에 해당하는 활성 회원을 반환한다")
+		@DisplayName("It : CurrentUser의 id에 해당하는 활성 회원을 반환한다")
 		void it_returns_active_user_by_current_user_id() {
 			// given
 			User user = createUser();
 			CurrentUser currentUser = CurrentUser.from(user);
-			given(userRepository.findById(user.getId())).willReturn(Optional.of(user));
+			given(userRepository.findByIdOrthrow(user.getId())).willReturn(user);
 
 			// when
 			User foundUser = userService.getActiveUserFromCurrentUser(currentUser);
@@ -596,11 +596,12 @@ class UserServiceTest {
 		}
 
 		@Test
-		@DisplayName("It: CurrentUser의 id에 해당하는 회원이 없으면 USER_DONT_EXISTS 예외가 발생한다")
+		@DisplayName("It : CurrentUser의 id에 해당하는 회원이 없으면 USER_DONT_EXISTS 예외가 발생한다")
 		void it_throws_user_dont_exists_when_user_does_not_exist() {
 			// given
 			CurrentUser currentUser = new CurrentUser(1L, "legend@naver.com", Role.USER);
-			given(userRepository.findById(currentUser.getId())).willReturn(Optional.empty());
+			given(userRepository.findByIdOrthrow(currentUser.getId()))
+				.willThrow(new BusinessException(ErrorCode.USER_DONT_EXISTS));
 
 			// when
 			BusinessException exception = assertThrows(
@@ -613,7 +614,7 @@ class UserServiceTest {
 		}
 
 		@Test
-		@DisplayName("It: CurrentUser가 없으면 UNAUTHORIZED 예외가 발생한다")
+		@DisplayName("It : CurrentUser가 없으면 UNAUTHORIZED 예외가 발생한다")
 		void it_throws_unauthorized_when_current_user_is_null() {
 			// when
 			BusinessException exception = assertThrows(
@@ -623,17 +624,17 @@ class UserServiceTest {
 
 			// then
 			assertThat(exception.getErrorCode()).isEqualTo(ErrorCode.UNAUTHORIZED);
-			verify(userRepository, never()).findById(any());
+			verify(userRepository, never()).findByIdOrthrow(any());
 		}
 
 		@Test
-		@DisplayName("It: CurrentUser의 id에 해당하는 회원이 삭제된 회원이면 USER_DONT_EXISTS 예외가 발생한다")
+		@DisplayName("It : CurrentUser의 id에 해당하는 회원이 삭제된 회원이면 USER_DONT_EXISTS 예외가 발생한다")
 		void it_throws_user_dont_exists_when_user_is_deleted() {
 			// given
 			User user = createUser();
 			user.delete();
 			CurrentUser currentUser = CurrentUser.from(user);
-			given(userRepository.findById(user.getId())).willReturn(Optional.of(user));
+			given(userRepository.findByIdOrthrow(user.getId())).willReturn(user);
 
 			// when
 			BusinessException exception = assertThrows(
