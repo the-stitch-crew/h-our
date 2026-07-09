@@ -7,11 +7,11 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.test.util.ReflectionTestUtils;
 import stitch.crew.hour.policy.domain.LessonPolicy;
-import stitch.crew.hour.policy.domain.WeekDay;
 import stitch.crew.hour.policy.dto.LessonPolicyRequest;
 import stitch.crew.hour.policy.dto.LessonPolicyResponse;
 import stitch.crew.hour.policy.repository.LessonPolicyRepository;
 
+import java.time.DayOfWeek;
 import java.time.LocalTime;
 import java.util.Optional;
 import java.util.Set;
@@ -34,7 +34,7 @@ class LessonPolicyServiceTest {
     Integer depositAmount = 10000;
     LocalTime startTime = LocalTime.of(9,0);
     LocalTime endTime = LocalTime.of(18,0);
-    Set<WeekDay> regularDays = Set.of(WeekDay.SAT, WeekDay.SUN);
+    Set<DayOfWeek> closedDays = Set.of(DayOfWeek.SATURDAY, DayOfWeek.SUNDAY);
 
 
 
@@ -50,7 +50,7 @@ class LessonPolicyServiceTest {
         class Context_with_available_id {
             @BeforeEach
             void setup() {
-                policy = new LessonPolicy(reservationAvailableDays, reservationDeadlineDays, cancelDeadlineDays, depositAmount, startTime, endTime, regularDays);
+                policy = new LessonPolicy(reservationAvailableDays, reservationDeadlineDays, cancelDeadlineDays, depositAmount, startTime, endTime, closedDays);
                 ReflectionTestUtils.setField(policy, "id", 1L);
             }
             @Test
@@ -65,7 +65,7 @@ class LessonPolicyServiceTest {
                 Assertions.assertNotNull(response);
                 assertThat(response.reservationAvailableDays()).isEqualTo(reservationAvailableDays);
                 assertThat(response.depositAmount()).isEqualTo(depositAmount);
-                assertThat(response.regularDays()).isEqualTo(regularDays);
+                assertThat(response.regularDays()).isEqualTo(closedDays);
             }
         }
     }
@@ -87,9 +87,9 @@ class LessonPolicyServiceTest {
                         depositAmount,
                         startTime,
                         endTime,
-                        regularDays
+                        closedDays
                 );
-                policy = new LessonPolicy(reservationAvailableDays, reservationDeadlineDays, cancelDeadlineDays, depositAmount, startTime, endTime, regularDays);
+                policy = new LessonPolicy(reservationAvailableDays, reservationDeadlineDays, cancelDeadlineDays, depositAmount, startTime, endTime, closedDays);
                 ReflectionTestUtils.setField(policy, "id", 1L);
             }
 

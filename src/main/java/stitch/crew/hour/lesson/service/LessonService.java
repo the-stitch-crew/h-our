@@ -48,4 +48,9 @@ public class LessonService {
         Lesson lesson = lessonRepository.findById(lessonId).orElseThrow(() -> new BusinessException(ErrorCode.LESSON_NOT_FOUND));
         lessonRepository.delete(lesson);
     }
+
+    @Transactional(readOnly = true)
+    public Lesson getLessonById(Long lessonId) {
+        return lessonRepository.findById(lessonId).orElseThrow(() -> new BusinessException(ErrorCode.LESSON_NOT_FOUND));
+    }
 }

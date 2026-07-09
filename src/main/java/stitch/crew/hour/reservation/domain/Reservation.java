@@ -4,9 +4,12 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import stitch.crew.hour.common.domain.BaseEntity;
+import stitch.crew.hour.lesson.domain.Lesson;
+import stitch.crew.hour.user.domain.User;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.util.UUID;
 
 @Entity
 @Getter
@@ -34,10 +37,34 @@ public class Reservation extends BaseEntity {
 
     private String request;   //추가 요청 내용
 
+    @Column(nullable = false)
+    private UUID reservationNumber;
+
     @Column(nullable = false, length = 10)
     @Enumerated(EnumType.STRING)
     private ReservationState state;
 
+    @ManyToOne
+//    @JoinColumn(name = "client_id", nullable = false)
+    @JoinColumn(name = "client_id")
+    private User user;
+
+    @ManyToOne
+    @JoinColumn(name = "lesson_id", nullable = false)
+    private Lesson lesson;
+
+    public Reservation(LocalDate date, LocalTime startTime, LocalTime endTime, Integer deposit, Integer price, String request, User user, Lesson lesson) {
+        this.date = date;
+        this.startTime = startTime;
+        this.endTime = endTime;
+        this.deposit = deposit;
+        this.price = price;
+        this.request = request;
+        this.reservationNumber = UUID.randomUUID();
+        this.state = ReservationState.PENDING;
+        this.user = user;
+        this.lesson = lesson;
+    }
 
 
 }

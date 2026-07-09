@@ -73,6 +73,17 @@ public enum ErrorCode {
     NO_LESSON_POLICY(HttpStatus.NOT_FOUND, "저장된 수업규칙이 없습니다."),
 
     /*Reservation*/
+    CLOSED_DAYS(HttpStatus.BAD_REQUEST, "휴무요일입니다."),
+    BEFORE_STARTTIME(HttpStatus.BAD_REQUEST, "오픈시간 전입니다."),
+    AFTER_ENDTIME(HttpStatus.BAD_REQUEST, "마감시간 후입니다."),
+    DURATION_NOT_MATCH(HttpStatus.BAD_REQUEST, "요청하신 시간과 수업시간이 일치하지 않습니다."),
+    NOT_AVAILABLE_DAYS(HttpStatus.BAD_REQUEST, "예약 가능한 날짜가 아닙니다."),
+    RESERVATION_DEADLINE_PASSED(HttpStatus.BAD_REQUEST, "예약 마감 기간이 지났습니다."),
+    PAST_DATE_RESERVATION(HttpStatus.BAD_REQUEST, "지난 날짜 입니다."),
+    DEPOSIT_NOT_MATCH(HttpStatus.BAD_REQUEST, "현재 설정된 예약금과 일치하지 않습니다."),
+    PRICE_NOT_MATCH(HttpStatus.BAD_REQUEST, "수업의 금액과 예약의 금액이 일치하지 않습니다."),
+    INVALID_TIME(HttpStatus.BAD_REQUEST, "불가능한 형식의 시간입니다."),
+    RESERVATION_OVERLAP(HttpStatus.CONFLICT, "이미 예약된 시간입니다."),
 
 
     ALREADY_DELETED(HttpStatus.BAD_REQUEST, "이미 삭제된 객체입니다."),

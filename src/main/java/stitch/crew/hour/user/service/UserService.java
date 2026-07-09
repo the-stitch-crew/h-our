@@ -164,4 +164,20 @@ public class UserService {
 		return CurrentUser.from(getActiveUser(email));
 	}
 
+	public User getActiveUserFromCurrentUser(CurrentUser currentUser){
+		PreConditions.validate(
+				currentUser != null,
+				ErrorCode.UNAUTHORIZED
+		);
+
+		User user = userRepository.findByIdOrthrow(currentUser.getId());
+
+		PreConditions.validate(
+				user.getDeletedAt() == null,
+				ErrorCode.USER_DONT_EXISTS
+		);
+
+		return user;
+	}
+
 }

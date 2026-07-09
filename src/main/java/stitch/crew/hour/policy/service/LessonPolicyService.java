@@ -28,6 +28,7 @@ public class LessonPolicyService {
         policy.update(request);
     }
 
+    @Transactional(readOnly = true)
     public LessonPolicy getPolicyForReservation() {
         return policyRepository.findById(1L).orElseThrow(()-> new BusinessException(ErrorCode.NO_LESSON_POLICY));
     }

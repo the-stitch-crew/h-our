@@ -1,5 +1,5 @@
 package stitch.crew.hour.reservation.domain;
 
 public enum  ReservationState {
-    APPROVED, CANCELED, DONE
+    PENDING, APPROVED, COMPLETED, CANCELED, NO_SHOW
 }

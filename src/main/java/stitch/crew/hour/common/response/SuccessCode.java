@@ -67,6 +67,10 @@ public enum SuccessCode {
     LESSON_POLICY_UPDATED("수업정책이 정상적으로 수정되었습니다."),
 
     /*RESERVATION*/
+    RESERVATION_CREATED("예약이 정상적으로 생성되었습니다."),
+    RESERVATION_READ("예약이 정상적으로 조회되었습니다."),
+    RESERVATION_UPDATED("예약이 정상적으로 수정되었습니다."),
+    RESERVATION_DELETED("예약이 정상적으로 삭제되었습니다."),
 
 
     BUSINESS_SUCCESS("정상적으로 작성되었습니다.");

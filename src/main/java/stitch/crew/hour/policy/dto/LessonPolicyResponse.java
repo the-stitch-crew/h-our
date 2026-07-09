@@ -23,7 +23,7 @@ public record LessonPolicyResponse(
                 policy.getDepositAmount(),
                 policy.getStartTime(),
                 policy.getEndTime(),
-                policy.getRegularDays()
+                policy.getClosedDays()
         );
     }
 }

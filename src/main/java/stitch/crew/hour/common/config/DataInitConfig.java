@@ -51,7 +51,7 @@ public class DataInitConfig {
                             1,
                             10000,
                             LocalTime.of(9,0),
-                            LocalTime.of(9,0),
+                            LocalTime.of(18,0),
                             Set.of(DayOfWeek.SATURDAY, DayOfWeek.SUNDAY))
             );
 

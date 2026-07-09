@@ -39,17 +39,18 @@ public class LessonPolicy {
 
     @Column(nullable = false)
     @ElementCollection
-    private Set<DayOfWeek> regularDays;
+    @Enumerated(EnumType.STRING)
+    private Set<DayOfWeek> closedDays;
 
 
-    public LessonPolicy(Integer reservationAvailableDays, Integer reservationDeadlineDays, Integer cancelDeadlineDays, Integer depositAmount, LocalTime startTime, LocalTime endTime, Set<DayOfWeek> regularDays) {
+    public LessonPolicy(Integer reservationAvailableDays, Integer reservationDeadlineDays, Integer cancelDeadlineDays, Integer depositAmount, LocalTime startTime, LocalTime endTime, Set<DayOfWeek> closedDays) {
         this.reservationAvailableDays = reservationAvailableDays;
         this.reservationDeadlineDays = reservationDeadlineDays;
         this.cancelDeadlineDays = cancelDeadlineDays;
         this.depositAmount = depositAmount;
         this.startTime = startTime;
         this.endTime = endTime;
-        this.regularDays = regularDays;
+        this.closedDays = closedDays;
     }
 
 
@@ -61,6 +62,6 @@ public class LessonPolicy {
         this.depositAmount = request.depositAmount();
         this.startTime = request.startTime();
         this.endTime = request.endTime();
-        this.regularDays = request.regularDays();
+        this.closedDays = request.regularDays();
     }
 }
