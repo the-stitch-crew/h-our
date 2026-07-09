@@ -20,7 +20,7 @@ public interface ReservationRepository extends JpaRepository<Reservation, Long> 
         where r.date = :date
         and r.status <> :status
         and (r.startTime < :endTime
-        or r.endTime < :startTime)
+        and r.endTime < :startTime)
     """)
     boolean existsByDateAndTimeOverlap(LocalDate date, LocalTime startTime,  LocalTime endTime,  ReservationStatus status);
 
