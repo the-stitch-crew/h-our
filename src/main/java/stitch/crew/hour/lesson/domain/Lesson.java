@@ -1,0 +1,40 @@
+package stitch.crew.hour.lesson.domain;
+
+import jakarta.persistence.*;
+import lombok.AccessLevel;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import stitch.crew.hour.common.domain.BaseEntity;
+import stitch.crew.hour.lesson.dto.LessonRequest;
+
+@Entity
+@Getter
+@Table(name = "lessons")
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+public class Lesson extends BaseEntity {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(nullable = false)
+    private Long id;
+
+    @Column(nullable = false, length = 50)
+    private String name;
+
+    @Column(nullable = false)
+    private Integer price;
+
+    @Column(nullable = false)
+    private Integer duration;
+
+    public Lesson(String name, Integer price, Integer duration) {
+        this.name = name;
+        this.price = price;
+        this.duration = duration;
+    }
+
+    public void update(LessonRequest request) {
+        this.name = request.name();
+        this.price = request.price();
+        this.duration = request.duration();
+    }
+}
