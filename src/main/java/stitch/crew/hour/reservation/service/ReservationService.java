@@ -76,7 +76,7 @@ public class ReservationService {
 
     }
 
-    //예약자가 예약 상세 확인
+    //예약자가 예약 상세 확인d
     @Transactional(readOnly = true)
     public ReservationResponse getMyReservation(CurrentUser currentUser, Long reservationId) {
         Reservation reservation = reservationRepository.findById(reservationId).orElseThrow(() -> new BusinessException(ErrorCode.RESERVATION_NOT_FOUND));
