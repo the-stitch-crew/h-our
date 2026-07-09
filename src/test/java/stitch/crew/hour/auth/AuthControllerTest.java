@@ -5,8 +5,11 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
+import jakarta.servlet.http.Cookie;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -24,6 +27,7 @@ import stitch.crew.hour.auth.dto.KeyPair;
 import stitch.crew.hour.auth.dto.OAuthSignupInfoResponse;
 import stitch.crew.hour.auth.dto.OAuthSignupRequest;
 import stitch.crew.hour.auth.dto.RefreshTokenRequest;
+import stitch.crew.hour.auth.service.OAuthSignupCookieManager;
 import stitch.crew.hour.auth.service.AuthService;
 import stitch.crew.hour.common.config.JwtAuthenticationFilter;
 import stitch.crew.hour.common.response.SuccessCode;
@@ -41,6 +45,9 @@ class AuthControllerTest {
 
 	@MockitoBean
 	private JwtAuthenticationFilter jwtAuthenticationFilter;
+
+	@MockitoBean
+	private OAuthSignupCookieManager oAuthSignupCookieManager;
 
 	@Nested
 	@DisplayName("Describe: POST /api/auth/login 엔드포인트는")
@@ -88,7 +95,6 @@ class AuthControllerTest {
 		void it_returns_201_created_and_tokens() throws Exception {
 			// given
 			OAuthSignupRequest request = new OAuthSignupRequest(
-				"signup-token",
 				java.time.LocalDate.of(2000, 1, 1),
 				stitch.crew.hour.user.constant.Gender.MALE,
 				"010-9999-8888",
@@ -99,15 +105,17 @@ class AuthControllerTest {
 				"oauth-refresh-token"
 			);
 
-			given(authService.oauthSignup(request)).willReturn(response);
+			given(authService.oauthSignup("signup-token", request)).willReturn(response);
+			given(oAuthSignupCookieManager.createExpiredCookieHeader())
+				.willReturn("signupToken=; Path=/api/auth/oauth; Max-Age=0; HttpOnly; SameSite=Lax");
 
 			// when & then
 			mockMvc.perform(
 					post("/api/auth/oauth/signup")
+						.cookie(new Cookie("signupToken", "signup-token"))
 						.contentType(MediaType.APPLICATION_JSON)
 						.content("""
 							{
-							  "signupToken": "signup-token",
 							  "birthDate": "2000-01-01",
 							  "gender": "MALE",
 							  "phoneNumber": "010-9999-8888",
@@ -121,6 +129,10 @@ class AuthControllerTest {
 				.andExpect(jsonPath("$.message").value(SuccessCode.USER_CREATED.getSuccessMessage()))
 				.andExpect(jsonPath("$.data.accessToken").value("oauth-access-token"))
 				.andExpect(jsonPath("$.data.refreshToken").value("oauth-refresh-token"))
+				.andExpect(header().string(
+					"Set-Cookie",
+					"signupToken=; Path=/api/auth/oauth; Max-Age=0; HttpOnly; SameSite=Lax"
+				))
 				.andDo(print());
 		}
 	}
@@ -130,7 +142,7 @@ class AuthControllerTest {
 	class Describe_getOAuthSignupInfo {
 
 		@Test
-		@DisplayName("It: signupToken으로 OAuth 회원가입 고정 정보를 조회한다")
+		@DisplayName("It: 쿠키의 signupToken으로 OAuth 회원가입 고정 정보를 조회한다")
 		void it_returns_200_ok_and_oauth_signup_info() throws Exception {
 			// given
 			OAuthSignupInfoResponse response = new OAuthSignupInfoResponse(
@@ -144,7 +156,7 @@ class AuthControllerTest {
 			// when & then
 			mockMvc.perform(
 					get("/api/auth/oauth/signup")
-						.param("signupToken", "signup-token")
+						.cookie(new Cookie("signupToken", "signup-token"))
 				)
 				.andExpect(status().isOk())
 				.andExpect(content().contentType(MediaType.APPLICATION_JSON))

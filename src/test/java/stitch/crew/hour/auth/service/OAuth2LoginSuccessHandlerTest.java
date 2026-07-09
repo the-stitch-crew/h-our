@@ -51,6 +51,9 @@ class OAuth2LoginSuccessHandlerTest {
 	@Mock
 	private SignupTokenStore oauthSignupTokenStore;
 
+	@Mock
+	private OAuthSignupCookieManager oAuthSignupCookieManager;
+
 	@BeforeEach
 	void setUp() {
 		ReflectionTestUtils.setField(successHandler, "frontendBaseUrl", "http://localhost:5173");
@@ -114,11 +117,12 @@ class OAuth2LoginSuccessHandlerTest {
 
 			// then
 			assertThat(response.getRedirectedUrl()).contains("http://localhost:5173/signup");
-			assertThat(response.getRedirectedUrl()).contains("signupToken=signup-token");
+			assertThat(response.getRedirectedUrl()).doesNotContain("signupToken=");
 			assertThat(response.getRedirectedUrl()).doesNotContain("oauth=true");
 			assertThat(response.getRedirectedUrl()).doesNotContain("email=");
 			assertThat(response.getRedirectedUrl()).doesNotContain("name=");
 			assertThat(response.getRedirectedUrl()).doesNotContain("provider=");
+			verify(oAuthSignupCookieManager).addSignupTokenCookie(response, "signup-token");
 
 			ArgumentCaptor<OAuthSignupPayload> payloadCaptor =
 				ArgumentCaptor.forClass(OAuthSignupPayload.class);
