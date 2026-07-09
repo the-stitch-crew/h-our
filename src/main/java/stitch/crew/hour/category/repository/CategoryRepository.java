@@ -7,7 +7,7 @@ import stitch.crew.hour.common.exception.ErrorCode;
 
 import java.util.Optional;
 
-public interface CategoryRepository extends JpaRepository<Category, Long> {
+public interface CategoryRepository extends JpaRepository<Category, Long>, CategoryRepositoryCustom {
     Boolean existsByName(String name);
 
     Optional<Category> findByName(String categoryName);
