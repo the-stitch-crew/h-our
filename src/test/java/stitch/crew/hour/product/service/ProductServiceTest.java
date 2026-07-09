@@ -317,7 +317,6 @@ class ProductServiceTest {
                 ProductUpdateRequest request = new ProductUpdateRequest(
                         "수정된 상품명",
                         2000L,
-                        "썸네일",
                         "요약",
                         "설명"
                 );
@@ -349,7 +348,6 @@ class ProductServiceTest {
                 ProductUpdateRequest request = new ProductUpdateRequest(
                         "수정된 상품명",
                         null,
-                        description,
                         description,
                         description
                 );
@@ -392,7 +390,6 @@ class ProductServiceTest {
                 ProductUpdateRequest request = new ProductUpdateRequest(
                         "수정된 상품명",
                         2000L,
-                        "썸네일",
                         "요약",
                         "설명"
                 );
