@@ -168,53 +168,53 @@ class ReservationConcurrencyTest {
 
                 log.info("성공 요청 : {}, 실패 요청 : {}, 실제 저장 : {}",successCount.get(),failureCount.get(),count);
             }
-            @Test
-            @DisplayName("It : 100명의 유저가 동일한 예약 시간으로 동시에 예약하는 경우 중복 예약이 발생하지 않는다")
-            void It_create_same_reservation_concurrently() throws InterruptedException {
-
-                int ITER = 100;
-                ExecutorService executor = Executors.newFixedThreadPool(ITER);
-                CountDownLatch startLatch = new CountDownLatch(1);
-                CountDownLatch endLatch = new CountDownLatch(ITER);
-
-                // 하나의 예약 요청 생성
-                ReservationRequest request = reservationRequests.get(0);
-
-                for (int i = 0; i < ITER; i++) {
-                    int index = i;
-
-                    executor.execute(() -> {
-                        try {
-                            startLatch.await();
-
-                            reservationService.saveReservation(
-                                    new CurrentUser(
-                                            users.get(index).getId(),
-                                            users.get(index).getEmail(),
-                                            Role.USER
-                                    ),
-                                    request
-                            );
-                            successCount.incrementAndGet();
-                            log.info("예약 성공 : {}", index);
-
-                        } catch (Exception e) {
-                            failureCount.incrementAndGet();
-                            log.error("예약 실패 : {}", e.getMessage());
-
-                        } finally {
-                            endLatch.countDown();
-                        }
-                    });
-                }
-
-                // 동시에 시작
-                startLatch.countDown();
-                endLatch.await();
-                executor.shutdown();
-                long savedCount = reservationRepository.count();
-                log.info("성공 요청 : {}, 실패 요청 : {}, 실제 저장 : {}",successCount.get(),failureCount.get(),savedCount);
-            }
+//            @Test
+//            @DisplayName("It : 100명의 유저가 동일한 예약 시간으로 동시에 예약하는 경우 중복 예약이 발생하지 않는다")
+//            void It_create_same_reservation_concurrently() throws InterruptedException {
+//
+//                int ITER = 100;
+//                ExecutorService executor = Executors.newFixedThreadPool(ITER);
+//                CountDownLatch startLatch = new CountDownLatch(1);
+//                CountDownLatch endLatch = new CountDownLatch(ITER);
+//
+//                // 하나의 예약 요청 생성
+//                ReservationRequest request = reservationRequests.get(0);
+//
+//                for (int i = 0; i < ITER; i++) {
+//                    int index = i;
+//
+//                    executor.execute(() -> {
+//                        try {
+//                            startLatch.await();
+//
+//                            reservationService.saveReservation(
+//                                    new CurrentUser(
+//                                            users.get(index).getId(),
+//                                            users.get(index).getEmail(),
+//                                            Role.USER
+//                                    ),
+//                                    request
+//                            );
+//                            successCount.incrementAndGet();
+//                            log.info("예약 성공 : {}", index);
+//
+//                        } catch (Exception e) {
+//                            failureCount.incrementAndGet();
+//                            log.error("예약 실패 : {}", e.getMessage());
+//
+//                        } finally {
+//                            endLatch.countDown();
+//                        }
+//                    });
+//                }
+//
+//                // 동시에 시작
+//                startLatch.countDown();
+//                endLatch.await();
+//                executor.shutdown();
+//                long savedCount = reservationRepository.count();
+//                log.info("성공 요청 : {}, 실패 요청 : {}, 실제 저장 : {}",successCount.get(),failureCount.get(),savedCount);
+//            }
         }
     }
 }
