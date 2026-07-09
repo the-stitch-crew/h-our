@@ -44,7 +44,7 @@ public class ReservationService {
     private final LessonService lessonService;
 
     // 손님이 예약
-    @Lock(key = Lock.Key.RESERVATION, waitTime = 500L, leaseTime = 700L, timeunit =  TimeUnit.MILLISECONDS)
+    @Lock(key = Lock.Key.RESERVATION, waitTime = 5L, leaseTime = 10L, timeunit =  TimeUnit.SECONDS)
     public void saveReservation(CurrentUser currentUser, ReservationRequest request) {
         User user = userService.getActiveUserFromCurrentUser(currentUser);
         Lesson lesson = lessonService.getLessonById(request.lessonId());
