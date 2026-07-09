@@ -110,6 +110,16 @@ class OrderControllerTest {
                         false
                 )
         );
+
+        shippingPolicyRepository.deleteAll();
+        shippingPolicyRepository.save(
+                new ShippingPolicy(
+                        4000L,
+                        3000L,
+                        true
+                )
+        );
+
         testCategory = categoryRepository.save(
                 new Category("카테고리명")
         );

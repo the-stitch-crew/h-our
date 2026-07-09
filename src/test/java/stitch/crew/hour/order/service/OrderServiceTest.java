@@ -72,6 +72,16 @@ class OrderServiceTest {
                         false
                 )
         );
+
+        shippingPolicyRepository.deleteAll();
+        shippingPolicyRepository.save(
+                new ShippingPolicy(
+                        4000L,
+                        3000L,
+                        true
+                )
+        );
+
         token = new TestingAuthenticationToken(
                 CurrentUser.from(testUser),
                 null,
