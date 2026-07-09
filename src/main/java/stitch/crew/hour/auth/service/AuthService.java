@@ -10,6 +10,7 @@ import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 import stitch.crew.hour.auth.domain.RefreshToken;
 import stitch.crew.hour.auth.dto.LoginRequest;
+import stitch.crew.hour.auth.dto.OAuthSignupInfoResponse;
 import stitch.crew.hour.auth.dto.OAuthSignupPayload;
 import stitch.crew.hour.auth.dto.OAuthSignupRequest;
 import stitch.crew.hour.auth.dto.RefreshTokenRequest;
@@ -93,6 +94,13 @@ public class AuthService {
 		KeyPair keyPair = jwtTokenProvider.issueKeyPair(savedUser.getEmail(), savedUser.getRole());
 		signupTokenStore.delete(request.signupToken());
 		return keyPair;
+	}
+
+	public OAuthSignupInfoResponse getOAuthSignupInfo(String signupToken) {
+		OAuthSignupPayload signupPayload = signupTokenStore.find(signupToken)
+			.orElseThrow(() -> new BusinessException(ErrorCode.INVALID_SIGNUP_TOKEN));
+
+		return OAuthSignupInfoResponse.from(signupPayload);
 	}
 
 	@Transactional

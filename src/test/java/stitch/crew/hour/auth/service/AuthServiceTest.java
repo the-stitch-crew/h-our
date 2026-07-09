@@ -25,6 +25,7 @@ import org.springframework.test.util.ReflectionTestUtils;
 import stitch.crew.hour.auth.domain.RefreshToken;
 import stitch.crew.hour.auth.dto.KeyPair;
 import stitch.crew.hour.auth.dto.LoginRequest;
+import stitch.crew.hour.auth.dto.OAuthSignupInfoResponse;
 import stitch.crew.hour.auth.dto.OAuthSignupPayload;
 import stitch.crew.hour.auth.dto.OAuthSignupRequest;
 import stitch.crew.hour.auth.dto.RefreshTokenRequest;
@@ -278,6 +279,46 @@ class AuthServiceTest {
 			verify(userRepository, never()).existsByEmail("oauth@google.com");
 			verify(userRepository, never()).save(any(User.class));
 			verify(oauthSignupTokenStore, never()).delete(request.signupToken());
+		}
+	}
+
+	@Nested
+	@DisplayName("Describe: getOAuthSignupInfo 메서드는")
+	class Describe_getOAuthSignupInfo {
+
+		@Test
+		@DisplayName("It: 유효한 signupToken이면 OAuth 회원가입 고정 정보를 반환한다")
+		void it_returns_oauth_signup_info_when_signup_token_is_valid() {
+			// given
+			String signupToken = "signup-token";
+			OAuthSignupPayload signupPayload = createOAuthSignupPayload("GOOGLE");
+
+			given(oauthSignupTokenStore.find(signupToken)).willReturn(Optional.of(signupPayload));
+
+			// when
+			OAuthSignupInfoResponse response = authService.getOAuthSignupInfo(signupToken);
+
+			// then
+			assertThat(response.email()).isEqualTo(signupPayload.email());
+			assertThat(response.userName()).isEqualTo(signupPayload.userName());
+			assertThat(response.provider()).isEqualTo(signupPayload.provider());
+		}
+
+		@Test
+		@DisplayName("It: signupToken이 유효하지 않으면 INVALID_SIGNUP_TOKEN 예외가 발생한다")
+		void it_throws_when_signup_token_is_invalid() {
+			// given
+			String signupToken = "invalid-signup-token";
+			given(oauthSignupTokenStore.find(signupToken)).willReturn(Optional.empty());
+
+			// when
+			BusinessException exception = assertThrows(
+				BusinessException.class,
+				() -> authService.getOAuthSignupInfo(signupToken)
+			);
+
+			// then
+			assertThat(exception.getErrorCode()).isEqualTo(ErrorCode.INVALID_SIGNUP_TOKEN);
 		}
 	}
 

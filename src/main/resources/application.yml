@@ -59,7 +59,7 @@ custom:
 
 app:
   frontend:
-    base-url: ${FRONTEND_BASE_URL}
+    base-url: ${FRONTEND_BASE_URL:http://localhost:5173}
 
 payment:
   baseUrl: ${TOSS_PAYMENT_BASE_URL}

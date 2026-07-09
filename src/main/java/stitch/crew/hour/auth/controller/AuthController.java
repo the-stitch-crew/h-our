@@ -1,14 +1,17 @@
 package stitch.crew.hour.auth.controller;
 
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import stitch.crew.hour.auth.dto.LoginRequest;
+import stitch.crew.hour.auth.dto.OAuthSignupInfoResponse;
 import stitch.crew.hour.auth.dto.OAuthSignupRequest;
 import stitch.crew.hour.auth.service.AuthService;
 import stitch.crew.hour.auth.dto.KeyPair;
@@ -38,6 +41,14 @@ public class AuthController {
 	) {
 		KeyPair response = authService.oauthSignup(request);
 		return ApiResult.created(SuccessCode.USER_CREATED, response);
+	}
+
+	@GetMapping("/oauth/signup")
+	public ResponseEntity<ApiResponses<OAuthSignupInfoResponse>> getOAuthSignupInfo(
+		@RequestParam String signupToken
+	) {
+		OAuthSignupInfoResponse response = authService.getOAuthSignupInfo(signupToken);
+		return ApiResult.ok(SuccessCode.USER_READ, response);
 	}
 
 	@PostMapping("/refresh")
