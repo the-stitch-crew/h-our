@@ -55,7 +55,7 @@ public class PaymentController implements PaymentSwaggerSupporter{
             @AuthenticationPrincipal CurrentUser currentUser,
             @RequestBody PaymentRequestBody requestBody
     ) throws Exception {
-        Payment initPayment = paymentService.initPaymentByOrder(requestBody);
+        Payment initPayment = paymentService.initPayment(requestBody);
 
         if (!initPayment.getTotalPrice().equals(requestBody.amount())) {
             paymentService.cancelPayment(initPayment);

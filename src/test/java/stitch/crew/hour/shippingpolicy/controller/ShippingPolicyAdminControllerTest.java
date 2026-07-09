@@ -13,13 +13,11 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.transaction.annotation.Transactional;
-import stitch.crew.hour.category.domain.Category;
-import stitch.crew.hour.common.config.SecurityConfig;
 import stitch.crew.hour.common.response.SuccessCode;
 import stitch.crew.hour.policy.domain.ShippingPolicy;
 import stitch.crew.hour.policy.dto.DeliveryFeeRequest;
 import stitch.crew.hour.policy.repository.ShippingPolicyRepository;
-import stitch.crew.hour.product.domain.Product;import stitch.crew.hour.user.constant.Gender;
+import stitch.crew.hour.user.constant.Gender;
 import stitch.crew.hour.user.constant.Role;
 import stitch.crew.hour.user.domain.CurrentUser;
 import stitch.crew.hour.user.domain.User;
@@ -28,7 +26,6 @@ import tools.jackson.databind.ObjectMapper;
 
 import java.time.LocalDate;
 
-import static org.junit.jupiter.api.Assertions.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
