@@ -10,7 +10,7 @@ import stitch.crew.hour.order.domain.QOrder;
 import stitch.crew.hour.payment.domain.QPayment;
 import stitch.crew.hour.payment.dto.PaymentDetailResponse;
 import stitch.crew.hour.payment.dto.QPaymentDetailResponse;
-import stitch.crew.hour.user.domain.QUser;
+import stitch.crew.hour.reservation.domain.QReservation;
 
 import java.util.List;
 
@@ -21,8 +21,8 @@ public class PaymentRepositoryImpl implements PaymentCustomRepository{
     private final JPAQueryFactory jpaQueryFactory;
 
     private final QPayment qPayment = QPayment.payment;
-    private final QUser qUser = QUser.user;
     private final QOrder qOrder = QOrder.order;
+    private final QReservation qReservation = QReservation.reservation;
 
     @Override
     public Page<PaymentDetailResponse> getPaymentDetails(
@@ -40,11 +40,11 @@ public class PaymentRepositoryImpl implements PaymentCustomRepository{
                                 qPayment.approvedAt.stringValue()
                         )
                 ).from(qPayment)
-                .join(qOrder)
+                .leftJoin(qOrder)
                 .on(qPayment.order.id.eq(qOrder.id))
-                .join(qUser)
-                .on(qUser.id.eq(qOrder.orderer.id))
-                .where(qUser.id.eq(userId))
+                .leftJoin(qReservation)
+                .on(qPayment.reservation.id.eq(qReservation.id))
+                .where(qOrder.orderer.id.eq(userId).or(qReservation.user.id.eq(userId)))
                 .offset(pageable.getOffset())
                 .limit(pageable.getPageSize())
                 .fetch();
@@ -52,11 +52,11 @@ public class PaymentRepositoryImpl implements PaymentCustomRepository{
         Long size = jpaQueryFactory.select(
                         qPayment.count()
                 ).from(qPayment)
-                .join(qOrder)
+                .leftJoin(qOrder)
                 .on(qPayment.order.id.eq(qOrder.id))
-                .join(qUser)
-                .on(qUser.id.eq(qOrder.orderer.id))
-                .where(qUser.id.eq(userId))
+                .leftJoin(qReservation)
+                .on(qPayment.reservation.id.eq(qReservation.id))
+                .where(qOrder.orderer.id.eq(userId).or(qReservation.user.id.eq(userId)))
                 .fetchOne();
         return new PageImpl<>(
                 fetched,

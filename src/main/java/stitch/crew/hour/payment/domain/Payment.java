@@ -88,7 +88,7 @@ public class Payment {
             this.totalPrice = order.getTotalPrice().longValue();
         } else {
             this.reservation = reservation;
-            this.totalPrice = requestBody.amount();
+            this.totalPrice = reservation.getDeposit().longValue();
         }
     }
 
