@@ -72,7 +72,6 @@ class OrderServiceTest {
                         false
                 )
         );
-
         token = new TestingAuthenticationToken(
                 CurrentUser.from(testUser),
                 null,

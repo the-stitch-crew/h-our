@@ -43,6 +43,8 @@ import stitch.crew.hour.order.repository.OrderBoundaryRepository;
 import stitch.crew.hour.order.service.OrderService;
 import stitch.crew.hour.orderproduct.dto.OrderProductCreateRequest;
 import stitch.crew.hour.orderproduct.dto.OrderProductDetailResponse;
+import stitch.crew.hour.policy.domain.ShippingPolicy;
+import stitch.crew.hour.policy.repository.ShippingPolicyRepository;
 import stitch.crew.hour.product.domain.Product;
 import stitch.crew.hour.product.repository.ProductRepository;
 import stitch.crew.hour.user.constant.Gender;
@@ -81,6 +83,9 @@ class OrderControllerTest {
     @Autowired
     ObjectMapper objectMapper;
 
+    @Autowired
+    ShippingPolicyRepository shippingPolicyRepository;
+
     User testUser;
 
     TestingAuthenticationToken token;
@@ -105,7 +110,6 @@ class OrderControllerTest {
                         false
                 )
         );
-
         testCategory = categoryRepository.save(
                 new Category("카테고리명")
         );
