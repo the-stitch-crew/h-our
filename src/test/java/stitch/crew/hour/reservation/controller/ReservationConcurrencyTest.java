@@ -21,11 +21,13 @@ import stitch.crew.hour.user.domain.CurrentUser;
 import stitch.crew.hour.user.domain.User;
 import stitch.crew.hour.user.repository.UserRepository;
 
+import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
+import java.util.Set;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -94,9 +96,19 @@ class ReservationConcurrencyTest {
                         new Lesson("키링 클래스", 45000, 3)
                 ));
 
-                // 정책 조회
-                LessonPolicy policy = lessonPolicyRepository.findById(1L)
-                        .orElseThrow();
+                // 정책 저장
+                lessonPolicyRepository.deleteAll();
+                LessonPolicy policy = lessonPolicyRepository.save(
+                        new LessonPolicy(
+                                21,
+                                3,
+                                1,
+                                10000,
+                                LocalTime.of(9, 0),
+                                LocalTime.of(18, 0),
+                                Set.of(DayOfWeek.SATURDAY, DayOfWeek.SUNDAY)
+                        )
+                );
 
                 int[] days = {16, 17, 20, 21};
                 Random random = new Random();
