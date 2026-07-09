@@ -62,6 +62,12 @@ public enum SuccessCode {
     CATEGORY_UPDATED("카테고리가 정상적으로 수정되었습니다."),
     CATEGORY_DELETED("카테고리가 정상적으로 삭제되었습니다."),
 
+    /*LESSON*/
+    LESSON_CREATED("수업이 정상적으로 생성되었습니다."),
+    LESSON_READ("수업이 정상적으로 조회되었습니다."),
+    LESSON_UPDATED("수업이 정상적으로 수정되었습니다."),
+    LESSON_DELETED("수업이 정상적으로 삭제되었습니다."),
+
     BUSINESS_SUCCESS("정상적으로 작성되었습니다.");
 
     private final String successMessage;
