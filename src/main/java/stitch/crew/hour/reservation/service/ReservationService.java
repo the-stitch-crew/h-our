@@ -153,6 +153,18 @@ public class ReservationService {
         reservation.setStatus(status);
     }
 
+    //결제시 예약 상태가 APPROVED로 변경
+    @Transactional
+    public void confirmReservation(Reservation reservation) {
+        reservation.confirm();
+    }
+
+    //환불시 예약 상태가 CANCELED로 변경
+    @Transactional
+    public void cancelReservation(Reservation reservation) {
+        reservation.cancel();
+    }
+
     //그 주의 일요일과 토요일 날짜 구하기
     private LocalDate[] getWeekRange(ReservationWeekRequest request) {
         //그 달의 첫번째 날 찾기
