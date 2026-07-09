@@ -45,7 +45,11 @@ public class ProductRepositoryCustomImpl implements ProductRepositoryCustom {
                                 qProduct.price,
                                 qProduct.thumbnail,
                                 qProduct.status.stringValue(),
-                                qProduct.summary
+                                qProduct.summary,
+                                qProduct.category.name,
+                                qProduct.isMain,
+                                qProduct.viewCount,
+                                qProduct.salesCount
                         )
                 ).from(qProduct)
                 .where(booleanBuilder)
@@ -54,14 +58,15 @@ public class ProductRepositoryCustomImpl implements ProductRepositoryCustom {
                 .limit(pageable.getPageSize())
                 .fetch();
 
-        Integer totalCnt = jpaQueryFactory.selectFrom(qProduct)
-                .where(containsCategoryName(categoryName))
-                .fetch().size();
+        Long totalCnt = jpaQueryFactory.select(qProduct.count())
+                .from(qProduct)
+                .where(booleanBuilder)
+                .fetchOne();
 
         return new PageImpl<ProductSearchResponse>(
                 founded,
                 pageable,
-                totalCnt
+                totalCnt == null ? 0L : totalCnt
         );
     }
 
