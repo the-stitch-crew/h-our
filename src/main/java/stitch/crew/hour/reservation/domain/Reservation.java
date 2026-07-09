@@ -14,7 +14,14 @@ import java.util.UUID;
 
 @Entity
 @Getter
-@Table(name="reservations")
+@Table(name="reservations",
+    indexes = {
+            @Index(
+                    name = "idx_reservation_date_status_time",
+                    columnList = "date,status,start_time,end_time"
+            )
+    }
+)
 @NoArgsConstructor
 public class Reservation extends BaseEntity {
     @Id

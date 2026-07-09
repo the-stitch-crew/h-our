@@ -31,8 +31,8 @@ public class LockAspect {
 //        log.info("lock key = {}", "%s:%s".formatted(lock.key(), date));
         try {
             // 커스텀어노테이션에서 설정된 필드값으로 동적으로 설정하여 tryLock()을 통해 락을 획득
-            Boolean available = rLock.tryLock(lock.waitTime(), lock.leaseTime(), lock.timeunit());
-            log.info("lock acquired = {}, key = {}", available, rLock.getName());
+            boolean available = rLock.tryLock(lock.waitTime(), lock.leaseTime(), lock.timeunit());
+//            log.info("lock acquired = {}, key = {}", available, rLock.getName());
             if ( !available ) return false;
             return aopTransactionManager.proceed(joinPoint);
         } finally {
@@ -40,7 +40,7 @@ public class LockAspect {
             // Lock이 만료된 경우 rLock.unlock() 호출 시 예외 발생하므로, 방어로직 작성
             if(rLock.isHeldByCurrentThread()) {
                 rLock.unlock();
-                log.info("lock released, key = {}", rLock.getName());
+//                log.info("lock released, key = {}", rLock.getName());
             }
         }
     }
