@@ -166,15 +166,15 @@ public class UserService {
 
 	public User getActiveUserFromCurrentUser(CurrentUser currentUser){
 		PreConditions.validate(
-				currentUser != null,
-				ErrorCode.UNAUTHORIZED
+			currentUser != null,
+			ErrorCode.UNAUTHORIZED
 		);
 
 		User user = userRepository.findByIdOrthrow(currentUser.getId());
 
 		PreConditions.validate(
-				user.getDeletedAt() == null,
-				ErrorCode.USER_DONT_EXISTS
+			user.getDeletedAt() == null,
+			ErrorCode.USER_DONT_EXISTS
 		);
 
 		return user;

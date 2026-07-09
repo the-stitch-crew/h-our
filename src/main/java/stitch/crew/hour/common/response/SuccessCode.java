@@ -51,6 +51,8 @@ public enum SuccessCode {
     PRODUCT_SWITCH_MAIN_SUCCESS("상품이 카테고리 메인 상품으로 수정되었습니다."),
     PRODUCT_READ_SUCCESS("상품이 정상적으로 조회되었습니다."),
 
+    // Admin
+    ADMIN_DASHBOARD_READ("대시보드 정보가 정상적으로 조회되었습니다."),
 
     /*CATEGORY*/
     CATEGORY_CREATED("카테고리가 정상적으로 생성되었습니다."),

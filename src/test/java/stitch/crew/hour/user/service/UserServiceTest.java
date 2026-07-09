@@ -30,13 +30,13 @@ import stitch.crew.hour.common.exception.BusinessException;
 import stitch.crew.hour.common.exception.ErrorCode;
 import stitch.crew.hour.user.constant.Gender;
 import stitch.crew.hour.user.constant.Role;
+import stitch.crew.hour.user.domain.CurrentUser;
 import stitch.crew.hour.user.domain.User;
 import stitch.crew.hour.user.dto.MyPageResponse;
 import stitch.crew.hour.user.dto.PasswordChangeRequest;
 import stitch.crew.hour.user.dto.SignupRequest;
 import stitch.crew.hour.user.dto.SignupResponse;
 import stitch.crew.hour.user.dto.UserInfoResponse;
-import stitch.crew.hour.user.dto.UserRoleUpdateRequest;
 import stitch.crew.hour.user.dto.UserUpdateRequest;
 import stitch.crew.hour.user.repository.UserRepository;
 
@@ -254,68 +254,6 @@ class UserServiceTest {
 	}
 
 	@Nested
-	@DisplayName("Describe: getUserInfo 메서드는")
-	class Describe_getUserInfo {
-
-		@Test
-		@DisplayName("It: id에 해당하는 회원 정보를 반환한다")
-		void it_returns_user_info() {
-			// given
-			User user = createUser();
-			given(userRepository.findById(user.getId())).willReturn(Optional.of(user));
-
-			// when
-			UserInfoResponse response = userService.getUserInfo(user.getId());
-
-			// then
-			assertThat(response.userId()).isEqualTo(user.getId());
-			assertThat(response.userName()).isEqualTo(user.getUserName());
-			assertThat(response.email()).isEqualTo(user.getEmail());
-			assertThat(response.birthDate()).isEqualTo(user.getBirthDate());
-			assertThat(response.gender()).isEqualTo(user.getGender());
-			assertThat(response.role()).isEqualTo(user.getRole());
-			assertThat(response.phoneNumber()).isEqualTo(user.getPhoneNumber());
-			assertThat(response.nationality()).isEqualTo(user.getNationality());
-			assertThat(response.isAuthLinked()).isFalse();
-		}
-
-		@Test
-		@DisplayName("It: id에 해당하는 회원이 없으면 NO_USER 예외가 발생한다")
-		void it_throws_no_user_when_user_does_not_exist() {
-			// given
-			Long userId = 1L;
-			given(userRepository.findById(userId)).willReturn(Optional.empty());
-
-			// when
-			BusinessException exception = assertThrows(
-				BusinessException.class,
-				() -> userService.getUserInfo(userId)
-			);
-
-			// then
-			assertThat(exception.getErrorCode()).isEqualTo(ErrorCode.USER_DONT_EXISTS);
-		}
-
-		@Test
-		@DisplayName("It: 삭제된 회원이면 USER_DONT_EXISTS 예외가 발생한다")
-		void it_throws_USER_DONT_EXISTS_when_user_is_deleted() {
-			// given
-			User user = createUser();
-			user.delete();
-			given(userRepository.findById(user.getId())).willReturn(Optional.of(user));
-
-			// when
-			BusinessException exception = assertThrows(
-				BusinessException.class,
-				() -> userService.getUserInfo(user.getId())
-			);
-
-			// then
-			assertThat(exception.getErrorCode()).isEqualTo(ErrorCode.USER_DONT_EXISTS);
-		}
-	}
-
-	@Nested
 	@DisplayName("Describe: updateMyInfo 메서드는")
 	class Describe_updateMyInfo {
 
@@ -396,99 +334,6 @@ class UserServiceTest {
 			// then
 			assertThat(exception.getErrorCode()).isEqualTo(ErrorCode.USER_PHONE_ALREADY_EXISTS);
 			assertThat(user.getPhoneNumber()).isEqualTo("010-1234-5678");
-		}
-	}
-
-	@Nested
-	@DisplayName("Describe: updateUserRole 메서드는")
-	class Describe_updateUserRole {
-
-		@Test
-		@DisplayName("It: USER 역할을 ADMIN으로 변경한다")
-		void it_changes_user_to_admin() {
-			// given
-			User user = createUser(Role.USER);
-			UserRoleUpdateRequest request = new UserRoleUpdateRequest(Role.ADMIN);
-			given(userRepository.findById(user.getId())).willReturn(Optional.of(user));
-
-			// when
-			UserInfoResponse response = userService.updateUserRole(user.getId(), request);
-
-			// then
-			assertThat(user.getRole()).isEqualTo(Role.ADMIN);
-			assertThat(response.role()).isEqualTo(Role.ADMIN);
-		}
-
-		@Test
-		@DisplayName("It: ADMIN 역할을 USER로 변경한다")
-		void it_changes_admin_to_user() {
-			// given
-			User user = createUser(Role.ADMIN);
-			UserRoleUpdateRequest request = new UserRoleUpdateRequest(Role.USER);
-			given(userRepository.findById(user.getId())).willReturn(Optional.of(user));
-
-			// when
-			UserInfoResponse response = userService.updateUserRole(user.getId(), request);
-
-			// then
-			assertThat(user.getRole()).isEqualTo(Role.USER);
-			assertThat(response.role()).isEqualTo(Role.USER);
-		}
-
-		@Test
-		@DisplayName("It: id에 해당하는 회원이 없으면 USER_DONT_EXISTS 예외가 발생한다")
-		void it_throws_user_dont_exists_when_user_does_not_exist() {
-			// given
-			Long userId = 1L;
-			UserRoleUpdateRequest request = new UserRoleUpdateRequest(Role.ADMIN);
-			given(userRepository.findById(userId)).willReturn(Optional.empty());
-
-			// when
-			BusinessException exception = assertThrows(
-				BusinessException.class,
-				() -> userService.updateUserRole(userId, request)
-			);
-
-			// then
-			assertThat(exception.getErrorCode()).isEqualTo(ErrorCode.USER_DONT_EXISTS);
-		}
-
-		@Test
-		@DisplayName("It: 삭제된 회원이면 USER_DONT_EXISTS 예외가 발생한다")
-		void it_throws_user_dont_exists_when_user_is_deleted() {
-			// given
-			User user = createUser();
-			user.delete();
-			UserRoleUpdateRequest request = new UserRoleUpdateRequest(Role.ADMIN);
-			given(userRepository.findById(user.getId())).willReturn(Optional.of(user));
-
-			// when
-			BusinessException exception = assertThrows(
-				BusinessException.class,
-				() -> userService.updateUserRole(user.getId(), request)
-			);
-
-			// then
-			assertThat(exception.getErrorCode()).isEqualTo(ErrorCode.USER_DONT_EXISTS);
-		}
-
-		@Test
-		@DisplayName("It: SUPER_ADMIN으로 변경하려 하면 USER_ROLE_CHANGE_NOT_ALLOWED 예외가 발생한다")
-		void it_throws_when_role_change_is_not_allowed() {
-			// given
-			User user = createUser(Role.USER);
-			UserRoleUpdateRequest request = new UserRoleUpdateRequest(Role.SUPER_ADMIN);
-			given(userRepository.findById(user.getId())).willReturn(Optional.of(user));
-
-			// when
-			BusinessException exception = assertThrows(
-				BusinessException.class,
-				() -> userService.updateUserRole(user.getId(), request)
-			);
-
-			// then
-			assertThat(exception.getErrorCode()).isEqualTo(ErrorCode.USER_ROLE_CHANGE_NOT_ALLOWED);
-			assertThat(user.getRole()).isEqualTo(Role.USER);
 		}
 	}
 
@@ -575,6 +420,77 @@ class UserServiceTest {
 		}
 	}
 
+	@Nested
+	@DisplayName("Describe : getActiveUserFromCurrentUser 메서드는")
+	class Describe_getActiveUserFromCurrentUser {
+
+		@Test
+		@DisplayName("It : CurrentUser의 id에 해당하는 활성 회원을 반환한다")
+		void it_returns_active_user_by_current_user_id() {
+			// given
+			User user = createUser();
+			CurrentUser currentUser = CurrentUser.from(user);
+			given(userRepository.findByIdOrthrow(user.getId())).willReturn(user);
+
+			// when
+			User foundUser = userService.getActiveUserFromCurrentUser(currentUser);
+
+			// then
+			assertThat(foundUser).isEqualTo(user);
+		}
+
+		@Test
+		@DisplayName("It : CurrentUser의 id에 해당하는 회원이 없으면 USER_DONT_EXISTS 예외가 발생한다")
+		void it_throws_user_dont_exists_when_user_does_not_exist() {
+			// given
+			CurrentUser currentUser = new CurrentUser(1L, "legend@naver.com", Role.USER);
+			given(userRepository.findByIdOrthrow(currentUser.getId()))
+				.willThrow(new BusinessException(ErrorCode.USER_DONT_EXISTS));
+
+			// when
+			BusinessException exception = assertThrows(
+				BusinessException.class,
+				() -> userService.getActiveUserFromCurrentUser(currentUser)
+			);
+
+			// then
+			assertThat(exception.getErrorCode()).isEqualTo(ErrorCode.USER_DONT_EXISTS);
+		}
+
+		@Test
+		@DisplayName("It : CurrentUser가 없으면 UNAUTHORIZED 예외가 발생한다")
+		void it_throws_unauthorized_when_current_user_is_null() {
+			// when
+			BusinessException exception = assertThrows(
+				BusinessException.class,
+				() -> userService.getActiveUserFromCurrentUser(null)
+			);
+
+			// then
+			assertThat(exception.getErrorCode()).isEqualTo(ErrorCode.UNAUTHORIZED);
+			verify(userRepository, never()).findByIdOrthrow(any());
+		}
+
+		@Test
+		@DisplayName("It : CurrentUser의 id에 해당하는 회원이 삭제된 회원이면 USER_DONT_EXISTS 예외가 발생한다")
+		void it_throws_user_dont_exists_when_user_is_deleted() {
+			// given
+			User user = createUser();
+			user.delete();
+			CurrentUser currentUser = CurrentUser.from(user);
+			given(userRepository.findByIdOrthrow(user.getId())).willReturn(user);
+
+			// when
+			BusinessException exception = assertThrows(
+				BusinessException.class,
+				() -> userService.getActiveUserFromCurrentUser(currentUser)
+			);
+
+			// then
+			assertThat(exception.getErrorCode()).isEqualTo(ErrorCode.USER_DONT_EXISTS);
+		}
+	}
+
 	private SignupRequest createSignupRequest() {
 		return new SignupRequest(
 			"대정수",
@@ -588,16 +504,12 @@ class UserServiceTest {
 	}
 
 	private User createUser() {
-		return createUser(Role.USER);
-	}
-
-	private User createUser(Role role) {
 		User user = new User(
 			"대정수",
 			"legend@naver.com",
 			"encodedPassword",
 			LocalDate.of(2000, 1, 1),
-			role,
+			Role.USER,
 			Gender.MALE,
 			null,
 			"010-1234-5678",

@@ -375,4 +375,64 @@ class OrderAdminControllerTest {
             }
         }
     }
+
+    @Nested
+    @DisplayName("Describe : PATCH /api/admin/orders/{orderNumber}/cancel")
+    class Describe_setOrderCanceled{
+
+        Cart testCart;
+        OrderCreateResponse orderFromCart;
+
+        @BeforeEach
+        void setUp(){
+
+            // given
+            testCart = cartRepository.save(new Cart(testUser));
+            SecurityContextHolder.getContext().setAuthentication(token);
+
+            cartProductRepository.save(
+                    new CartProduct(
+                            testCart,
+                            testProduct,
+                            2L
+                    )
+            );
+
+            OrderCreateFromCartRequest requestFromCart = new OrderCreateFromCartRequest(
+                    "주소" ,
+                    "26331",
+                    "이정수" ,
+                    "요청사황",
+                    "01041245512"
+            );
+            orderFromCart = orderService.createOrderFromCart(
+                    testUser.getId(),
+                    requestFromCart
+            );
+        }
+
+        @Nested
+        @DisplayName("Context : 올바른 데이터가 주어진 경우")
+        class Context_with_valid_data{
+
+            @Test
+            @DisplayName("It : 주문을 취소 상태로 전환")
+            void It_성공적으로_주문취소_전환() throws Exception {
+                // given
+                SecurityContextHolder.getContext().setAuthentication(token);
+
+                // when
+                mockMvc.perform(
+                                MockMvcRequestBuilders.patch(BASE_URL + "/%s/cancel"
+                                        .formatted(orderFromCart.orderNumber()))
+                        ).andDo(print())
+
+                        // then
+                        .andExpect(MockMvcResultMatchers.status().isOk())
+                        .andExpect(jsonPath("$.message").value(SuccessCode.ORDER_CANCELED.getSuccessMessage()));
+                Order foundedOrder = orderBoundaryRepository.findByOrderNumberOrThrow(orderFromCart.orderNumber());
+                Assertions.assertThat(foundedOrder.getOrderStatus()).isEqualTo(OrderStatus.CANCELED);
+            }
+        }
+    }
 }
