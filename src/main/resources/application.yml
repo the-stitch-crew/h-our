@@ -60,6 +60,6 @@ app:
     base-url: ${FRONTEND_BASE_URL}
 
 payment:
-  baseUrl: https://api.tosspayments.com/v1/payments
-  clientKey: test_gck_docs_Ovk5rk1EwkEbP0W43n07xlzm
-  secretKey: test_gsk_docs_OaPz8L5KdmQXkzRz3y47BMw6
+  baseUrl: ${TOSS_PAYMENT_BASE_URL}
+  clientKey: ${TOSS_PAYMENT_CLIENT_KEY}
+  secretKey: ${TOSS_PAYMENT_SECRET_KEY}
