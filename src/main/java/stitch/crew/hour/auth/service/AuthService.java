@@ -10,6 +10,7 @@ import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 import stitch.crew.hour.auth.domain.RefreshToken;
 import stitch.crew.hour.auth.dto.LoginRequest;
+import stitch.crew.hour.auth.dto.OAuthSignupPayload;
 import stitch.crew.hour.auth.dto.OAuthSignupRequest;
 import stitch.crew.hour.auth.dto.RefreshTokenRequest;
 import stitch.crew.hour.auth.dto.TokenBody;
@@ -31,6 +32,7 @@ public class AuthService {
 	private final PasswordEncoder passwordEncoder;
 	private final JwtTokenProvider jwtTokenProvider;
 	private final RefreshTokenRepository refreshTokenRepository;
+	private final SignupTokenStore signupTokenStore;
 
 	@Transactional
 	public KeyPair login(LoginRequest request) {
@@ -52,7 +54,10 @@ public class AuthService {
 
 	@Transactional
 	public KeyPair oauthSignup(OAuthSignupRequest request) {
-		String provider = request.provider().toUpperCase(Locale.ROOT);
+		OAuthSignupPayload signupPayload = signupTokenStore.find(request.signupToken())
+			.orElseThrow(() -> new BusinessException(ErrorCode.INVALID_SIGNUP_TOKEN));
+
+		String provider = signupPayload.provider().toUpperCase(Locale.ROOT);
 
 		PreConditions.validate(
 			provider.equals("GOOGLE"),
@@ -61,7 +66,7 @@ public class AuthService {
 
 		//필터체인에서 기존 회원이 있으면 이 메서드를 실행시키지 않음. 신규회원의 상황인데 이메일이 있으면 안되니까 예외.
 		PreConditions.validate(
-			!userRepository.existsByEmail(request.email()),
+			!userRepository.existsByEmail(signupPayload.email()),
 			ErrorCode.USER_EMAIL_ALREADY_EXISTS
 		);
 
@@ -71,8 +76,8 @@ public class AuthService {
 		);
 
 		User user = new User(
-			request.userName(),
-			request.email(),
+			signupPayload.userName(),
+			signupPayload.email(),
 			passwordEncoder.encode(UUID.randomUUID().toString()),
 			request.birthDate(),
 			Role.USER,
@@ -85,7 +90,9 @@ public class AuthService {
 		);
 
 		User savedUser = userRepository.save(user);
-		return jwtTokenProvider.issueKeyPair(savedUser.getEmail(), savedUser.getRole());
+		KeyPair keyPair = jwtTokenProvider.issueKeyPair(savedUser.getEmail(), savedUser.getRole());
+		signupTokenStore.delete(request.signupToken());
+		return keyPair;
 	}
 
 	@Transactional

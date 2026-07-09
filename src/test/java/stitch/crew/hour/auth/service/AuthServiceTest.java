@@ -25,6 +25,7 @@ import org.springframework.test.util.ReflectionTestUtils;
 import stitch.crew.hour.auth.domain.RefreshToken;
 import stitch.crew.hour.auth.dto.KeyPair;
 import stitch.crew.hour.auth.dto.LoginRequest;
+import stitch.crew.hour.auth.dto.OAuthSignupPayload;
 import stitch.crew.hour.auth.dto.OAuthSignupRequest;
 import stitch.crew.hour.auth.dto.RefreshTokenRequest;
 import stitch.crew.hour.auth.dto.TokenBody;
@@ -54,6 +55,9 @@ class AuthServiceTest {
 
 	@Mock
 	private RefreshTokenRepository refreshTokenRepository;
+
+	@Mock
+	private SignupTokenStore oauthSignupTokenStore;
 
 	@Nested
 	@DisplayName("Describe: login 메서드는")
@@ -150,13 +154,16 @@ class AuthServiceTest {
 		void it_creates_oauth_user_and_returns_tokens() {
 			// given
 			OAuthSignupRequest request = createOAuthSignupRequest();
+			OAuthSignupPayload signupPayload = createOAuthSignupPayload("GOOGLE");
 			KeyPair keyPair = new KeyPair("oauth-access-token", "oauth-refresh-token");
 
-			given(userRepository.existsByEmail(request.email())).willReturn(false);
+			given(oauthSignupTokenStore.find(request.signupToken()))
+				.willReturn(Optional.of(signupPayload));
+			given(userRepository.existsByEmail(signupPayload.email())).willReturn(false);
 			given(userRepository.existsByPhoneNumber(request.phoneNumber())).willReturn(false);
 			given(passwordEncoder.encode(any(String.class))).willReturn("encoded-random-password");
 			given(userRepository.save(any(User.class))).willAnswer(invocation -> invocation.getArgument(0));
-			given(jwtTokenProvider.issueKeyPair(request.email(), Role.USER)).willReturn(keyPair);
+			given(jwtTokenProvider.issueKeyPair(signupPayload.email(), Role.USER)).willReturn(keyPair);
 
 			// when
 			KeyPair response = authService.oauthSignup(request);
@@ -169,12 +176,13 @@ class AuthServiceTest {
 			verify(userRepository).save(userCaptor.capture());
 			User savedUser = userCaptor.getValue();
 
-			assertThat(savedUser.getEmail()).isEqualTo(request.email());
-			assertThat(savedUser.getUserName()).isEqualTo(request.userName());
+			assertThat(savedUser.getEmail()).isEqualTo(signupPayload.email());
+			assertThat(savedUser.getUserName()).isEqualTo(signupPayload.userName());
 			assertThat(savedUser.getProvider()).isEqualTo("GOOGLE");
 			assertThat(savedUser.getIsAuthLinked()).isTrue();
 			assertThat(savedUser.getPassword()).isEqualTo("encoded-random-password");
 			assertThat(savedUser.getRole()).isEqualTo(Role.USER);
+			verify(oauthSignupTokenStore).delete(request.signupToken());
 		}
 
 		@Test
@@ -182,7 +190,10 @@ class AuthServiceTest {
 		void it_throws_when_email_already_exists() {
 			// given
 			OAuthSignupRequest request = createOAuthSignupRequest();
-			given(userRepository.existsByEmail(request.email())).willReturn(true);
+			OAuthSignupPayload signupPayload = createOAuthSignupPayload("GOOGLE");
+			given(oauthSignupTokenStore.find(request.signupToken()))
+				.willReturn(Optional.of(signupPayload));
+			given(userRepository.existsByEmail(signupPayload.email())).willReturn(true);
 
 			// when
 			BusinessException exception = assertThrows(
@@ -193,7 +204,8 @@ class AuthServiceTest {
 			// then
 			assertThat(exception.getErrorCode()).isEqualTo(ErrorCode.USER_EMAIL_ALREADY_EXISTS);
 			verify(userRepository, never()).save(any(User.class));
-			verify(jwtTokenProvider, never()).issueKeyPair(request.email(), Role.USER);
+			verify(jwtTokenProvider, never()).issueKeyPair(signupPayload.email(), Role.USER);
+			verify(oauthSignupTokenStore, never()).delete(request.signupToken());
 		}
 
 		@Test
@@ -201,7 +213,10 @@ class AuthServiceTest {
 		void it_throws_when_phone_number_already_exists() {
 			// given
 			OAuthSignupRequest request = createOAuthSignupRequest();
-			given(userRepository.existsByEmail(request.email())).willReturn(false);
+			OAuthSignupPayload signupPayload = createOAuthSignupPayload("GOOGLE");
+			given(oauthSignupTokenStore.find(request.signupToken()))
+				.willReturn(Optional.of(signupPayload));
+			given(userRepository.existsByEmail(signupPayload.email())).willReturn(false);
 			given(userRepository.existsByPhoneNumber(request.phoneNumber())).willReturn(true);
 
 			// when
@@ -213,7 +228,8 @@ class AuthServiceTest {
 			// then
 			assertThat(exception.getErrorCode()).isEqualTo(ErrorCode.USER_PHONE_ALREADY_EXISTS);
 			verify(userRepository, never()).save(any(User.class));
-			verify(jwtTokenProvider, never()).issueKeyPair(request.email(), Role.USER);
+			verify(jwtTokenProvider, never()).issueKeyPair(signupPayload.email(), Role.USER);
+			verify(oauthSignupTokenStore, never()).delete(request.signupToken());
 		}
 
 		@Test
@@ -221,14 +237,14 @@ class AuthServiceTest {
 		void it_throws_when_provider_is_not_google() {
 			// given
 			OAuthSignupRequest request = new OAuthSignupRequest(
-				"oauth@google.com",
-				"OAuth User",
-				"KAKAO",
+				"signup-token",
 				LocalDate.of(2000, 1, 1),
 				Gender.MALE,
 				"010-9999-8888",
 				"KOREA"
 			);
+			given(oauthSignupTokenStore.find(request.signupToken()))
+				.willReturn(Optional.of(createOAuthSignupPayload("KAKAO")));
 
 			// when
 			BusinessException exception = assertThrows(
@@ -238,8 +254,30 @@ class AuthServiceTest {
 
 			// then
 			assertThat(exception.getErrorCode()).isEqualTo(ErrorCode.VALIDATION_FAILED);
-			verify(userRepository, never()).existsByEmail(request.email());
+			verify(userRepository, never()).existsByEmail("oauth@google.com");
+			verify(userRepository, never()).existsByPhoneNumber(request.phoneNumber());
 			verify(userRepository, never()).save(any(User.class));
+			verify(oauthSignupTokenStore, never()).delete(request.signupToken());
+		}
+
+		@Test
+		@DisplayName("It: signupToken이 유효하지 않으면 INVALID_SIGNUP_TOKEN 예외가 발생한다")
+		void it_throws_when_signup_token_is_invalid() {
+			// given
+			OAuthSignupRequest request = createOAuthSignupRequest();
+			given(oauthSignupTokenStore.find(request.signupToken())).willReturn(Optional.empty());
+
+			// when
+			BusinessException exception = assertThrows(
+				BusinessException.class,
+				() -> authService.oauthSignup(request)
+			);
+
+			// then
+			assertThat(exception.getErrorCode()).isEqualTo(ErrorCode.INVALID_SIGNUP_TOKEN);
+			verify(userRepository, never()).existsByEmail("oauth@google.com");
+			verify(userRepository, never()).save(any(User.class));
+			verify(oauthSignupTokenStore, never()).delete(request.signupToken());
 		}
 	}
 
@@ -389,13 +427,19 @@ class AuthServiceTest {
 
 	private OAuthSignupRequest createOAuthSignupRequest() {
 		return new OAuthSignupRequest(
-			"oauth@google.com",
-			"OAuth User",
-			"GOOGLE",
+			"signup-token",
 			LocalDate.of(2000, 1, 1),
 			Gender.MALE,
 			"010-9999-8888",
 			"KOREA"
+		);
+	}
+
+	private OAuthSignupPayload createOAuthSignupPayload(String provider) {
+		return new OAuthSignupPayload(
+			"test@google.com",
+			"namename",
+			provider
 		);
 	}
 

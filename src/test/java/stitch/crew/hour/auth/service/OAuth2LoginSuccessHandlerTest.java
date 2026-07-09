@@ -37,6 +37,7 @@ import stitch.crew.hour.user.constant.Role;
 import stitch.crew.hour.user.domain.User;
 import stitch.crew.hour.user.repository.UserRepository;
 import tools.jackson.databind.ObjectMapper;
+import stitch.crew.hour.auth.dto.OAuthSignupPayload;
 
 @ExtendWith(MockitoExtension.class)
 @DisplayName("OAuth2LoginSuccessHandler의")
@@ -53,6 +54,9 @@ class OAuth2LoginSuccessHandlerTest {
 
 	@Mock
 	private ObjectMapper objectMapper;
+
+	@Mock
+	private SignupTokenStore oauthSignupTokenStore;
 
 	@BeforeEach
 	void setUp() {
@@ -107,12 +111,13 @@ class OAuth2LoginSuccessHandlerTest {
 		void it_redirects_to_signup_when_user_does_not_exist() throws Exception {
 			// given
 			OAuth2AuthenticationToken authentication = createOAuthAuthentication(
-				"new@google.com",
-				"New User"
+				"hello@google.com",
+				"hihiUser"
 			);
 			MockHttpServletResponse response = new MockHttpServletResponse();
 
-			given(userRepository.findByEmail("new@google.com")).willReturn(Optional.empty());
+			given(userRepository.findByEmail("hello@google.com")).willReturn(Optional.empty());
+			given(oauthSignupTokenStore.save(any(OAuthSignupPayload.class))).willReturn("signup-token");
 
 			// when
 			successHandler.onAuthenticationSuccess(
@@ -123,10 +128,20 @@ class OAuth2LoginSuccessHandlerTest {
 
 			// then
 			assertThat(response.getRedirectedUrl()).contains("http://localhost:5173/signup");
-			assertThat(response.getRedirectedUrl()).contains("oauth=true");
-			assertThat(response.getRedirectedUrl()).contains("email=new@google.com");
-			assertThat(response.getRedirectedUrl()).contains("name=New%20User");
-			assertThat(response.getRedirectedUrl()).contains("provider=GOOGLE");
+			assertThat(response.getRedirectedUrl()).contains("signupToken=signup-token");
+			assertThat(response.getRedirectedUrl()).doesNotContain("oauth=true");
+			assertThat(response.getRedirectedUrl()).doesNotContain("email=");
+			assertThat(response.getRedirectedUrl()).doesNotContain("name=");
+			assertThat(response.getRedirectedUrl()).doesNotContain("provider=");
+
+			ArgumentCaptor<OAuthSignupPayload> payloadCaptor =
+				ArgumentCaptor.forClass(OAuthSignupPayload.class);
+			verify(oauthSignupTokenStore).save(payloadCaptor.capture());
+
+			OAuthSignupPayload payload = payloadCaptor.getValue();
+			assertThat(payload.email()).isEqualTo("hello@google.com");
+			assertThat(payload.userName()).isEqualTo("hihiUser");
+			assertThat(payload.provider()).isEqualTo("GOOGLE");
 		}
 	}
 

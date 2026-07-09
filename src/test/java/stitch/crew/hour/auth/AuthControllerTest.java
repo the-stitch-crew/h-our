@@ -86,9 +86,7 @@ class AuthControllerTest {
 		void it_returns_201_created_and_tokens() throws Exception {
 			// given
 			OAuthSignupRequest request = new OAuthSignupRequest(
-				"oauth@google.com",
-				"OAuth User",
-				"GOOGLE",
+				"signup-token",
 				java.time.LocalDate.of(2000, 1, 1),
 				stitch.crew.hour.user.constant.Gender.MALE,
 				"010-9999-8888",
@@ -107,9 +105,7 @@ class AuthControllerTest {
 						.contentType(MediaType.APPLICATION_JSON)
 						.content("""
 							{
-							  "email": "oauth@google.com",
-							  "userName": "OAuth User",
-							  "provider": "GOOGLE",
+							  "signupToken": "signup-token",
 							  "birthDate": "2000-01-01",
 							  "gender": "MALE",
 							  "phoneNumber": "010-9999-8888",

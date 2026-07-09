@@ -12,7 +12,7 @@ import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 import stitch.crew.hour.auth.domain.SignupToken;
 import stitch.crew.hour.auth.dto.OAuthSignupPayload;
-import stitch.crew.hour.auth.repository.OAuthSignupTokenRepository;
+import stitch.crew.hour.auth.repository.SignupTokenRepository;
 
 @Service
 @RequiredArgsConstructor
@@ -20,11 +20,11 @@ public class SignupTokenStoreImpl implements SignupTokenStore {
 
 	private static final int TOKEN_BYTES = 32;
 
-	private final OAuthSignupTokenRepository oauthSignupTokenRepository;
+	private final SignupTokenRepository oauthSignupTokenRepository;
 	private final SecureRandom secureRandom = new SecureRandom();
 
-	@Value("${custom.oauth.signup-token-ttl-ms:600000}")
-	private long signupTokenTtlMillis = 600000L;
+	@Value("${custom.oauth.signup-token-ttl-ms}")
+	private long signupTokenTtlMillis;
 
 	@Override
 	@Transactional
@@ -48,7 +48,7 @@ public class SignupTokenStoreImpl implements SignupTokenStore {
 	@Override
 	@Transactional
 	public Optional<OAuthSignupPayload> find(String signupToken) {
-		return oauthSignupTokenRepository.findByTokenForUpdate(signupToken)
+		return oauthSignupTokenRepository.findByToken(signupToken)
 			.flatMap(oauthSignupToken -> {
 				if (oauthSignupToken.isExpired(LocalDateTime.now())) {
 					oauthSignupTokenRepository.delete(oauthSignupToken);
