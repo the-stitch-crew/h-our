@@ -329,6 +329,7 @@ class ProductServiceTest {
                 productService.updateProduct(
                         testUser.getId(),
                         testProduct.getId(),
+                        null,
                         request
                 );
 
@@ -359,6 +360,7 @@ class ProductServiceTest {
                 productService.updateProduct(
                         testUser.getId(),
                         testProduct.getId(),
+                        null,
                         request
                 );
 
@@ -400,6 +402,7 @@ class ProductServiceTest {
                         ()-> productService.updateProduct(
                                 testUser.getId(),
                                 testProduct.getId(),
+                                null,
                                 request
                         )
                 )

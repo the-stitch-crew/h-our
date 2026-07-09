@@ -6,6 +6,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 import stitch.crew.hour.common.response.ApiResponses;
 import stitch.crew.hour.common.response.ApiResult;
 import stitch.crew.hour.common.response.SuccessCode;
@@ -95,13 +96,15 @@ public class ProductAdminController implements ProductAdminSwaggerSupporter {
     @Override
     @PutMapping("/{productId}")
     public ResponseEntity<ApiResponses<Void>> updateProduct(
-           @AuthenticationPrincipal CurrentUser currentUser,
-           @PathVariable Long productId,
-           @RequestBody @Valid ProductUpdateRequest request
+            @AuthenticationPrincipal CurrentUser currentUser,
+            @PathVariable Long productId,
+            @RequestPart(required = false) MultipartFile file,
+            @RequestPart @Valid ProductUpdateRequest request
     ) {
         productService.updateProduct(
                 currentUser.getId(),
                 productId,
+                file,
                 request
         );
         return ApiResult.ok(SuccessCode.PRODUCT_UPDATE_SUCCESS);
