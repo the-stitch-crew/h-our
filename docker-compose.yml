@@ -1,31 +1,31 @@
-name: hour
-
+name: stitch-crew
 services:
   db:
-    image: postgres:latest
-    container_name: postgres-db
-
+    image: postgres:17
+    container_name: hour-db
+    environment:
+      POSTGRES_USER: ${DB_USERNAME}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: ${DB_NAME}
+    volumes:
+      - hour-db-data:/var/lib/postgresql/data
     env_file:
-      - .env.dev
-
+      .env
     ports:
       - "5432:5432"
     networks:
-      - hour_network
-    volumes:
-      - postgres_data:/var/lib/postgresql
-
+      - hour-network
+  # restart: unless-stopped
   redis:
-    image: redis:latest
-    container_name: redis-db
+    image: redis:7
+    container_name: hour-redis
     ports:
-      - "6379:6379"
+     - "6379:6379"
     networks:
-      - hour_network
-
-volumes:
-  postgres_data:
+     - hour-network
 networks:
-  hour_network:
+  hour-network:
     driver: bridge
-
+volumes:
+  hour-db-data:
+  lb_data:

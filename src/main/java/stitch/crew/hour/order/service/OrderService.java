@@ -112,13 +112,15 @@ public class OrderService {
         Cart cart = foundedUser.getCart();
 
         List<OrderProduct> orderProducts = cart.getCartProducts().stream().map(
-                (cartProduct) -> new OrderProduct(
-                        cartProduct.getProductName(),
-                        cartProduct.getAmount(),
-                        cartProduct.getProductPrice(),
-                        cartProduct.getProduct().getId(),
-                        cartProduct.getOption(),
-                        order
+                (cartProduct) -> orderBoundaryRepository.saveOrderProduct(
+                        new OrderProduct(
+                                cartProduct.getProductName(),
+                                cartProduct.getAmount(),
+                                cartProduct.getProductPrice(),
+                                cartProduct.getProduct().getId(),
+                                cartProduct.getOption(),
+                                order
+                        )
                 )
         ).toList();
 
@@ -138,6 +140,28 @@ public class OrderService {
         PreConditions.validate(
                 validateAuthority(foundedUser,foundedOrder),
                 ErrorCode.NO_AUTHORITY_ON_ORDER
+        );
+
+        return OrderDetailResponse.from(foundedOrder);
+    }
+
+    @PreAuthorize("isAuthenticated() && #userId == authentication.principal.id")
+    public OrderDetailResponse getOrderDetailFromPurchase(
+            Long userId,
+            UUID orderNumber
+    ){
+
+        User foundedUser = userRepository.findByIdOrthrow(userId);
+        Order foundedOrder = orderBoundaryRepository.findByOrderNumberOrThrow(orderNumber);
+
+        PreConditions.validate(
+                validateAuthority(foundedUser,foundedOrder),
+                ErrorCode.NO_AUTHORITY_ON_ORDER
+        );
+
+        PreConditions.validate(
+                foundedOrder.getOrderStatus().equals(OrderStatus.ORDERED),
+                ErrorCode.PAYMENT_ALREADY_PAYED
         );
 
         return OrderDetailResponse.from(foundedOrder);

@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/success-page.css">
+    <title>결제 완료</title>
+</head>
+<body>
+<main class="success-container">
+    <div class="loading" id="loading">
+        결제 정보를 확인하는 중입니다.
+    </div>
+
+    <section id="success-content" style="display: none;">
+        <div class="success-icon" aria-hidden="true">✓</div>
+
+        <h1 class="success-title">결제가 완료되었습니다</h1>
+        <p class="success-subtitle">주문이 정상적으로 처리되었습니다.</p>
+
+        <div class="order-info">
+            <h2>주문 정보</h2>
+
+            <div class="info-row">
+                <span class="info-label">주문번호</span>
+                <span class="info-value" id="orderNumber"></span>
+            </div>
+
+            <div class="info-row">
+                <span class="info-label">결제금액</span>
+                <span class="info-value" id="amount"></span>
+            </div>
+        </div>
+
+        <div class="action-buttons">
+            <a href="/" class="btn btn-primary">확인</a>
+        </div>
+    </section>
+</main>
+
+<script>
+    const loading = document.getElementById("loading");
+    const successContent = document.getElementById("success-content");
+    const urlParams = new URLSearchParams(window.location.search);
+    const amount = Number(urlParams.get("amount") || 0);
+    const orderNumber = urlParams.get("orderNumber");
+    const accessToken = localStorage.getItem("hourAccessToken");
+
+    const requestData = {
+        paymentKey: urlParams.get("paymentKey"),
+        orderId: urlParams.get("orderId"),
+        orderNumber,
+        amount,
+    };
+
+    fetch("/api/payments/confirm", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+            Authorization: "Bearer " + accessToken,
+        },
+        body: JSON.stringify(requestData),
+    })
+        .then(response => response.text())
+        .then(result => {
+            if (result !== "success") {
+                location.href = "/api/payments/fail?orderNumber=" + encodeURIComponent(orderNumber || "")
+                    + "&amount=" + encodeURIComponent(String(amount));
+                return;
+            }
+
+            document.getElementById("orderNumber").textContent = orderNumber || "-";
+            document.getElementById("amount").textContent = amount.toLocaleString("ko-KR") + "원";
+            loading.style.display = "none";
+            successContent.style.display = "block";
+        })
+        .catch(() => {
+            location.href = "/api/payments/fail?orderNumber=" + encodeURIComponent(orderNumber || "")
+                + "&amount=" + encodeURIComponent(String(amount));
+        });
+</script>
+</body>
+</html>

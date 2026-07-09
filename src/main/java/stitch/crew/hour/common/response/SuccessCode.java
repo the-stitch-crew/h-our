@@ -26,6 +26,10 @@ public enum SuccessCode {
     AUTH_LOGIN_SUCCESS("로그인에 성공했습니다."),
     AUTH_REFRESH_SUCCESS("토큰 갱신에 성공했습니다."),
     AUTH_LOGOUT_SUCCESS("로그아웃에 성공했습니다."),
+    
+    // PAYMENT
+    PAYMENT_READ_SUCCESS("결제 조회에 성공했습니다."),
+    PAYMENT_REFUND_COMPLETE("환불에 성공했습니다."),
 
     // CART
     CART_RETRIEVE_SUCCESS("장바구니 조회에 성공했습니다."),

@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="utf-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>결제하기</title>
+    <link rel="stylesheet" href="/modal-page.css"/>
+    <script src="https://js.tosspayments.com/v2/standard"></script>
+</head>
+
+<body>
+<main class="wrapper">
+    <section class="product-section">
+        <div class="product-info">
+            <div class="product-details">
+                <p class="eyebrow">주문 결제</p>
+                <h1 th:text="${orderName}">주문 상품</h1>
+                <p th:text="|주문번호 ${order.orderNumber}|">주문번호</p>
+            </div>
+            <div class="product-price">
+                <p class="price-final">
+                    <span th:text="${#numbers.formatInteger(order.totalPrice, 0, 'COMMA')}">0</span>
+                    <span class="currency">원</span>
+                </p>
+            </div>
+        </div>
+
+        <div class="product-summary">
+            <div class="summary-row" th:each="product : ${order.orderProducts}">
+                <span class="summary-label" th:text="|${product.name} x ${product.amount}|">상품</span>
+                <span class="summary-value"
+                      th:text="|${#numbers.formatInteger(product.price * product.amount, 0, 'COMMA')}원|">0원</span>
+            </div>
+
+            <div class="summary-row">
+                <span class="summary-label">배송비</span>
+                <span class="summary-value"
+                      th:text="|${#numbers.formatInteger(order.deliveryFee, 0, 'COMMA')}원|">0원</span>
+            </div>
+
+            <div class="summary-row">
+                <span class="summary-label">총 결제 금액</span>
+                <span class="summary-value"
+                      th:text="|${#numbers.formatInteger(order.totalPrice, 0, 'COMMA')}원|">0원</span>
+            </div>
+        </div>
+
+        <div class="shipping-summary">
+            <div>
+                <span>받는 분</span>
+                <strong th:text="${order.receiverName}">수령자</strong>
+            </div>
+            <div>
+                <span>연락처</span>
+                <strong th:text="${order.receiverPhoneNumber}">010-0000-0000</strong>
+            </div>
+            <div>
+                <span>배송지</span>
+                <strong th:text="|(${order.postalCode}) ${order.address}|">배송지</strong>
+            </div>
+        </div>
+    </section>
+
+    <section class="box_section">
+        <div id="payment-method"></div>
+        <div id="agreement"></div>
+
+        <div class="result">
+            <button class="button" id="payment-button" type="button">
+                결제하기
+            </button>
+        </div>
+    </section>
+</main>
+
+<script th:inline="javascript">
+    main();
+
+    async function main() {
+        const button = document.getElementById("payment-button");
+        const orderNumber = /*[[${order.orderNumber}]]*/ "";
+        const orderName = /*[[${orderName}]]*/ "주문 상품";
+        const totalAmount = /*[[${order.totalPrice}]]*/ 0;
+        const customerName = /*[[${order.receiverName}]]*/ "고객";
+        const clientKey = /*[[${@environment.getProperty('payment.clientKey')}]]*/ "";
+
+        const tossPayments = TossPayments(clientKey);
+        const widgets = tossPayments.widgets({customerKey: TossPayments.ANONYMOUS});
+
+        await widgets.setAmount({
+            currency: "KRW",
+            value: totalAmount,
+        });
+
+        await widgets.renderPaymentMethods({
+            selector: "#payment-method",
+            variantKey: "DEFAULT",
+        });
+
+        await widgets.renderAgreement({
+            selector: "#agreement",
+            variantKey: "AGREEMENT",
+        });
+
+        button.addEventListener("click", async function () {
+            button.disabled = true;
+
+            try {
+                const tossOrderId = crypto.randomUUID();
+                const successUrl = new URL("/api/payments/success", window.location.origin);
+                const failUrl = new URL("/api/payments/fail", window.location.origin);
+
+                successUrl.searchParams.set("orderNumber", orderNumber);
+                failUrl.searchParams.set("orderNumber", orderNumber);
+
+                await widgets.requestPayment({
+                    orderId: tossOrderId,
+                    orderName,
+                    successUrl: successUrl.toString(),
+                    failUrl: failUrl.toString(),
+                    customerName,
+                });
+            } catch (error) {
+                button.disabled = false;
+                alert(error.message || "결제를 시작하지 못했습니다.");
+            }
+        });
+    }
+</script>
+</body>
+</html>
