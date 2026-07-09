@@ -417,15 +417,14 @@ class OrderControllerTest {
         void setUp(){
             userTester = userRepository.save(
                     new User(
-                            "이름",
-                            "wjdtn123132\74" +
-                                    "7@naver.com",
+                            "order-purchased-user",
+                            "order-purchased-user@example.com",
                             "1234",
                             LocalDate.now(),
                             Role.USER,
                             Gender.MALE,
                             "google",
-                            "0123131230",
+                            "01012345678",
                             "?",
                             false,
                             false
@@ -544,15 +543,14 @@ class OrderControllerTest {
         void setUp(){
             userTester = userRepository.save(
                     new User(
-                            "이름",
-                            "wjdtn12313274" +
-                                    "7@naver.com",
+                            "order-canceled-user",
+                            "order-canceled-user@example.com",
                             "1234",
                             LocalDate.now(),
                             Role.USER,
                             Gender.MALE,
                             "google",
-                            "0123131230",
+                            "01087654321",
                             "?",
                             false,
                             false
