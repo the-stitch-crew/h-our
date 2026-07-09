@@ -324,4 +324,41 @@ class ProductAdminControllerTest {
             }
         }
     }
+
+    @Nested
+    @DisplayName("Describe : PATCH /api/admin/products/{productId}/status")
+    class Describe_Patch_Product_Status{
+
+        @Nested
+        @DisplayName("Context : 올바른 데이터가 주어진 경우")
+        class Context_with_Valid_Data {
+
+            @Test
+            @DisplayName("It : 상품 상태를 성공적으로 변경")
+            void It_Update_Product_Status_Success() throws Exception {
+                // given
+                testUser.changeRole(Role.ADMIN);
+                SecurityContextHolder.getContext().setAuthentication(token);
+
+                String json = """
+                        {
+                          "status": "SOLD_OUT"
+                        }
+                        """;
+
+                // when
+                mockMvc.perform(
+                                MockMvcRequestBuilders.patch(BASE_URL + "/%s/status".formatted(testProduct.getId()))
+                                        .contentType(MediaType.APPLICATION_JSON)
+                                        .content(json)
+                        )
+                        .andDo(print())
+                        // then
+                        .andExpect(status().isOk())
+                        .andExpect(jsonPath("$.message").value(SuccessCode.PRODUCT_UPDATE_SUCCESS.getSuccessMessage()));
+                Product foundedProduct = productRepository.findByIdOrThrow(testProduct.getId());
+                Assertions.assertThat(foundedProduct.getStatus()).isEqualTo(ProductStatus.SOLD_OUT);
+            }
+        }
+    }
 }

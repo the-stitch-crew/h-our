@@ -7,12 +7,19 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.security.authentication.TestingAuthenticationToken;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
+import stitch.crew.hour.category.dto.AdminCategoryDetailResponse;
+import stitch.crew.hour.category.dto.AdminCategorySearchResponse;
 import stitch.crew.hour.category.dto.CategoryRequest;
+import stitch.crew.hour.category.service.CategoryAdminService;
 import stitch.crew.hour.category.service.CategoryService;
 import stitch.crew.hour.common.config.JwtAuthenticationFilter;
 import stitch.crew.hour.common.config.entrypoint.JwtAccessDeniedHandler;
@@ -23,6 +30,11 @@ import stitch.crew.hour.common.response.SuccessCode;
 import stitch.crew.hour.util.TestUtil;
 import tools.jackson.databind.ObjectMapper;
 
+import java.time.LocalDateTime;
+import java.util.List;
+
+import static org.mockito.BDDMockito.given;
+import static org.mockito.BDDMockito.willThrow;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doThrow;
@@ -45,6 +57,9 @@ class CategoryAdminControllerTest {
     private CategoryService categoryService;
 
     @MockitoBean
+    private CategoryAdminService categoryAdminService;
+
+    @MockitoBean
     JwtAuthenticationFilter jwtAuthenticationFilter;
 
     @MockitoBean
@@ -63,6 +78,146 @@ class CategoryAdminControllerTest {
 
     TestingAuthenticationToken adminAuthentication = TestUtil.createAdminAuthentication(email);
     TestingAuthenticationToken userAuthentication = TestUtil.createUserAuthentication(email2);
+
+    @Nested
+    @DisplayName("Describe : GET /api/admin/categories 엔드포인트는")
+    class Describe_getCategories {
+
+        @Test
+        @DisplayName("It : 카테고리 목록을 반환한다")
+        void It_카테고리_목록을_반환한다() throws Exception {
+            // given
+            Page<AdminCategorySearchResponse> response = new PageImpl<>(
+                    List.of(searchResponse())
+            );
+
+            given(categoryAdminService.getCategories(0, 20, null, false)).willReturn(response);
+
+            // when & then
+            mockMvc.perform(MockMvcRequestBuilders.request(HttpMethod.GET, "/api/admin/categories"))
+                    .andExpect(status().isOk())
+                    .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                    .andExpect(jsonPath("$.code").value(SuccessCode.CATEGORY_READ.name()))
+                    .andExpect(jsonPath("$.message").value(SuccessCode.CATEGORY_READ.getSuccessMessage()))
+                    .andExpect(jsonPath("$.data.content[0].categoryId").value(1L))
+                    .andExpect(jsonPath("$.data.content[0].name").value("가방"))
+                    .andExpect(jsonPath("$.data.content[0].totalProductCount").value(3L))
+                    .andExpect(jsonPath("$.data.content[0].activeProductCount").value(1L))
+                    .andExpect(jsonPath("$.data.content[0].soldOutProductCount").value(1L))
+                    .andExpect(jsonPath("$.data.content[0].mainProductCount").value(1L))
+                    .andDo(print());
+        }
+    }
+
+    @Nested
+    @DisplayName("Describe : GET /api/admin/categories/{categoryId} 엔드포인트는")
+    class Describe_getCategory {
+
+        @Test
+        @DisplayName("It : 카테고리 상세를 반환한다")
+        void It_카테고리_상세를_반환한다() throws Exception {
+            // given
+            Long categoryId = 1L;
+
+            given(categoryAdminService.getCategory(categoryId)).willReturn(detailResponse());
+
+            // when & then
+            mockMvc.perform(MockMvcRequestBuilders.request(HttpMethod.GET, "/api/admin/categories/{categoryId}", categoryId))
+                    .andExpect(status().isOk())
+                    .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                    .andExpect(jsonPath("$.code").value(SuccessCode.CATEGORY_READ.name()))
+                    .andExpect(jsonPath("$.message").value(SuccessCode.CATEGORY_READ.getSuccessMessage()))
+                    .andExpect(jsonPath("$.data.categoryId").value(categoryId))
+                    .andExpect(jsonPath("$.data.activeProductCount").value(1L))
+                    .andExpect(jsonPath("$.data.soldOutProductCount").value(1L))
+                    .andExpect(jsonPath("$.data.deactivatedProductCount").value(1L))
+                    .andExpect(jsonPath("$.data.deletedProductCount").value(1L))
+                    .andDo(print());
+        }
+
+        @Test
+        @DisplayName("It : 카테고리가 존재하지 않으면 404 상태를 반환한다")
+        void It_카테고리가_존재하지_않으면_404_상태를_반환한다() throws Exception {
+            // given
+            Long categoryId = 1L;
+
+            willThrow(new BusinessException(ErrorCode.CATEGORY_NOT_FOUND))
+                    .given(categoryAdminService)
+                    .getCategory(categoryId);
+
+            // when & then
+            mockMvc.perform(MockMvcRequestBuilders.request(HttpMethod.GET, "/api/admin/categories/{categoryId}", categoryId))
+                    .andExpect(status().isNotFound())
+                    .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                    .andExpect(jsonPath("$.code").value(ErrorCode.CATEGORY_NOT_FOUND.name()))
+                    .andExpect(jsonPath("$.message").value(ErrorCode.CATEGORY_NOT_FOUND.getMessage()))
+                    .andDo(print());
+        }
+    }
+
+    @Nested
+    @DisplayName("Describe : PATCH /api/admin/categories/{categoryId} 엔드포인트는")
+    class Describe_updateCategory {
+
+        @Test
+        @DisplayName("It : 카테고리를 수정하고 성공 메시지를 반환한다")
+        void It_카테고리를_수정하고_성공_메시지를_반환한다() throws Exception {
+            // given
+            Long categoryId = 1L;
+            CategoryRequest request = new CategoryRequest("가방");
+            MockMultipartFile requestPart = new MockMultipartFile(
+                    "request",
+                    "",
+                    MediaType.APPLICATION_JSON_VALUE,
+                    om.writeValueAsBytes(request)
+            );
+
+            doNothing().when(categoryService).updateCategory(categoryId, request, null);
+
+            // when & then
+            mockMvc.perform(
+                            multipart("/api/admin/categories/{categoryId}", categoryId)
+                                    .file(requestPart)
+                                    .with(servletRequest -> {
+                                        servletRequest.setMethod("PATCH");
+                                        return servletRequest;
+                                    })
+                                    .with(csrf())
+                                    .principal(adminAuthentication)
+                    )
+                    .andExpect(status().isOk())
+                    .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                    .andExpect(jsonPath("$.code").value(SuccessCode.CATEGORY_UPDATED.name()))
+                    .andExpect(jsonPath("$.message").value(SuccessCode.CATEGORY_UPDATED.getSuccessMessage()))
+                    .andDo(print());
+        }
+    }
+
+    @Nested
+    @DisplayName("Describe : DELETE /api/admin/categories/{categoryId} 엔드포인트는")
+    class Describe_deleteCategory {
+
+        @Test
+        @DisplayName("It : 카테고리를 삭제하고 성공 메시지를 반환한다")
+        void It_카테고리를_삭제하고_성공_메시지를_반환한다() throws Exception {
+            // given
+            Long categoryId = 1L;
+
+            doNothing().when(categoryService).deleteCategory(categoryId);
+
+            // when & then
+            mockMvc.perform(
+                            MockMvcRequestBuilders.request(HttpMethod.DELETE, "/api/admin/categories/{categoryId}", categoryId)
+                                    .with(csrf())
+                                    .principal(adminAuthentication)
+                    )
+                    .andExpect(status().isOk())
+                    .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                    .andExpect(jsonPath("$.code").value(SuccessCode.CATEGORY_DELETED.name()))
+                    .andExpect(jsonPath("$.message").value(SuccessCode.CATEGORY_DELETED.getSuccessMessage()))
+                    .andDo(print());
+        }
+    }
 
     @Nested
     @DisplayName("Discribe: POST / 엔드포인트는")
@@ -668,4 +823,36 @@ class CategoryAdminControllerTest {
 //            }
 //        }
 //    }
+
+    private AdminCategorySearchResponse searchResponse() {
+        return new AdminCategorySearchResponse(
+                1L,
+                "가방",
+                "thumbnail",
+                3L,
+                1L,
+                1L,
+                1L,
+                LocalDateTime.of(2026, 7, 9, 1, 0),
+                LocalDateTime.of(2026, 7, 9, 1, 0),
+                null
+        );
+    }
+
+    private AdminCategoryDetailResponse detailResponse() {
+        return new AdminCategoryDetailResponse(
+                1L,
+                "가방",
+                "thumbnail",
+                3L,
+                1L,
+                1L,
+                1L,
+                1L,
+                1L,
+                LocalDateTime.of(2026, 7, 9, 1, 0),
+                LocalDateTime.of(2026, 7, 9, 1, 0),
+                null
+        );
+    }
 }

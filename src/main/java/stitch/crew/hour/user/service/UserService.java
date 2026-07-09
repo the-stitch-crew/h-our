@@ -18,7 +18,6 @@ import stitch.crew.hour.user.constant.Role;
 import stitch.crew.hour.user.domain.User;
 import stitch.crew.hour.user.dto.UserInfoResponse;
 import stitch.crew.hour.user.dto.SignupResponse;
-import stitch.crew.hour.user.dto.UserRoleUpdateRequest;
 import stitch.crew.hour.user.dto.UserUpdateRequest;
 import stitch.crew.hour.user.repository.UserRepository;
 
@@ -76,37 +75,6 @@ public class UserService {
 		);
 	}
 
-	public UserInfoResponse getUserInfo(Long userId) {
-		User user = userRepository.findById(userId)
-			.orElseThrow(() -> new BusinessException(ErrorCode.USER_DONT_EXISTS));
-
-		PreConditions.validate(
-			user.getDeletedAt() == null,
-			ErrorCode.USER_DONT_EXISTS
-		);
-
-		return UserInfoResponse.from(user);
-	}
-
-	@Transactional
-	public UserInfoResponse updateUserRole(Long userId, UserRoleUpdateRequest request) {
-		User user = userRepository.findById(userId)
-			.orElseThrow(() -> new BusinessException(ErrorCode.USER_DONT_EXISTS));
-
-		PreConditions.validate(
-			user.getDeletedAt() == null,
-			ErrorCode.USER_DONT_EXISTS
-		);
-
-		PreConditions.validate(
-			request.role() == Role.USER || request.role() == Role.ADMIN,
-			ErrorCode.USER_ROLE_CHANGE_NOT_ALLOWED
-		);
-
-		user.changeRole(request.role());
-		return UserInfoResponse.from(user);
-	}
-
 	@Transactional
 	public UserInfoResponse updateMyInfo(String email, UserUpdateRequest request) {
 		User user = getActiveUser(email);
@@ -162,6 +130,22 @@ public class UserService {
 
 	public CurrentUser loadCurrentUserByEmail(String email) {
 		return CurrentUser.from(getActiveUser(email));
+	}
+
+	public User getActiveUserFromCurrentUser(CurrentUser currentUser){
+		PreConditions.validate(
+			currentUser != null,
+			ErrorCode.UNAUTHORIZED
+		);
+
+		User user = userRepository.findByIdOrthrow(currentUser.getId());
+
+		PreConditions.validate(
+			user.getDeletedAt() == null,
+			ErrorCode.USER_DONT_EXISTS
+		);
+
+		return user;
 	}
 
 }
