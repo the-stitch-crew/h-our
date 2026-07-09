@@ -8,6 +8,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 @Setter
 @ConfigurationProperties(prefix = "custom.redis")
 public class RedisProperties {
+    private Boolean enabled = true;
     private String host;
     private Integer port;
 }
