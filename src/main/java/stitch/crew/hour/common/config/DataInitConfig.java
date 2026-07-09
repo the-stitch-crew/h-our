@@ -55,13 +55,15 @@ public class DataInitConfig {
     @Transactional
     CommandLineRunner init() {
         return _ -> {
-            shippingPolicyRepository.save(
-                    new ShippingPolicy(
-                            3_500L,
-                            2_000L,
-                            true
-                    )
-            );
+            if (shippingPolicyRepository.findActive().isEmpty()) {
+                shippingPolicyRepository.save(
+                        new ShippingPolicy(
+                                3_500L,
+                                2_000L,
+                                true
+                        )
+                );
+            }
             lessonPolicyRepository.save(
                     new LessonPolicy(21,
                             3,

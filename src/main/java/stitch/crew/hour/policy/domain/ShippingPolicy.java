@@ -5,6 +5,7 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import stitch.crew.hour.common.domain.BaseEntity;
+import stitch.crew.hour.policy.dto.ShippingPolicyUpdateRequest;
 
 @Entity
 @Getter
@@ -28,6 +29,19 @@ public class ShippingPolicy extends BaseEntity {
     ){
         this.deliveryFee = deliveryFee;
         this.extraFee = extraFee;
-        this.isActive = isActive;
+        this.isActive = Boolean.TRUE.equals(isActive);
+    }
+
+    public void update(ShippingPolicyUpdateRequest request) {
+        this.deliveryFee = request.deliveryFee();
+        this.extraFee = request.extraFee();
+    }
+
+    public void activate() {
+        this.isActive = true;
+    }
+
+    public void deactivate() {
+        this.isActive = false;
     }
 }
