@@ -5,7 +5,6 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.verify;
 
-import java.io.Writer;
 import java.time.LocalDate;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -30,13 +29,10 @@ import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.test.util.ReflectionTestUtils;
 
 import stitch.crew.hour.auth.dto.KeyPair;
-import stitch.crew.hour.common.response.ApiResponses;
-import stitch.crew.hour.common.response.SuccessCode;
 import stitch.crew.hour.user.constant.Gender;
 import stitch.crew.hour.user.constant.Role;
 import stitch.crew.hour.user.domain.User;
 import stitch.crew.hour.user.repository.UserRepository;
-import tools.jackson.databind.ObjectMapper;
 import stitch.crew.hour.auth.dto.OAuthSignupPayload;
 
 @ExtendWith(MockitoExtension.class)
@@ -53,9 +49,6 @@ class OAuth2LoginSuccessHandlerTest {
 	private JwtTokenProvider jwtTokenProvider;
 
 	@Mock
-	private ObjectMapper objectMapper;
-
-	@Mock
 	private SignupTokenStore oauthSignupTokenStore;
 
 	@BeforeEach
@@ -68,8 +61,8 @@ class OAuth2LoginSuccessHandlerTest {
 	class Describe_onAuthenticationSuccess {
 
 		@Test
-		@DisplayName("It: 기존 회원이면 OAuth 정보를 연동하고 토큰 응답을 작성한다")
-		void it_links_oauth_and_writes_token_response_when_user_exists() throws Exception {
+		@DisplayName("It: 기존 회원이면 OAuth 정보를 연동하고 토큰 콜백 페이지로 리다이렉트한다")
+		void it_links_oauth_and_redirects_to_callback_when_user_exists() throws Exception {
 			// given
 			User user = createUser();
 			KeyPair keyPair = new KeyPair("access-token", "refresh-token");
@@ -92,18 +85,11 @@ class OAuth2LoginSuccessHandlerTest {
 			// then
 			assertThat(user.getProvider()).isEqualTo("GOOGLE");
 			assertThat(user.getIsAuthLinked()).isTrue();
-			assertThat(response.getStatus()).isEqualTo(MockHttpServletResponse.SC_OK);
-			assertThat(response.getContentType()).contains("application/json");
+			assertThat(response.getRedirectedUrl()).contains("http://localhost:5173/oauth/callback");
+			assertThat(response.getRedirectedUrl()).contains("accessToken=access-token");
+			assertThat(response.getRedirectedUrl()).contains("refreshToken=refresh-token");
 
 			verify(userRepository).save(user);
-
-			ArgumentCaptor<ApiResponses> responseCaptor = ArgumentCaptor.forClass(ApiResponses.class);
-			verify(objectMapper).writeValue(any(Writer.class), responseCaptor.capture());
-			ApiResponses capturedResponse = responseCaptor.getValue();
-
-			assertThat(capturedResponse.success()).isTrue();
-			assertThat(capturedResponse.code()).isEqualTo(SuccessCode.AUTH_LOGIN_SUCCESS.name());
-			assertThat(capturedResponse.data()).isEqualTo(keyPair);
 		}
 
 		@Test
