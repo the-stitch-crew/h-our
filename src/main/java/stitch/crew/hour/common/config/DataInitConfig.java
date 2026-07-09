@@ -1,10 +1,6 @@
 package stitch.crew.hour.common.config;
 
 
-import java.time.LocalDate;
-import java.time.LocalTime;
-import java.util.Set;
-
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.CommandLineRunner;
@@ -16,13 +12,17 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 import stitch.crew.hour.policy.domain.LessonPolicy;
 import stitch.crew.hour.policy.domain.ShippingPolicy;
-import stitch.crew.hour.policy.domain.WeekDay;
 import stitch.crew.hour.policy.repository.LessonPolicyRepository;
 import stitch.crew.hour.policy.repository.ShippingPolicyRepository;
 import stitch.crew.hour.user.constant.Gender;
 import stitch.crew.hour.user.constant.Role;
 import stitch.crew.hour.user.domain.User;
 import stitch.crew.hour.user.repository.UserRepository;
+
+import java.time.DayOfWeek;
+import java.time.LocalDate;
+import java.time.LocalTime;
+import java.util.Set;
 
 @Configuration
 @RequiredArgsConstructor
@@ -52,7 +52,7 @@ public class DataInitConfig {
                             10000,
                             LocalTime.of(9,0),
                             LocalTime.of(9,0),
-                            Set.of(WeekDay.SAT, WeekDay.SUN))
+                            Set.of(DayOfWeek.SATURDAY, DayOfWeek.SUNDAY))
             );
 
             if (userRepository.count() < 1) {

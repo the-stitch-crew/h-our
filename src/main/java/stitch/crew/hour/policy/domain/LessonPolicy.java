@@ -6,8 +6,8 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import stitch.crew.hour.policy.dto.LessonPolicyRequest;
-import stitch.crew.hour.policy.dto.LessonPolicyResponse;
 
+import java.time.DayOfWeek;
 import java.time.LocalTime;
 import java.util.Set;
 
@@ -39,10 +39,10 @@ public class LessonPolicy {
 
     @Column(nullable = false)
     @ElementCollection
-    private Set<WeekDay> regularDays;
+    private Set<DayOfWeek> regularDays;
 
 
-    public LessonPolicy(Integer reservationAvailableDays, Integer reservationDeadlineDays, Integer cancelDeadlineDays, Integer depositAmount, LocalTime startTime, LocalTime endTime, Set<WeekDay> regularDays) {
+    public LessonPolicy(Integer reservationAvailableDays, Integer reservationDeadlineDays, Integer cancelDeadlineDays, Integer depositAmount, LocalTime startTime, LocalTime endTime, Set<DayOfWeek> regularDays) {
         this.reservationAvailableDays = reservationAvailableDays;
         this.reservationDeadlineDays = reservationDeadlineDays;
         this.cancelDeadlineDays = cancelDeadlineDays;
@@ -52,17 +52,7 @@ public class LessonPolicy {
         this.regularDays = regularDays;
     }
 
-    public static LessonPolicyResponse from(LessonPolicy policy) {
-        return new LessonPolicyResponse(
-                policy.getReservationAvailableDays(),
-                policy.getReservationDeadlineDays(),
-                policy.getCancelDeadlineDays(),
-                policy.getDepositAmount(),
-                policy.getStartTime(),
-                policy.getEndTime(),
-                policy.getRegularDays()
-        );
-    }
+
 
     public void update(@Valid LessonPolicyRequest request) {
         this.reservationAvailableDays = request.reservationAvailableDays();

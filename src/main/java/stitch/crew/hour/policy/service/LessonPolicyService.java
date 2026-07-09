@@ -19,12 +19,16 @@ public class LessonPolicyService {
     @Transactional(readOnly = true)
     public LessonPolicyResponse getLessonPolicy() {
         LessonPolicy policy = policyRepository.findById(1L).orElseThrow(()-> new BusinessException(ErrorCode.NO_LESSON_POLICY));
-        return LessonPolicy.from(policy);
+        return LessonPolicyResponse.from(policy);
     }
 
     @Transactional
     public void updateLessonPolicy(@Valid LessonPolicyRequest request) {
         LessonPolicy policy = policyRepository.findById(1L).orElseThrow(()-> new BusinessException(ErrorCode.NO_LESSON_POLICY));
         policy.update(request);
+    }
+
+    public LessonPolicy getPolicyForReservation() {
+        return policyRepository.findById(1L).orElseThrow(()-> new BusinessException(ErrorCode.NO_LESSON_POLICY));
     }
 }
