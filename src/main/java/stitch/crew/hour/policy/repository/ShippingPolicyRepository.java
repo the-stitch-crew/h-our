@@ -1,10 +1,10 @@
-package stitch.crew.hour.shippingpolicy.repository;
+package stitch.crew.hour.policy.repository;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import stitch.crew.hour.common.exception.BusinessException;
 import stitch.crew.hour.common.exception.ErrorCode;
-import stitch.crew.hour.shippingpolicy.domain.ShippingPolicy;
+import stitch.crew.hour.policy.domain.ShippingPolicy;
 
 import java.util.Optional;
 

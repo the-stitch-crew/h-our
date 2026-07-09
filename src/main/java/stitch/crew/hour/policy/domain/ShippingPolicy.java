@@ -1,4 +1,4 @@
-package stitch.crew.hour.shippingpolicy.domain;
+package stitch.crew.hour.policy.domain;
 
 import jakarta.persistence.*;
 import lombok.AccessLevel;

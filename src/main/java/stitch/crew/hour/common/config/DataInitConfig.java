@@ -1,8 +1,6 @@
 package stitch.crew.hour.common.config;
 
 
-import java.time.LocalDate;
-
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.CommandLineRunner;
@@ -14,6 +12,10 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
+import stitch.crew.hour.policy.domain.LessonPolicy;
+import stitch.crew.hour.policy.domain.ShippingPolicy;
+import stitch.crew.hour.policy.repository.LessonPolicyRepository;
+import stitch.crew.hour.policy.repository.ShippingPolicyRepository;
 import stitch.crew.hour.category.domain.Category;
 import stitch.crew.hour.category.repository.CategoryRepository;
 import stitch.crew.hour.order.domain.Order;
@@ -22,12 +24,15 @@ import stitch.crew.hour.order.repository.OrderBoundaryRepository;
 import stitch.crew.hour.orderproduct.domain.OrderProduct;
 import stitch.crew.hour.product.domain.Product;
 import stitch.crew.hour.product.repository.ProductRepository;
-import stitch.crew.hour.shippingpolicy.domain.ShippingPolicy;
-import stitch.crew.hour.shippingpolicy.repository.ShippingPolicyRepository;
 import stitch.crew.hour.user.constant.Gender;
 import stitch.crew.hour.user.constant.Role;
 import stitch.crew.hour.user.domain.User;
 import stitch.crew.hour.user.repository.UserRepository;
+
+import java.time.DayOfWeek;
+import java.time.LocalDate;
+import java.time.LocalTime;
+import java.util.Set;
 
 @Configuration
 @RequiredArgsConstructor
@@ -38,6 +43,7 @@ public class DataInitConfig {
     private static final String SAMPLE_CATEGORY_NAME = "테스트 상품";
 
     private final ShippingPolicyRepository shippingPolicyRepository;
+    private final LessonPolicyRepository lessonPolicyRepository;
     private final UserRepository userRepository;
     private final CategoryRepository categoryRepository;
     private final ProductRepository productRepository;
@@ -48,13 +54,22 @@ public class DataInitConfig {
     @Bean
     @Transactional
     CommandLineRunner init() {
-        return args -> {
+        return _ -> {
             shippingPolicyRepository.save(
                     new ShippingPolicy(
                             3_500L,
                             2_000L,
                             true
                     )
+            );
+            lessonPolicyRepository.save(
+                    new LessonPolicy(21,
+                            3,
+                            1,
+                            10000,
+                            LocalTime.of(9,0),
+                            LocalTime.of(18,0),
+                            Set.of(DayOfWeek.SATURDAY, DayOfWeek.SUNDAY))
             );
 
             if (userRepository.count() < 1) {

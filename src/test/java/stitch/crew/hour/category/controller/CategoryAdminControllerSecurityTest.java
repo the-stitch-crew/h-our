@@ -1,19 +1,5 @@
 package stitch.crew.hour.category.controller;
 
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyInt;
-import static org.mockito.ArgumentMatchers.anyLong;
-import static org.mockito.BDDMockito.given;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-
-import java.nio.charset.StandardCharsets;
-import java.time.LocalDateTime;
-import java.util.List;
-
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,7 +13,6 @@ import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
-
 import stitch.crew.hour.auth.dto.TokenBody;
 import stitch.crew.hour.auth.service.JwtTokenProvider;
 import stitch.crew.hour.category.dto.AdminCategoryDetailResponse;
@@ -42,6 +27,17 @@ import stitch.crew.hour.common.response.SuccessCode;
 import stitch.crew.hour.user.constant.Role;
 import stitch.crew.hour.user.domain.CurrentUser;
 import stitch.crew.hour.user.service.UserService;
+
+import java.nio.charset.StandardCharsets;
+import java.time.LocalDateTime;
+import java.util.List;
+
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.BDDMockito.given;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(CategoryAdminController.class)
 @Import({
@@ -214,7 +210,7 @@ class CategoryAdminControllerSecurityTest {
 				multipart(BASE_URL + "/{categoryId}", 1L)
 					.file(requestPart())
 					.with(request -> {
-						request.setMethod("PATCH");
+						request.setMethod("PUT");
 						return request;
 					})
 			)
@@ -234,7 +230,7 @@ class CategoryAdminControllerSecurityTest {
 				multipart(BASE_URL + "/{categoryId}", 1L)
 					.file(requestPart())
 					.with(request -> {
-						request.setMethod("PATCH");
+						request.setMethod("PUT");
 						return request;
 					})
 					.header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
@@ -255,7 +251,7 @@ class CategoryAdminControllerSecurityTest {
 				multipart(BASE_URL + "/{categoryId}", 1L)
 					.file(requestPart())
 					.with(request -> {
-						request.setMethod("PATCH");
+						request.setMethod("PUT");
 						return request;
 					})
 					.header(HttpHeaders.AUTHORIZATION, "Bearer " + token)

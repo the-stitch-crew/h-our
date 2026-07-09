@@ -59,7 +59,7 @@ public class CategoryAdminController {
         return ApiResult.created(SuccessCode.CATEGORY_CREATED);
     }
 
-    @PatchMapping("/{categoryId}")
+    @PutMapping("/{categoryId}")
     public ResponseEntity<ApiResponses<Void>> updateCategory (@PathVariable Long categoryId,
                                                               @RequestPart @Valid CategoryRequest request,
                                                               @RequestPart(required = false) MultipartFile file) {
