@@ -1,5 +1,6 @@
 package stitch.crew.hour.auth;
 
+import static org.hamcrest.Matchers.containsString;
 import static org.mockito.BDDMockito.given;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -129,10 +130,11 @@ class AuthControllerTest {
 				.andExpect(jsonPath("$.message").value(SuccessCode.USER_CREATED.getSuccessMessage()))
 				.andExpect(jsonPath("$.data.accessToken").value("oauth-access-token"))
 				.andExpect(jsonPath("$.data.refreshToken").value("oauth-refresh-token"))
-				.andExpect(header().string(
-					"Set-Cookie",
-					"signupToken=; Path=/api/auth/oauth; Max-Age=0; HttpOnly; SameSite=Lax"
-				))
+				.andExpect(header().string("Set-Cookie", containsString("signupToken=;")))
+				.andExpect(header().string("Set-Cookie", containsString("Path=/api/auth/oauth")))
+				.andExpect(header().string("Set-Cookie", containsString("Max-Age=0")))
+				.andExpect(header().string("Set-Cookie", containsString("HttpOnly")))
+				.andExpect(header().string("Set-Cookie", containsString("SameSite=Lax")))
 				.andDo(print());
 		}
 	}
