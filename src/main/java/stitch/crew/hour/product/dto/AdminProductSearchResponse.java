@@ -17,11 +17,15 @@ public record AdminProductSearchResponse(
         LocalDateTime createdAt
 ) {
     public static AdminProductSearchResponse from(Product product) {
+        return from(product, product.getThumbnail());
+    }
+
+    public static AdminProductSearchResponse from(Product product, String thumbnail) {
         return new AdminProductSearchResponse(
                 product.getId(),
                 product.getName(),
                 product.getPrice(),
-                product.getThumbnail(),
+                thumbnail,
                 product.getStatus().name(),
                 product.getCategory().getName(),
                 product.getIsMain(),

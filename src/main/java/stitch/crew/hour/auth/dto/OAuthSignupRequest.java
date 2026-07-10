@@ -10,9 +10,6 @@ import stitch.crew.hour.user.constant.Gender;
 
 public record OAuthSignupRequest(
 
-	@NotBlank(message = "회원가입 토큰은 필수입니다.")
-	String signupToken,
-
 	@NotNull(message = "생년월일은 필수입니다.")
 	@Past(message = "생년월일은 과거 날짜여야 합니다.")
 	LocalDate birthDate,

@@ -3,6 +3,7 @@ package stitch.crew.hour.product.controller;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
@@ -64,15 +65,17 @@ public class ProductAdminController implements ProductAdminSwaggerSupporter {
     }
 
     @Override
-    @PostMapping
+    @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<ApiResponses<ProductCreateResponse>> createProduct(
             @AuthenticationPrincipal CurrentUser currentUser,
-            @RequestBody @Valid ProductCreateRequest request
+            @RequestPart(required = false) MultipartFile file,
+            @RequestPart @Valid ProductCreateRequest request
     ){
         return ApiResult.created(
                 SuccessCode.PRODUCT_CREATED_SUCCESS,
                 productService.createProduct(
                         currentUser.getId(),
+                        file,
                         request
                 )
         );

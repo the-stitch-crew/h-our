@@ -27,10 +27,10 @@ public class ReservationController {
 
     //고객이 예약
     @PostMapping
-    public ResponseEntity<ApiResponses<Void>> saveReservation(@AuthenticationPrincipal CurrentUser currentUser,
-                                                              @RequestBody @Valid ReservationRequest request) {
-        reservationService.saveReservation(currentUser, request);
-        return ApiResult.ok(SuccessCode.RESERVATION_CREATED);
+    public ResponseEntity<ApiResponses<ReservationResponse>> saveReservation(@AuthenticationPrincipal CurrentUser currentUser,
+                                                                             @RequestBody @Valid ReservationRequest request) {
+        ReservationResponse response = reservationService.saveReservation(currentUser, request);
+        return ApiResult.ok(SuccessCode.RESERVATION_CREATED, response);
     }
 
     //예약시 기존의 예약 확인

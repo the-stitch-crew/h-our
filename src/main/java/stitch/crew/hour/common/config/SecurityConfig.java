@@ -1,11 +1,16 @@
 package stitch.crew.hour.common.config;
 
+import java.util.LinkedHashSet;
+import java.util.List;
+
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
+import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
@@ -34,7 +39,7 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
+                .cors(Customizer.withDefaults())
                 .csrf(csrf -> csrf.disable())
                 .httpBasic(basic -> basic.disable())
                 .formLogin(formLogin -> formLogin.disable());
@@ -58,7 +63,13 @@ public class SecurityConfig {
                     .requestMatchers("/oauth2/**", "/login/oauth2/**").permitAll()
                     .requestMatchers("/api/users/me", "/api/users/me/**").authenticated()
                     .requestMatchers("/api/addresses", "/api/addresses/**").authenticated()
-                    .requestMatchers("/api/admin/**").hasAnyRole("ADMIN", "SUPER_ADMIN")
+                    .requestMatchers(HttpMethod.GET, "/api/categories").permitAll()
+                    .requestMatchers(HttpMethod.GET, "/api/products", "/api/products/**").permitAll()
+                    .requestMatchers(HttpMethod.GET, "/api/lessons", "/api/lessons/**").permitAll()
+                    .requestMatchers(HttpMethod.GET, "/api/reservations").permitAll()
+                    .requestMatchers("/api/admin/**").hasRole("ADMIN")
+                    .requestMatchers("/api/lessons/**").authenticated()
+                    .requestMatchers("/api/reservations", "/api/reservations/**").hasAnyRole( "USER")
                     .requestMatchers("/api/categories").hasAnyRole("ADMIN", "USER")
                     .requestMatchers("/api/lessons/**").hasAnyRole("ADMIN", "USER")
                     .requestMatchers("/api/reservations/**").hasAnyRole( "USER")
@@ -71,15 +82,22 @@ public class SecurityConfig {
     }
 
     @Bean
-    public CorsConfigurationSource corsConfigurationSource() {
+    public CorsConfigurationSource corsConfigurationSource(
+        @Value("${app.frontend.base-url:http://localhost:5173}") String frontendBaseUrl
+    ) {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.addAllowedOrigin(frontendBaseUrl);
-        configuration.addAllowedMethod("*");
-        configuration.addAllowedHeader("*");
+        configuration.setAllowedOrigins(List.copyOf(new LinkedHashSet<>(List.of(
+            frontendBaseUrl,
+            "http://localhost:5173",
+            "http://127.0.0.1:5173"
+        ))));
+        configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
+        configuration.setAllowedHeaders(List.of("*"));
         configuration.setAllowCredentials(true);
+        configuration.setMaxAge(3600L);
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-        source.registerCorsConfiguration("/**", configuration);
+        source.registerCorsConfiguration("/api/**", configuration);
         return source;
     }
 

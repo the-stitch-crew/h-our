@@ -2,7 +2,9 @@ package stitch.crew.hour.user.controller;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.options;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import org.junit.jupiter.api.DisplayName;
@@ -45,6 +47,19 @@ class UserControllerSecurityTest {
 
 	@MockitoBean
 	private UserRepository userRepository;
+
+	@Test
+	@DisplayName("OPTIONS /api/users/signup 프리플라이트 요청을 허용한다")
+	void it_allows_signup_preflight_request() throws Exception {
+		mockMvc.perform(
+				options("/api/users/signup")
+					.header("Origin", "http://localhost:5173")
+					.header("Access-Control-Request-Method", "POST")
+					.header("Access-Control-Request-Headers", "content-type")
+			)
+			.andExpect(status().isOk())
+			.andExpect(header().string("Access-Control-Allow-Origin", "http://localhost:5173"));
+	}
 
 	@Test
 	@DisplayName("GET /api/users/me 요청에 인증이 없으면 예외발생")

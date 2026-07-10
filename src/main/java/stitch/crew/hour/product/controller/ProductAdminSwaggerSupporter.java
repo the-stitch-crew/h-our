@@ -60,7 +60,7 @@ import stitch.crew.hour.user.domain.CurrentUser;
     @RequestBody(
             content = {
                     @Content(
-                            mediaType = "application/json",
+                            mediaType = MediaType.MULTIPART_FORM_DATA_VALUE,
                             schema = @Schema(
                                     implementation = ProductCreateRequest.class
                             )
@@ -116,6 +116,7 @@ import stitch.crew.hour.user.domain.CurrentUser;
     @SecurityRequirement(name = "Bearer Authentication")
     ResponseEntity<ApiResponses<ProductCreateResponse>> createProduct(
             CurrentUser currentUser,
+            MultipartFile file,
             ProductCreateRequest request
     );
 

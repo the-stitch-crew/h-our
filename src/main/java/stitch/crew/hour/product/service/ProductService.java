@@ -40,6 +40,7 @@ public class ProductService {
     @PreAuthorize("isAuthenticated()")
     public ProductCreateResponse createProduct(
             Long userId,
+            MultipartFile file,
             ProductCreateRequest request
     ){
         User foundedUser = userRepository.findByIdOrthrow(userId);
@@ -51,17 +52,22 @@ public class ProductService {
                 ErrorCode.NOT_ADMIN
         );
 
-        return ProductCreateResponse.from(
-                productRepository.save(
-                        new Product(
-                                request.name(),
-                                request.price(),
-                                request.summary(),
-                                request.description(),
-                                foundedCategory
-                        )
+        Product product = productRepository.save(
+                new Product(
+                        request.name(),
+                        request.price(),
+                        request.summary(),
+                        request.description(),
+                        foundedCategory
                 )
         );
+
+        if (file != null && !file.isEmpty()) {
+            String thumbnail = imageService.saveThumbnail(ThumbnailDomain.PRODUCT, product.getId(), file);
+            product.setThumbnail(thumbnail);
+        }
+
+        return ProductCreateResponse.from(product);
     }
 
     public ProductDetailsResponse getProductDetail(
@@ -69,7 +75,9 @@ public class ProductService {
     ){
         Product founded = productRepository.findByIdOrThrow(productId);
         founded.increaseViewCount();
-        return ProductDetailsResponse.from(founded
+        return ProductDetailsResponse.from(
+            founded,
+            createThumbnailUrl(founded.getThumbnail())
         );
     }
 
@@ -80,7 +88,18 @@ public class ProductService {
         return productRepository.getAllProduct(
                 pageRequest,
                 categoryName
-        );
+        ).map(response -> new ProductSearchResponse(
+                response.productId(),
+                response.name(),
+                response.price(),
+                createThumbnailUrl(response.thumbnail()),
+                response.productStatus(),
+                response.summary(),
+                response.categoryName(),
+                response.isMain(),
+                response.viewCount(),
+                response.salesCount()
+        ));
     }
 
     @Transactional
@@ -165,5 +184,15 @@ public class ProductService {
             product.unsetMain();
             targetProduct.setMain();
         }
+    }
+
+    private String createThumbnailUrl(String thumbnail) {
+        if (Strings.isBlank(thumbnail)) {
+            return null;
+        }
+        if (thumbnail.startsWith("http://") || thumbnail.startsWith("https://") || thumbnail.startsWith("/")) {
+            return thumbnail;
+        }
+        return imageService.getPresignedUrl(thumbnail);
     }
 }

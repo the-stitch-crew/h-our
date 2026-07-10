@@ -6,6 +6,7 @@ import java.util.UUID;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
 
 import lombok.RequiredArgsConstructor;
 import stitch.crew.hour.auth.domain.RefreshToken;
@@ -54,9 +55,11 @@ public class AuthService {
 	}
 
 	@Transactional
-	public KeyPair oauthSignup(OAuthSignupRequest request) {
-		OAuthSignupPayload signupPayload = signupTokenStore.find(request.signupToken())
-			.orElseThrow(() -> new BusinessException(ErrorCode.INVALID_SIGNUP_TOKEN));
+	public KeyPair oauthSignup(
+		String signupToken,
+		OAuthSignupRequest request
+	) {
+		OAuthSignupPayload signupPayload = findSignupPayload(signupToken);
 
 		String provider = signupPayload.provider().toUpperCase(Locale.ROOT);
 
@@ -92,15 +95,23 @@ public class AuthService {
 
 		User savedUser = userRepository.save(user);
 		KeyPair keyPair = jwtTokenProvider.issueKeyPair(savedUser.getEmail(), savedUser.getRole());
-		signupTokenStore.delete(request.signupToken());
+		signupTokenStore.delete(signupToken);
 		return keyPair;
 	}
 
 	public OAuthSignupInfoResponse getOAuthSignupInfo(String signupToken) {
-		OAuthSignupPayload signupPayload = signupTokenStore.find(signupToken)
-			.orElseThrow(() -> new BusinessException(ErrorCode.INVALID_SIGNUP_TOKEN));
+		OAuthSignupPayload signupPayload = findSignupPayload(signupToken);
 
 		return OAuthSignupInfoResponse.from(signupPayload);
+	}
+
+	private OAuthSignupPayload findSignupPayload(String signupToken) {
+		if (!StringUtils.hasText(signupToken)) {
+			throw new BusinessException(ErrorCode.INVALID_SIGNUP_TOKEN);
+		}
+
+		return signupTokenStore.find(signupToken)
+			.orElseThrow(() -> new BusinessException(ErrorCode.INVALID_SIGNUP_TOKEN));
 	}
 
 	@Transactional

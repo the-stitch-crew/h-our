@@ -137,15 +137,17 @@ class ProductAdminControllerTest {
                 testUser.changeRole(Role.ADMIN);
                 SecurityContextHolder.getContext().setAuthentication(token);
 
-                String json = objectMapper.writeValueAsString(createRequest);
-
-                System.out.println(json);
+                MockMultipartFile requestPart = new MockMultipartFile(
+                        "request",
+                        "",
+                        MediaType.APPLICATION_JSON_VALUE,
+                        objectMapper.writeValueAsBytes(createRequest)
+                );
 
                 // when
                 mockMvc.perform(
-                        MockMvcRequestBuilders.post(BASE_URL)
-                                .contentType(MediaType.APPLICATION_JSON)
-                                .content(json)
+                        MockMvcRequestBuilders.multipart(BASE_URL)
+                                .file(requestPart)
                 )
                         .andDo(print())
                         // then
@@ -173,15 +175,17 @@ class ProductAdminControllerTest {
 
                 SecurityContextHolder.getContext().setAuthentication(token);
 
-                String json = objectMapper.writeValueAsString(createRequest);
-
-                System.out.println(json);
+                MockMultipartFile requestPart = new MockMultipartFile(
+                        "request",
+                        "",
+                        MediaType.APPLICATION_JSON_VALUE,
+                        objectMapper.writeValueAsBytes(createRequest)
+                );
 
                 // when
                 mockMvc.perform(
-                                MockMvcRequestBuilders.post(BASE_URL)
-                                        .contentType(MediaType.APPLICATION_JSON)
-                                        .content(json)
+                                MockMvcRequestBuilders.multipart(BASE_URL)
+                                        .file(requestPart)
                         )
                         .andDo(print())
                         // then

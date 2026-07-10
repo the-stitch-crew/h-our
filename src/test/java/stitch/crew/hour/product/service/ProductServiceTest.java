@@ -123,6 +123,7 @@ class ProductServiceTest {
                 // when
                 ProductCreateResponse product = service.createProduct(
                         testUser.getId(),
+                        null,
                         request
                 );
 
@@ -157,6 +158,7 @@ class ProductServiceTest {
                 Assertions.assertThatThrownBy(
                                 () -> service.createProduct(
                                         testUser.getId(),
+                                        null,
                                         request
                                 )
                         ).isInstanceOf(BusinessException.class)
