@@ -123,6 +123,7 @@ class ProductServiceTest {
                 // when
                 ProductCreateResponse product = service.createProduct(
                         testUser.getId(),
+                        null,
                         request
                 );
 
@@ -157,6 +158,7 @@ class ProductServiceTest {
                 Assertions.assertThatThrownBy(
                                 () -> service.createProduct(
                                         testUser.getId(),
+                                        null,
                                         request
                                 )
                         ).isInstanceOf(BusinessException.class)
@@ -317,7 +319,6 @@ class ProductServiceTest {
                 ProductUpdateRequest request = new ProductUpdateRequest(
                         "수정된 상품명",
                         2000L,
-                        "썸네일",
                         "요약",
                         "설명"
                 );
@@ -329,6 +330,7 @@ class ProductServiceTest {
                 productService.updateProduct(
                         testUser.getId(),
                         testProduct.getId(),
+                        null,
                         request
                 );
 
@@ -349,7 +351,6 @@ class ProductServiceTest {
                         "수정된 상품명",
                         null,
                         description,
-                        description,
                         description
                 );
                 testUser.changeRole(Role.ADMIN);
@@ -359,6 +360,7 @@ class ProductServiceTest {
                 productService.updateProduct(
                         testUser.getId(),
                         testProduct.getId(),
+                        null,
                         request
                 );
 
@@ -390,7 +392,6 @@ class ProductServiceTest {
                 ProductUpdateRequest request = new ProductUpdateRequest(
                         "수정된 상품명",
                         2000L,
-                        "썸네일",
                         "요약",
                         "설명"
                 );
@@ -400,6 +401,7 @@ class ProductServiceTest {
                         ()-> productService.updateProduct(
                                 testUser.getId(),
                                 testProduct.getId(),
+                                null,
                                 request
                         )
                 )

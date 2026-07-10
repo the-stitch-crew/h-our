@@ -1,40 +1,34 @@
 package stitch.crew.hour.common.config;
 
 import java.io.IOException;
-import java.util.List;
+import java.nio.charset.StandardCharsets;
 
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
-import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.Jws;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import stitch.crew.hour.auth.dto.TokenBody;
 import stitch.crew.hour.auth.service.JwtTokenProvider;
 import stitch.crew.hour.common.exception.BusinessException;
 import stitch.crew.hour.common.exception.ErrorCode;
-import stitch.crew.hour.common.util.PreConditions;
 import stitch.crew.hour.user.domain.CurrentUser;
-import stitch.crew.hour.user.domain.User;
-import stitch.crew.hour.user.repository.UserRepository;
+import stitch.crew.hour.user.service.UserService;
 
 @Component
 @RequiredArgsConstructor
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
-	private static final String AUTHORIZATION_HEADER = "Authorization";
-	private static final String BEARER_PREFIX = "Bearer ";
-	private static final String ROLE_PREFIX = "ROLE_";
 
 	private final JwtTokenProvider jwtTokenProvider;
-	private final UserRepository userRepository;
+	private final UserService userService;
 
 	@Override
 	protected void doFilterInternal(
@@ -42,39 +36,60 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 		HttpServletResponse response,
 		FilterChain filterChain
 	) throws ServletException, IOException {
-		String authorizationHeader = request.getHeader(AUTHORIZATION_HEADER);
+		String extractedToken = extractToken(request);
 
-		if (!hasBearerToken(authorizationHeader)) {
-			filterChain.doFilter(request, response);
+		if (extractedToken == null){
+			filterChain.doFilter(request,response);
 			return;
 		}
 
-		String token = authorizationHeader.substring(BEARER_PREFIX.length());
-		jwtTokenProvider.validate(token);
+		try {
+			if (jwtTokenProvider.validate(extractedToken)) {
+				TokenBody tokenBody = jwtTokenProvider.parseJwt(extractedToken);
+				CurrentUser currentUser = userService.loadCurrentUserByEmail(tokenBody.getEmail());
+				UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
+					currentUser,
+					null,
+					currentUser.getAuthorities()
+				);
+				SecurityContextHolder.getContext().setAuthentication(authentication);
+			}
+		} catch (BusinessException exception) {
+			SecurityContextHolder.clearContext();
+			writeErrorResponse(response, resolveAuthenticationErrorCode(exception.getErrorCode()));
+			return;
+		}
 
-		Jws<Claims> claims = jwtTokenProvider.parseClaims(token);
-		String email = String.valueOf(claims.getPayload().get("email"));
-		User user = userRepository.findByEmail(email)
-			.orElseThrow(() -> new BusinessException(ErrorCode.USER_DONT_EXISTS));
-
-		PreConditions.validate(
-			user.getDeletedAt() == null,
-			ErrorCode.ALREADY_DELETED
-		);
-
-		UsernamePasswordAuthenticationToken authentication =
-			new UsernamePasswordAuthenticationToken(
-				CurrentUser.from(user),
-				null,
-				List.of(new SimpleGrantedAuthority(ROLE_PREFIX + user.getRole().name()))
-			);
-		authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-		SecurityContextHolder.getContext().setAuthentication(authentication);
-
-		filterChain.doFilter(request, response);
+		filterChain.doFilter(request,response);
 	}
 
-	private boolean hasBearerToken(String authorizationHeader) {
-		return authorizationHeader != null && authorizationHeader.startsWith(BEARER_PREFIX);
+	private ErrorCode resolveAuthenticationErrorCode(ErrorCode errorCode) {
+		if (errorCode == ErrorCode.USER_DONT_EXISTS) {
+			return ErrorCode.UNAUTHORIZED;
+		}
+		return errorCode;
+	}
+
+	private void writeErrorResponse(
+		HttpServletResponse response,
+		ErrorCode errorCode
+	) throws IOException {
+		response.setStatus(errorCode.getStatus().value());
+		response.setContentType(MediaType.APPLICATION_JSON_VALUE);
+		response.setCharacterEncoding(StandardCharsets.UTF_8.name());
+		response.getWriter().write("""
+			{
+			  "success": false,
+			  "code": "%s",
+			  "message": "%s",
+			  "data": null
+			}
+			""".formatted(errorCode.name(), errorCode.getMessage()));
+	}
+
+	public String extractToken(HttpServletRequest request){
+		String bearerToken = request.getHeader(HttpHeaders.AUTHORIZATION);
+		if(bearerToken != null && bearerToken.startsWith("Bearer ")) return bearerToken.substring(7);
+		return null;
 	}
 }

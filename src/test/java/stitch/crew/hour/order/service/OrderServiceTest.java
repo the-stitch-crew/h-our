@@ -9,10 +9,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
 import org.springframework.security.authentication.TestingAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.test.context.ActiveProfiles;
 import org.springframework.transaction.annotation.Transactional;
 import stitch.crew.hour.cart.domain.Cart;
 import stitch.crew.hour.cart.repository.CartRepository;
@@ -21,25 +19,17 @@ import stitch.crew.hour.cartproduct.repository.CartProductRepository;
 import stitch.crew.hour.category.domain.Category;
 import stitch.crew.hour.category.repository.CategoryRepository;
 import stitch.crew.hour.order.dto.*;
-import stitch.crew.hour.order.repository.OrderBoundaryRepository;
-import stitch.crew.hour.orderproduct.domain.OrderProduct;
-import stitch.crew.hour.orderproduct.dto.OrderProductCreateRequest;
 import stitch.crew.hour.product.domain.Product;
 import stitch.crew.hour.product.repository.ProductRepository;
-import stitch.crew.hour.shippingpolicy.domain.ShippingPolicy;
-import stitch.crew.hour.shippingpolicy.repository.ShippingPolicyRepository;
+import stitch.crew.hour.policy.domain.ShippingPolicy;
+import stitch.crew.hour.policy.repository.ShippingPolicyRepository;
 import stitch.crew.hour.user.constant.Gender;
 import stitch.crew.hour.user.constant.Role;
 import stitch.crew.hour.user.domain.CurrentUser;
 import stitch.crew.hour.user.domain.User;
 import stitch.crew.hour.user.repository.UserRepository;
-import stitch.crew.hour.util.TestUtil;
 
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.List;
-
-import static org.junit.jupiter.api.Assertions.*;
 
 @SpringBootTest
 @Transactional
@@ -80,6 +70,15 @@ class OrderServiceTest {
                         "?",
                         false,
                         false
+                )
+        );
+
+        shippingPolicyRepository.deleteAll();
+        shippingPolicyRepository.save(
+                new ShippingPolicy(
+                        4000L,
+                        3000L,
+                        true
                 )
         );
 

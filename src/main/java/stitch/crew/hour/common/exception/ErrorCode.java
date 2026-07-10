@@ -15,20 +15,32 @@ public enum ErrorCode {
     USER_DONT_EXISTS(HttpStatus.NOT_FOUND, "존재하지 않는 유저입니다."),
     USER_ROLE_CHANGE_NOT_ALLOWED(HttpStatus.BAD_REQUEST, "변경할 수 없는 역할입니다."),
 
+    // Address
+    ADDRESS_NOT_FOUND(HttpStatus.NOT_FOUND, "주소를 찾을 수 없습니다."),
+
 
     // Auth
+    UNAUTHORIZED(HttpStatus.UNAUTHORIZED, "계정 인증이 필요합니다."),
     LOGIN_FAILED(HttpStatus.UNAUTHORIZED, "이메일 또는 비밀번호가 일치하지 않습니다."),
     EXPIRED_TOKEN(HttpStatus.UNAUTHORIZED, "만료된 토큰입니다."),
     ABNORMAL_TOKEN(HttpStatus.UNAUTHORIZED, "비정상적인 토큰입니다."),
     ERROR_FROM_TOKEN(HttpStatus.UNAUTHORIZED, "토큰 처리 중 오류가 발생했습니다."),
     INVALID_REFRESH_TOKEN(HttpStatus.UNAUTHORIZED, "유효하지 않은 토큰입니다."),
+    INVALID_SIGNUP_TOKEN(HttpStatus.UNAUTHORIZED, "유효하지 않은 회원가입 토큰입니다."),
     TOKEN_CREATION_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "토큰 생성에 실패했습니다."),
+    ACCESS_DENIED(HttpStatus.FORBIDDEN, "권한이 없습니다."),
 
 
     /*category*/
     EXIST_CATEGORY(HttpStatus.CONFLICT, "중복된 카테고리 이름입니다."),
     CATEGORY_NOT_FOUND(HttpStatus.NOT_FOUND, "카테고리를 찾을 수 없습니다."),
 
+    // 결제
+    PAYMENT_NOT_FOUND(HttpStatus.NOT_FOUND, "해당 결제를 찾을 수 없습니다."),
+    PAYMENT_NOT_PAYED(HttpStatus.NOT_FOUND, "해당 주문이 결제되지 않거나 취소되었습니다."),
+    PAYMENT_ALREADY_PAYED(HttpStatus.BAD_REQUEST, "이미 결제된 주문입니다."),
+    PAYMENT_PERMISSION_DENY(HttpStatus.FORBIDDEN, "권한이 없어 작업에 실패 했습니다."),
+    NO_ACCESS_ON_RECEIPT(HttpStatus.BAD_REQUEST, "해당 결제건의 영수증을 조회할 수 없습니다."),
 
     // 주문
     ORDER_NOT_FOUND(HttpStatus.NOT_FOUND, "주문을 찾을 수 없습니다."),
@@ -47,6 +59,7 @@ public enum ErrorCode {
 
     // 배송규칙
     NO_SHIPPING_POLICY(HttpStatus.NOT_FOUND, "활성화된 배송규칙이 없습니다."),
+    SHIPPING_POLICY_NOT_FOUND(HttpStatus.NOT_FOUND, "배송 정책을 찾을 수 없습니다."),
 
     // 상품
     PRODUCT_NOT_FOUND(HttpStatus.NOT_FOUND, "해당 상품을 찾을 수 없습니다."),
@@ -62,8 +75,34 @@ public enum ErrorCode {
     SIZE_INVALID(HttpStatus.BAD_REQUEST, "파일 크기는 20MB를 초과할 수 없습니다."),
 
 
+    /*lesson*/
+    EXIST_LESSON(HttpStatus.CONFLICT, "중복된 수업 이름입니다."),
+    LESSON_NOT_FOUND(HttpStatus.NOT_FOUND, "수업을 찾을 수 없습니다."),
+    NO_LESSON_POLICY(HttpStatus.NOT_FOUND, "저장된 수업규칙이 없습니다."),
+
+    /*Reservation*/
+    CLOSED_DAYS(HttpStatus.BAD_REQUEST, "휴무요일입니다."),
+    BEFORE_STARTTIME(HttpStatus.BAD_REQUEST, "오픈시간 전입니다."),
+    AFTER_ENDTIME(HttpStatus.BAD_REQUEST, "마감시간 후입니다."),
+    DURATION_NOT_MATCH(HttpStatus.BAD_REQUEST, "요청하신 시간과 수업시간이 일치하지 않습니다."),
+    NOT_AVAILABLE_DAYS(HttpStatus.BAD_REQUEST, "예약 가능한 날짜가 아닙니다."),
+    RESERVATION_DEADLINE_PASSED(HttpStatus.BAD_REQUEST, "예약 마감 기간이 지났습니다."),
+    PAST_DATE_RESERVATION(HttpStatus.BAD_REQUEST, "지난 날짜 입니다."),
+    DEPOSIT_NOT_MATCH(HttpStatus.BAD_REQUEST, "현재 설정된 예약금과 일치하지 않습니다."),
+    PRICE_NOT_MATCH(HttpStatus.BAD_REQUEST, "수업의 금액과 예약의 금액이 일치하지 않습니다."),
+    INVALID_TIME(HttpStatus.BAD_REQUEST, "불가능한 형식의 시간입니다."),
+    RESERVATION_OVERLAP(HttpStatus.CONFLICT, "이미 예약된 시간입니다."),
+    RESERVATION_NOT_FOUND(HttpStatus.NOT_FOUND, "해당 예약을 찾을 수 없습니다."),
+    RESERVATION_NOT_CLIENT(HttpStatus.FORBIDDEN, "예약의 당사자가 아닙니다."),
+    INVALID_DATE(HttpStatus.BAD_REQUEST, "검색 날짜가 존재하지 않습니다."),
+    INVALID_RESERVATION_STATUS(HttpStatus.BAD_REQUEST, "해당하는 예약 상태가 존재하지 않습니다."),
+    RESERVATION_NOT_PENDING(HttpStatus.CONFLICT, "해당하는 예약이 결제 준비 상태가 아닙니다."),
+    RESERVATION_NOT_DONE(HttpStatus.BAD_REQUEST, "변경 상태가 완료 또는 노쇼가 아닙니다."),
+    RESERVATION_NOT_APPROVE(HttpStatus.CONFLICT, "해당하는 예약이 예약 승인 상태가 아닙니다."),
 
 
+
+    REQUESTPARAM_REQUIRED(HttpStatus.BAD_REQUEST, "해당 파라미터는 필수값입니다. :::"),
     ALREADY_DELETED(HttpStatus.BAD_REQUEST, "이미 삭제된 객체입니다."),
     VALIDATION_FAILED(HttpStatus.BAD_REQUEST, "검증에 실패했습니다."),
     INTERNAL_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "서버 내부 오류입니다."),

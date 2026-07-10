@@ -10,6 +10,7 @@ import org.apache.logging.log4j.util.Strings;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.apache.logging.log4j.util.Strings;
 import stitch.crew.hour.cart.domain.Cart;
 import stitch.crew.hour.category.domain.Category;
 import stitch.crew.hour.common.domain.BaseEntity;
@@ -17,27 +18,31 @@ import stitch.crew.hour.order.domain.Order;
 import stitch.crew.hour.user.constant.Gender;
 import stitch.crew.hour.user.constant.Role;
 
+import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
+
 @Entity
 @Getter
 @Table(name="users")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class User extends BaseEntity {
 
-	@Id
-	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	private Long id;
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
 
-	@Column(nullable = false)
-	private String userName;
+    @Column(nullable = false, unique = true)
+    private String userName;
 
 	@Column(nullable = false, unique = true)
 	private String email;
 
-	@Column(nullable = false)
-	private String password;
+    @Column(nullable = false)
+    private String password;
 
-	@Column(nullable = false)
-	private LocalDate birthDate;
+    @Column(nullable = false)
+    private LocalDate birthDate;
 
 	@Column(nullable = false)
 	@Enumerated(EnumType.STRING)
@@ -47,26 +52,50 @@ public class User extends BaseEntity {
 	@Enumerated(EnumType.STRING)
 	private Gender gender;
 
-	@Column()
-	private String provider;
+    @Column()
+    private String provider;
 
 	@Column(nullable = false, unique = true)
 	private String phoneNumber;
 
-	@Column(nullable = false)
-	private String nationality;
+    @Column(nullable = false)
+    private String nationality;
 
-	@Column(nullable = false)
-	private Boolean isAuthLinked;
+    @Column(nullable = false)
+    private Boolean isAuthLinked;
 
-	@Column(nullable = false)
-	private Boolean idBlack;
+    @Column(nullable = false)
+    private Boolean idBlack;
 
 	@OneToOne(mappedBy = "user")
 	private Cart cart;
 
-	@OneToMany(mappedBy = "orderer")
-	private List<Order> orders = new ArrayList<>();
+
+    @OneToMany(mappedBy = "orderer")
+    private List<Order> orders = new ArrayList<>();
+
+    public User(
+            String userName,
+            String email,
+            String password,
+            LocalDate birthDate,
+            String provider,
+            String phoneNumber,
+            String nationality,
+            Boolean isAuthLinked,
+            Boolean idBlack
+    ) {
+        this.userName = userName;
+        this.email = email;
+        this.password = password;
+        this.birthDate = birthDate;
+        this.phoneNumber = phoneNumber;
+        this.nationality = nationality;
+        this.isAuthLinked = isAuthLinked;
+        this.idBlack = idBlack;
+        this.role = Role.USER;
+        if(Strings.isNotBlank(provider)) this.provider = provider;
+    }
 
 	public User(
 		String userName,
@@ -94,6 +123,10 @@ public class User extends BaseEntity {
 		if(Strings.isNotBlank(provider)) this.provider = provider;
 	}
 
+    public void switchAdmin(){
+        this.role = Role.ADMIN;
+    }
+
 	public void updateProfile(
 		String userName,
 		LocalDate birthDate,
@@ -118,6 +151,18 @@ public class User extends BaseEntity {
 		}
 	}
 
+	public void setOAuth(String provider) {
+		if (Strings.isNotBlank(provider)) {
+			this.provider = provider;
+		}
+		this.isAuthLinked = true;
+	}
+
+	public void unsetOAuth(String provider) {
+		this.provider = null;
+		this.isAuthLinked = false;
+	}
+
 	public void changePassword(String password) {
 		this.password = password;
 	}
@@ -126,9 +171,13 @@ public class User extends BaseEntity {
 		this.role = role;
 	}
 
-	public void addOrder(Order order) {
-		this.orders.add(order);
+	public void changeBlacklisted(Boolean blacklisted) {
+		this.idBlack = blacklisted;
 	}
+
+    public void addOrder(Order order){
+        this.orders.add(order);
+    }
 
 	public void addCart(Cart cart){ this.cart = cart;}
 

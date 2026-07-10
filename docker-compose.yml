@@ -28,4 +28,3 @@ volumes:
 networks:
   hour_network:
     driver: bridge
-

@@ -9,6 +9,18 @@ spring:
     aws:
       region:
         static: ap-northeast-2
+  security:
+    oauth2:
+      client:
+        registration:
+          google:
+            client-name: Google
+            client-id: ${GOOGLE_CLIENT_ID}
+            client-secret: ${GOOGLE_CLIENT_SECRET}
+            redirect-uri: "{baseUrl}/login/oauth2/code/{registrationId}"
+            scope:
+              - email
+              - profile
 
 
 springdoc:
@@ -38,7 +50,18 @@ custom:
   redis:
     host: ${REDIS_HOST}
     port: ${REDIS_PORT}
+  oauth:
+    signup-token-ttl-ms: ${OAUTH_SIGNUP_TOKEN_TTL_MS}
   s3:
     bucket-name: ${S3_BUCKET}
     access-key: ${S3_ACCESS_KEY}
     secret-key: ${S3_SECRET_KEY}
+
+app:
+  frontend:
+    base-url: ${FRONTEND_BASE_URL}
+
+payment:
+  baseUrl: ${TOSS_PAYMENT_BASE_URL}
+  clientKey: ${TOSS_PAYMENT_CLIENT_KEY}
+  secretKey: ${TOSS_PAYMENT_SECRET_KEY}

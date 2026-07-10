@@ -28,6 +28,8 @@ import stitch.crew.hour.order.dto.OrderCreateFromCartRequest;
 import stitch.crew.hour.order.dto.OrderCreateResponse;
 import stitch.crew.hour.order.repository.OrderBoundaryRepository;
 import stitch.crew.hour.order.service.OrderService;
+import stitch.crew.hour.policy.domain.ShippingPolicy;
+import stitch.crew.hour.policy.repository.ShippingPolicyRepository;
 import stitch.crew.hour.product.domain.Product;
 import stitch.crew.hour.product.repository.ProductRepository;
 import stitch.crew.hour.user.constant.Gender;
@@ -78,6 +80,9 @@ class OrderAdminControllerTest {
     Category testCategory;
     Product testProduct;
 
+    @Autowired
+    ShippingPolicyRepository shippingPolicyRepository;
+
     @BeforeEach
     void setUp() {
         testUser = userRepository.save(
@@ -93,6 +98,14 @@ class OrderAdminControllerTest {
                         "?",
                         false,
                         false
+                )
+        );
+        shippingPolicyRepository.deleteAll();
+        shippingPolicyRepository.save(
+                new ShippingPolicy(
+                        4000L,
+                        3000L,
+                        true
                 )
         );
 
@@ -372,6 +385,66 @@ class OrderAdminControllerTest {
 
                         // then
                         .andExpect(MockMvcResultMatchers.status().is4xxClientError());
+            }
+        }
+    }
+
+    @Nested
+    @DisplayName("Describe : PATCH /api/admin/orders/{orderNumber}/cancel")
+    class Describe_setOrderCanceled{
+
+        Cart testCart;
+        OrderCreateResponse orderFromCart;
+
+        @BeforeEach
+        void setUp(){
+
+            // given
+            testCart = cartRepository.save(new Cart(testUser));
+            SecurityContextHolder.getContext().setAuthentication(token);
+
+            cartProductRepository.save(
+                    new CartProduct(
+                            testCart,
+                            testProduct,
+                            2L
+                    )
+            );
+
+            OrderCreateFromCartRequest requestFromCart = new OrderCreateFromCartRequest(
+                    "주소" ,
+                    "26331",
+                    "이정수" ,
+                    "요청사황",
+                    "01041245512"
+            );
+            orderFromCart = orderService.createOrderFromCart(
+                    testUser.getId(),
+                    requestFromCart
+            );
+        }
+
+        @Nested
+        @DisplayName("Context : 올바른 데이터가 주어진 경우")
+        class Context_with_valid_data{
+
+            @Test
+            @DisplayName("It : 주문을 취소 상태로 전환")
+            void It_성공적으로_주문취소_전환() throws Exception {
+                // given
+                SecurityContextHolder.getContext().setAuthentication(token);
+
+                // when
+                mockMvc.perform(
+                                MockMvcRequestBuilders.patch(BASE_URL + "/%s/cancel"
+                                        .formatted(orderFromCart.orderNumber()))
+                        ).andDo(print())
+
+                        // then
+                        .andExpect(MockMvcResultMatchers.status().isOk())
+                        .andExpect(jsonPath("$.message").value(SuccessCode.ORDER_CANCELED.getSuccessMessage()));
+                Order foundedOrder = orderBoundaryRepository.findByOrderNumberOrThrow(orderFromCart.orderNumber());
+                Assertions.assertThat(foundedOrder.getOrderStatus()).isEqualTo(OrderStatus.CANCELED);
             }
         }
     }

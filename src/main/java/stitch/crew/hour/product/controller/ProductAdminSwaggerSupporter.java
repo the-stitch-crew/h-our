@@ -10,19 +10,48 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import org.springframework.data.domain.Page;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestPart;
+import org.springframework.web.multipart.MultipartFile;
 import stitch.crew.hour.common.response.ApiResponses;
+import stitch.crew.hour.product.constant.ProductStatus;
+import stitch.crew.hour.product.dto.AdminProductDetailResponse;
+import stitch.crew.hour.product.dto.AdminProductSearchResponse;
 import stitch.crew.hour.product.dto.ProductCreateRequest;
 import stitch.crew.hour.product.dto.ProductCreateResponse;
+import stitch.crew.hour.product.dto.ProductStatusUpdateRequest;
 import stitch.crew.hour.product.dto.ProductUpdateRequest;
 import stitch.crew.hour.user.domain.CurrentUser;
 
 @Tag(name="Product Admin API", description="관리자가 사용하는 상품 관련 API")
  public interface ProductAdminSwaggerSupporter {
 
+    @Operation(
+            summary = "관리자 상품 목록 조회",
+            description = "관리자가 상품 목록을 검색하고 필터링하는 API"
+    )
+    @SecurityRequirement(name = "Bearer Authentication")
+    ResponseEntity<ApiResponses<Page<AdminProductSearchResponse>>> getProducts(
+            int page,
+            int size,
+            String keyword,
+            String categoryName,
+            ProductStatus status,
+            Boolean isMain
+    );
+
+    @Operation(
+            summary = "관리자 상품 상세 조회",
+            description = "관리자가 상품 상태와 관계없이 상품 상세를 조회하는 API"
+    )
+    @SecurityRequirement(name = "Bearer Authentication")
+    ResponseEntity<ApiResponses<AdminProductDetailResponse>> getProduct(
+            Long productId
+    );
 
     @Operation(
             summary = "상품 생성",
@@ -31,7 +60,7 @@ import stitch.crew.hour.user.domain.CurrentUser;
     @RequestBody(
             content = {
                     @Content(
-                            mediaType = "application/json",
+                            mediaType = MediaType.MULTIPART_FORM_DATA_VALUE,
                             schema = @Schema(
                                     implementation = ProductCreateRequest.class
                             )
@@ -87,6 +116,7 @@ import stitch.crew.hour.user.domain.CurrentUser;
     @SecurityRequirement(name = "Bearer Authentication")
     ResponseEntity<ApiResponses<ProductCreateResponse>> createProduct(
             CurrentUser currentUser,
+            MultipartFile file,
             ProductCreateRequest request
     );
 
@@ -159,7 +189,18 @@ import stitch.crew.hour.user.domain.CurrentUser;
     ResponseEntity<ApiResponses<Void>> updateProduct(
             CurrentUser currentUser,
             Long productId,
+            MultipartFile file,
             ProductUpdateRequest request
+    );
+
+    @Operation(
+            summary = "상품 상태 변경",
+            description = "관리자가 상품 운영 상태를 변경하는 API"
+    )
+    @SecurityRequirement(name = "Bearer Authentication")
+    ResponseEntity<ApiResponses<Void>> updateStatus(
+            Long productId,
+            ProductStatusUpdateRequest request
     );
 
     @Operation(

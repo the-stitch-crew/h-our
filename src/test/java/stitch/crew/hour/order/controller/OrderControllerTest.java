@@ -43,6 +43,8 @@ import stitch.crew.hour.order.repository.OrderBoundaryRepository;
 import stitch.crew.hour.order.service.OrderService;
 import stitch.crew.hour.orderproduct.dto.OrderProductCreateRequest;
 import stitch.crew.hour.orderproduct.dto.OrderProductDetailResponse;
+import stitch.crew.hour.policy.domain.ShippingPolicy;
+import stitch.crew.hour.policy.repository.ShippingPolicyRepository;
 import stitch.crew.hour.product.domain.Product;
 import stitch.crew.hour.product.repository.ProductRepository;
 import stitch.crew.hour.user.constant.Gender;
@@ -81,6 +83,9 @@ class OrderControllerTest {
     @Autowired
     ObjectMapper objectMapper;
 
+    @Autowired
+    ShippingPolicyRepository shippingPolicyRepository;
+
     User testUser;
 
     TestingAuthenticationToken token;
@@ -103,6 +108,15 @@ class OrderControllerTest {
                         "?",
                         false,
                         false
+                )
+        );
+
+        shippingPolicyRepository.deleteAll();
+        shippingPolicyRepository.save(
+                new ShippingPolicy(
+                        4000L,
+                        3000L,
+                        true
                 )
         );
 
@@ -417,15 +431,14 @@ class OrderControllerTest {
         void setUp(){
             userTester = userRepository.save(
                     new User(
-                            "이름",
-                            "wjdtn123132\74" +
-                                    "7@naver.com",
+                            "order-purchased-user",
+                            "order-purchased-user@example.com",
                             "1234",
                             LocalDate.now(),
                             Role.USER,
                             Gender.MALE,
                             "google",
-                            "0123131230",
+                            "01012345678",
                             "?",
                             false,
                             false
@@ -544,15 +557,14 @@ class OrderControllerTest {
         void setUp(){
             userTester = userRepository.save(
                     new User(
-                            "이름",
-                            "wjdtn12313274" +
-                                    "7@naver.com",
+                            "order-canceled-user",
+                            "order-canceled-user@example.com",
                             "1234",
                             LocalDate.now(),
                             Role.USER,
                             Gender.MALE,
                             "google",
-                            "0123131230",
+                            "01087654321",
                             "?",
                             false,
                             false

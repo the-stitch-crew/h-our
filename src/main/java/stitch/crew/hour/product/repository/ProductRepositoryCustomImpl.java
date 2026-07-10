@@ -13,6 +13,7 @@ import stitch.crew.hour.category.domain.QCategory;
 import stitch.crew.hour.product.constant.ProductStatus;
 import stitch.crew.hour.product.domain.Product;
 import stitch.crew.hour.product.domain.QProduct;
+import stitch.crew.hour.product.dto.AdminProductSearchResponse;
 import stitch.crew.hour.product.dto.ProductSearchResponse;
 import stitch.crew.hour.product.dto.QProductSearchResponse;
 
@@ -44,7 +45,11 @@ public class ProductRepositoryCustomImpl implements ProductRepositoryCustom {
                                 qProduct.price,
                                 qProduct.thumbnail,
                                 qProduct.status.stringValue(),
-                                qProduct.summary
+                                qProduct.summary,
+                                qProduct.category.name,
+                                qProduct.isMain,
+                                qProduct.viewCount,
+                                qProduct.salesCount
                         )
                 ).from(qProduct)
                 .where(booleanBuilder)
@@ -53,14 +58,53 @@ public class ProductRepositoryCustomImpl implements ProductRepositoryCustom {
                 .limit(pageable.getPageSize())
                 .fetch();
 
-        Integer totalCnt = jpaQueryFactory.selectFrom(qProduct)
-                .where(containsCategoryName(categoryName))
-                .fetch().size();
+        Long totalCnt = jpaQueryFactory.select(qProduct.count())
+                .from(qProduct)
+                .where(booleanBuilder)
+                .fetchOne();
 
         return new PageImpl<ProductSearchResponse>(
                 founded,
                 pageable,
-                totalCnt
+                totalCnt == null ? 0L : totalCnt
+        );
+    }
+
+    @Override
+    public Page<AdminProductSearchResponse> getAdminProducts(
+            Pageable pageable,
+            String keyword,
+            String categoryName,
+            ProductStatus status,
+            Boolean isMain
+    ) {
+        BooleanBuilder booleanBuilder = new BooleanBuilder()
+                .and(containsProductName(keyword))
+                .and(containsCategoryName(categoryName))
+                .and(eqStatusOrExcludeDeleted(status))
+                .and(eqIsMain(isMain));
+
+        List<Product> products = jpaQueryFactory.selectFrom(qProduct)
+                .join(qProduct.category, qCategory)
+                .fetchJoin()
+                .where(booleanBuilder)
+                .orderBy(qProduct.createdAt.desc())
+                .offset(pageable.getOffset())
+                .limit(pageable.getPageSize())
+                .fetch();
+
+        Long totalCnt = jpaQueryFactory.select(qProduct.count())
+                .from(qProduct)
+                .join(qProduct.category, qCategory)
+                .where(booleanBuilder)
+                .fetchOne();
+
+        return new PageImpl<>(
+                products.stream()
+                        .map(AdminProductSearchResponse::from)
+                        .toList(),
+                pageable,
+                totalCnt == null ? 0L : totalCnt
         );
     }
 
@@ -82,6 +126,24 @@ public class ProductRepositoryCustomImpl implements ProductRepositoryCustom {
         return (Strings.isNotBlank(categoryName))?
                 qProduct.category.name.containsIgnoreCase(categoryName)
                 : null;
+    }
+
+    private BooleanExpression containsProductName(String keyword) {
+        return Strings.isNotBlank(keyword)
+                ? qProduct.name.containsIgnoreCase(keyword)
+                : null;
+    }
+
+    private BooleanExpression eqStatusOrExcludeDeleted(ProductStatus status) {
+        return status == null
+                ? qProduct.status.ne(ProductStatus.DELETED)
+                : qProduct.status.eq(status);
+    }
+
+    private BooleanExpression eqIsMain(Boolean isMain) {
+        return isMain == null
+                ? null
+                : qProduct.isMain.eq(isMain);
     }
 
 }

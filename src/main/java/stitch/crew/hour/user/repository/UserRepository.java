@@ -10,7 +10,7 @@ import stitch.crew.hour.common.exception.ErrorCode;
 import stitch.crew.hour.user.domain.User;
 
 @Repository
-public interface UserRepository extends JpaRepository<User, Long> {
+public interface UserRepository extends JpaRepository<User, Long>, UserRepositoryCustom {
 
 	boolean existsByEmail(String email);
 	boolean existsByPhoneNumber(String phoneNumber);

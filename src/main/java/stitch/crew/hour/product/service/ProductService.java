@@ -8,11 +8,14 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 import stitch.crew.hour.category.domain.Category;
 import stitch.crew.hour.category.repository.CategoryRepository;
 import stitch.crew.hour.common.exception.BusinessException;
 import stitch.crew.hour.common.exception.ErrorCode;
 import stitch.crew.hour.common.util.PreConditions;
+import stitch.crew.hour.image.domain.ThumbnailDomain;
+import stitch.crew.hour.image.service.ImageService;
 import stitch.crew.hour.product.constant.ProductStatus;
 import stitch.crew.hour.product.domain.Product;
 import stitch.crew.hour.product.dto.*;
@@ -31,11 +34,13 @@ public class ProductService {
     private final ProductRepository productRepository;
     private final UserRepository userRepository;
     private final CategoryRepository categoryRepository;
+    private final ImageService imageService;
 
     @Transactional
     @PreAuthorize("isAuthenticated()")
     public ProductCreateResponse createProduct(
             Long userId,
+            MultipartFile file,
             ProductCreateRequest request
     ){
         User foundedUser = userRepository.findByIdOrthrow(userId);
@@ -47,17 +52,22 @@ public class ProductService {
                 ErrorCode.NOT_ADMIN
         );
 
-        return ProductCreateResponse.from(
-                productRepository.save(
-                        new Product(
-                                request.name(),
-                                request.price(),
-                                request.summary(),
-                                request.description(),
-                                foundedCategory
-                        )
+        Product product = productRepository.save(
+                new Product(
+                        request.name(),
+                        request.price(),
+                        request.summary(),
+                        request.description(),
+                        foundedCategory
                 )
         );
+
+        if (file != null && !file.isEmpty()) {
+            String thumbnail = imageService.saveThumbnail(ThumbnailDomain.PRODUCT, product.getId(), file);
+            product.setThumbnail(thumbnail);
+        }
+
+        return ProductCreateResponse.from(product);
     }
 
     public ProductDetailsResponse getProductDetail(
@@ -65,7 +75,9 @@ public class ProductService {
     ){
         Product founded = productRepository.findByIdOrThrow(productId);
         founded.increaseViewCount();
-        return ProductDetailsResponse.from(founded
+        return ProductDetailsResponse.from(
+            founded,
+            createThumbnailUrl(founded.getThumbnail())
         );
     }
 
@@ -76,7 +88,18 @@ public class ProductService {
         return productRepository.getAllProduct(
                 pageRequest,
                 categoryName
-        );
+        ).map(response -> new ProductSearchResponse(
+                response.productId(),
+                response.name(),
+                response.price(),
+                createThumbnailUrl(response.thumbnail()),
+                response.productStatus(),
+                response.summary(),
+                response.categoryName(),
+                response.isMain(),
+                response.viewCount(),
+                response.salesCount()
+        ));
     }
 
     @Transactional
@@ -101,6 +124,7 @@ public class ProductService {
     public void updateProduct(
         Long userId,
         Long productId,
+        MultipartFile multipartFile,
         ProductUpdateRequest request
     ){
         User foundedUser = userRepository.findByIdOrthrow(userId);
@@ -114,9 +138,14 @@ public class ProductService {
 
         if (Strings.isNotBlank(request.name())) foundedProduct.setName(request.name());
         if (request.price() != null) foundedProduct.setPrice(request.price());
-        if (Strings.isNotBlank(request.thumbnail())) foundedProduct.setThumbnail(request.thumbnail());
         if (Strings.isNotBlank(request.summary())) foundedProduct.setSummary(request.summary());
         if (Strings.isNotBlank(request.description())) foundedProduct.setDescription(request.description());
+
+        if (multipartFile != null) {
+            if ( foundedProduct.getThumbnail() != null ) imageService.deleteThumbnail(foundedProduct.getThumbnail());
+            String newThumbnail = imageService.saveThumbnail(ThumbnailDomain.PRODUCT, productId, multipartFile);
+            foundedProduct.setThumbnail(newThumbnail);
+        }
     }
 
     @Transactional
@@ -155,5 +184,15 @@ public class ProductService {
             product.unsetMain();
             targetProduct.setMain();
         }
+    }
+
+    private String createThumbnailUrl(String thumbnail) {
+        if (Strings.isBlank(thumbnail)) {
+            return null;
+        }
+        if (thumbnail.startsWith("http://") || thumbnail.startsWith("https://") || thumbnail.startsWith("/")) {
+            return thumbnail;
+        }
+        return imageService.getPresignedUrl(thumbnail);
     }
 }

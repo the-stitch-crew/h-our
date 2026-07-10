@@ -15,10 +15,21 @@ public enum SuccessCode {
     USER_DELETED("계정이 정상적으로 탈퇴되었습니다."),
     USER_ROLE_UPDATED("계정 권한이 정상적으로 변경되었습니다."),
 
+    // ADDRESS
+    ADDRESS_CREATED("주소가 정상적으로 생성되었습니다."),
+    ADDRESS_READ("주소가 정상적으로 조회되었습니다."),
+    ADDRESS_UPDATED("주소가 정상적으로 수정되었습니다."),
+    ADDRESS_MAIN_UPDATED("대표 주소가 정상적으로 변경되었습니다."),
+    ADDRESS_DELETED("주소가 정상적으로 삭제되었습니다."),
+
     // AUTH
     AUTH_LOGIN_SUCCESS("로그인에 성공했습니다."),
     AUTH_REFRESH_SUCCESS("토큰 갱신에 성공했습니다."),
     AUTH_LOGOUT_SUCCESS("로그아웃에 성공했습니다."),
+    
+    // PAYMENT
+    PAYMENT_READ_SUCCESS("결제 조회에 성공했습니다."),
+    PAYMENT_REFUND_COMPLETE("환불에 성공했습니다."),
 
     // CART
     CART_RETRIEVE_SUCCESS("장바구니 조회에 성공했습니다."),
@@ -44,12 +55,40 @@ public enum SuccessCode {
     PRODUCT_SWITCH_MAIN_SUCCESS("상품이 카테고리 메인 상품으로 수정되었습니다."),
     PRODUCT_READ_SUCCESS("상품이 정상적으로 조회되었습니다."),
 
+    // Admin
+    ADMIN_DASHBOARD_READ("대시보드 정보가 정상적으로 조회되었습니다."),
 
     /*CATEGORY*/
     CATEGORY_CREATED("카테고리가 정상적으로 생성되었습니다."),
     CATEGORY_READ("카테고리가 정상적으로 조회되었습니다."),
     CATEGORY_UPDATED("카테고리가 정상적으로 수정되었습니다."),
     CATEGORY_DELETED("카테고리가 정상적으로 삭제되었습니다."),
+
+    /*LESSON*/
+    LESSON_CREATED("수업이 정상적으로 생성되었습니다."),
+    LESSON_READ("수업이 정상적으로 조회되었습니다."),
+    LESSON_UPDATED("수업이 정상적으로 수정되었습니다."),
+    LESSON_DELETED("수업이 정상적으로 삭제되었습니다."),
+    LESSON_POLICY_READ("수업정책이 정상적으로 조회되었습니다."),
+    LESSON_POLICY_UPDATED("수업정책이 정상적으로 수정되었습니다."),
+
+    /*SHIPPING POLICY*/
+    SHIPPING_POLICY_CREATED("배송 정책이 정상적으로 생성되었습니다."),
+    SHIPPING_POLICY_READ("배송 정책이 정상적으로 조회되었습니다."),
+    SHIPPING_POLICY_UPDATED("배송 정책이 정상적으로 수정되었습니다."),
+    SHIPPING_POLICY_DELETED("배송 정책이 정상적으로 삭제되었습니다."),
+    SHIPPING_POLICY_ACTIVATED("배송 정책이 정상적으로 활성화되었습니다."),
+
+    /*RESERVATION*/
+    RESERVATION_CREATED("예약이 정상적으로 생성되었습니다."),
+    RESERVATION_READ("예약이 정상적으로 조회되었습니다."),
+    RESERVATION_UPDATED("예약이 정상적으로 수정되었습니다."),
+    RESERVATION_DELETED("예약이 정상적으로 삭제되었습니다."),
+
+
+    // DELIVERY FEE
+    DELIVERY_FEE_READED_SUCCESS("활성화 중인 배송비를 조회하였습니다."),
+    DELIVERY_FEE_SAVEED_SUCCESS("배송비를 저장하였습니다."),
 
     BUSINESS_SUCCESS("정상적으로 작성되었습니다.");
 

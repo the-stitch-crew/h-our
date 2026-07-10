@@ -17,10 +17,6 @@ public record ProductUpdateRequest(
         )
         Long price,
         @Schema(
-                description = "썸네일 주소"
-        )
-        String thumbnail,
-        @Schema(
                 examples = "위대한 령도자님의 기운이 담기신 감자입니다.",
                 description = "상품 요약"
         )
