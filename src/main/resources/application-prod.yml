@@ -15,10 +15,6 @@ spring:
       hibernate:
         format_sql: true
 logging:
+  config: classpath:logstash.xml
   level:
     root: info
-springdoc:
-  api-docs:
-    enabled: false
-  swagger-ui:
-    enabled: false

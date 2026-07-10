@@ -31,6 +31,8 @@ import stitch.crew.hour.user.repository.UserRepository;
 import java.util.Optional;
 import java.util.UUID;
 
+import static net.logstash.logback.argument.StructuredArguments.kv;
+
 @Slf4j
 @Service
 @EnableMethodSecurity(prePostEnabled = true)
@@ -70,7 +72,7 @@ public class PaymentService {
         );
 
 
-        return paymentRepository.save(
+        Payment payment = paymentRepository.save(
                 new Payment(
                         foundedOrder,
                         null,
@@ -79,6 +81,18 @@ public class PaymentService {
                         PaymentType.ORDER
                 )
         );
+
+        log.info("order payment initialized",
+                kv("event", "payment_initialized"),
+                kv("paymentId", payment.getId()),
+                kv("paymentType", payment.getPaymentType()),
+                kv("orderNumber", payment.getOrderNumber()),
+                kv("tossOrderId", payment.getTossOrderId()),
+                kv("amount", payment.getTotalPrice()),
+                kv("paymentStatus", payment.getPaymentStatus())
+        );
+
+        return payment;
     }
 
     private Payment initPaymentByReservation(
@@ -93,7 +107,7 @@ public class PaymentService {
                 ErrorCode.RESERVATION_NOT_PENDING
         );
 
-        return paymentRepository.save(
+        Payment payment = paymentRepository.save(
                 new Payment(
                         null,
                         foundedReservation,
@@ -102,6 +116,18 @@ public class PaymentService {
                         PaymentType.RESERVATION
                 )
         );
+
+        log.info("reservation payment initialized",
+                kv("event", "payment_initialized"),
+                kv("paymentId", payment.getId()),
+                kv("paymentType", payment.getPaymentType()),
+                kv("reservationNumber", payment.getReservationNumber()),
+                kv("tossOrderId", payment.getTossOrderId()),
+                kv("amount", payment.getTotalPrice()),
+                kv("paymentStatus", payment.getPaymentStatus())
+        );
+
+        return payment;
     }
 
     @Transactional
@@ -111,6 +137,8 @@ public class PaymentService {
         Payment payment,
         String pgReceiptUrl
     ){
+        PaymentStatus beforeStatus = payment.getPaymentStatus();
+
         if (payment.getPaymentType().equals(PaymentType.RESERVATION)) {
             Reservation foundedReservation = payment.getReservation();
 
@@ -131,6 +159,19 @@ public class PaymentService {
 
         payment.switchPaymentStatus(PaymentStatus.COMPLETED);
         payment.purchaseComplete(pgReceiptUrl);
+
+        log.info("payment status changed",
+                kv("event", "payment_status_changed"),
+                kv("userId", userId),
+                kv("paymentId", payment.getId()),
+                kv("paymentType", payment.getPaymentType()),
+                kv("orderNumber", payment.getOrderNumber()),
+                kv("reservationNumber", payment.getReservationNumber()),
+                kv("beforeStatus", beforeStatus),
+                kv("afterStatus", payment.getPaymentStatus()),
+                kv("amount", payment.getTotalPrice()),
+                kv("pgReceiptIssued", pgReceiptUrl != null)
+        );
     }
 
     @Transactional
@@ -138,7 +179,19 @@ public class PaymentService {
     public void cancelPayment(
         Payment payment
     ){
+        PaymentStatus beforeStatus = payment.getPaymentStatus();
         payment.switchPaymentStatus(PaymentStatus.CANCELED);
+
+        log.warn("payment status changed",
+                kv("event", "payment_status_changed"),
+                kv("paymentId", payment.getId()),
+                kv("paymentType", payment.getPaymentType()),
+                kv("orderNumber", payment.getOrderNumber()),
+                kv("reservationNumber", payment.getReservationNumber()),
+                kv("beforeStatus", beforeStatus),
+                kv("afterStatus", payment.getPaymentStatus()),
+                kv("amount", payment.getTotalPrice())
+        );
     }
 
     @PreAuthorize(value = "isAuthenticated()")
@@ -234,11 +287,25 @@ public class PaymentService {
                 ErrorCode.PAYMENT_PERMISSION_DENY
         );
 
+        PaymentStatus beforeStatus = foundedPayment.getPaymentStatus();
+
         if (foundedPayment.getPaymentType().equals(PaymentType.RESERVATION)) {
             reservationService.cancelReservation(foundedPayment.getReservation());
         }
 
         foundedPayment.switchPaymentStatus(PaymentStatus.REFUNDED);
+
+        log.info("payment refunded",
+                kv("event", "payment_refunded"),
+                kv("userId", userId),
+                kv("paymentId", foundedPayment.getId()),
+                kv("paymentType", foundedPayment.getPaymentType()),
+                kv("orderNumber", foundedPayment.getOrderNumber()),
+                kv("reservationNumber", foundedPayment.getReservationNumber()),
+                kv("beforeStatus", beforeStatus),
+                kv("afterStatus", foundedPayment.getPaymentStatus()),
+                kv("amount", foundedPayment.getTotalPrice())
+        );
     }
 
     private Boolean validateCondition(

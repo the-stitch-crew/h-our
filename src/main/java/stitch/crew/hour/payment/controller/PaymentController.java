@@ -33,6 +33,8 @@ import java.util.Base64;
 import java.util.Map;
 import java.util.UUID;
 
+import static net.logstash.logback.argument.StructuredArguments.kv;
+
 @RestController
 @Slf4j
 @RequiredArgsConstructor
@@ -55,9 +57,30 @@ public class PaymentController implements PaymentSwaggerSupporter{
             @AuthenticationPrincipal CurrentUser currentUser,
             @RequestBody PaymentRequestBody requestBody
     ) throws Exception {
+        log.info("payment confirm requested",
+                kv("event", "payment_confirm_requested"),
+                kv("userId", currentUser.getId()),
+                kv("paymentType", requestBody.paymentTypeOrDefault()),
+                kv("orderNumber", requestBody.orderNumber()),
+                kv("reservationNumber", requestBody.reservationNumber()),
+                kv("tossOrderId", requestBody.orderId()),
+                kv("paymentKey", maskPaymentKey(requestBody.paymentKey())),
+                kv("amount", requestBody.amount())
+        );
+
         Payment initPayment = paymentService.initPayment(requestBody);
 
         if (!initPayment.getTotalPrice().equals(requestBody.amount())) {
+            log.warn("payment amount mismatch",
+                    kv("event", "payment_amount_mismatch"),
+                    kv("userId", currentUser.getId()),
+                    kv("paymentId", initPayment.getId()),
+                    kv("paymentType", initPayment.getPaymentType()),
+                    kv("orderNumber", initPayment.getOrderNumber()),
+                    kv("reservationNumber", initPayment.getReservationNumber()),
+                    kv("requestedAmount", requestBody.amount()),
+                    kv("expectedAmount", initPayment.getTotalPrice())
+            );
             paymentService.cancelPayment(initPayment);
             return "fail";
         }
@@ -70,11 +93,33 @@ public class PaymentController implements PaymentSwaggerSupporter{
                     initPayment.getIdempotencyKey()
             );
         } catch (Exception e) {
+            log.warn("toss payment confirm request failed",
+                    kv("event", "toss_payment_confirm_failed"),
+                    kv("userId", currentUser.getId()),
+                    kv("paymentId", initPayment.getId()),
+                    kv("paymentType", initPayment.getPaymentType()),
+                    kv("orderNumber", initPayment.getOrderNumber()),
+                    kv("reservationNumber", initPayment.getReservationNumber()),
+                    kv("tossOrderId", requestBody.orderId()),
+                    kv("paymentKey", maskPaymentKey(requestBody.paymentKey())),
+                    kv("reason", e.getMessage())
+            );
             paymentService.cancelPayment(initPayment);
             return "fail";
         }
 
         if (response.getStatusCode() != HttpStatus.OK) {
+            log.warn("toss payment confirm rejected",
+                    kv("event", "toss_payment_confirm_rejected"),
+                    kv("userId", currentUser.getId()),
+                    kv("paymentId", initPayment.getId()),
+                    kv("paymentType", initPayment.getPaymentType()),
+                    kv("orderNumber", initPayment.getOrderNumber()),
+                    kv("reservationNumber", initPayment.getReservationNumber()),
+                    kv("tossOrderId", requestBody.orderId()),
+                    kv("paymentKey", maskPaymentKey(requestBody.paymentKey())),
+                    kv("httpStatus", response.getStatusCode().value())
+            );
             paymentService.cancelPayment(initPayment);
             return "fail";
         }
@@ -91,8 +136,31 @@ public class PaymentController implements PaymentSwaggerSupporter{
                     paymentResponse.receipt().url()
             );
 
+            log.info("payment confirm completed",
+                    kv("event", "payment_confirm_completed"),
+                    kv("userId", currentUser.getId()),
+                    kv("paymentId", initPayment.getId()),
+                    kv("paymentType", initPayment.getPaymentType()),
+                    kv("orderNumber", initPayment.getOrderNumber()),
+                    kv("reservationNumber", initPayment.getReservationNumber()),
+                    kv("tossOrderId", requestBody.orderId()),
+                    kv("paymentKey", maskPaymentKey(requestBody.paymentKey())),
+                    kv("amount", requestBody.amount()),
+                    kv("pgReceiptIssued", paymentResponse.receipt() != null && paymentResponse.receipt().url() != null)
+            );
             return "success";
         } catch (Exception e) {
+            log.error("payment internal confirm failed",
+                    kv("event", "payment_internal_confirm_failed"),
+                    kv("userId", currentUser.getId()),
+                    kv("paymentId", initPayment.getId()),
+                    kv("paymentType", initPayment.getPaymentType()),
+                    kv("orderNumber", initPayment.getOrderNumber()),
+                    kv("reservationNumber", initPayment.getReservationNumber()),
+                    kv("tossOrderId", requestBody.orderId()),
+                    kv("paymentKey", maskPaymentKey(requestBody.paymentKey())),
+                    kv("reason", e.getMessage())
+            );
             requestPaymentCancel(
                     requestBody.paymentKey(),
                     "server payment handling failed",
@@ -128,12 +196,22 @@ public class PaymentController implements PaymentSwaggerSupporter{
         HttpEntity<Map<String, Object>> httpEntity = new HttpEntity<>(requestMap, headers);
         RestTemplate restTemplate = new RestTemplate();
 
-        return restTemplate.exchange(
+        ResponseEntity<String> response = restTemplate.exchange(
                 baseUrl + "/confirm",
                 HttpMethod.POST,
                 httpEntity,
                 String.class
         );
+
+        log.info("toss payment confirm responded",
+                kv("event", "toss_payment_confirm_responded"),
+                kv("tossOrderId", requestBody.orderId()),
+                kv("paymentKey", maskPaymentKey(requestBody.paymentKey())),
+                kv("amount", requestBody.amount()),
+                kv("httpStatus", response.getStatusCode().value())
+        );
+
+        return response;
     }
 
     public ResponseEntity<String> requestPaymentCancel(
@@ -151,12 +229,21 @@ public class PaymentController implements PaymentSwaggerSupporter{
         HttpEntity<Map<String, Object>> httpEntity = new HttpEntity<>(requestMap, headers);
         RestTemplate restTemplate = new RestTemplate();
 
-        return restTemplate.exchange(
+        ResponseEntity<String> response = restTemplate.exchange(
                 baseUrl + "/%s/cancel".formatted(paymentKey),
                 HttpMethod.POST,
                 httpEntity,
                 String.class
         );
+
+        log.info("toss payment cancel responded",
+                kv("event", "toss_payment_cancel_responded"),
+                kv("paymentKey", maskPaymentKey(paymentKey)),
+                kv("cancelReason", cancelReason),
+                kv("httpStatus", response.getStatusCode().value())
+        );
+
+        return response;
     }
 
     @GetMapping("/{paymentId}")
@@ -237,8 +324,25 @@ public class PaymentController implements PaymentSwaggerSupporter{
                 foundedPayment.getIdempotencyKey()
         );
 
+        log.info("payment refund requested to toss",
+                kv("event", "payment_refund_requested_to_toss"),
+                kv("userId", currentUser.getId()),
+                kv("paymentId", paymentId),
+                kv("paymentType", foundedPayment.getPaymentType()),
+                kv("orderNumber", foundedPayment.getOrderNumber()),
+                kv("reservationNumber", foundedPayment.getReservationNumber()),
+                kv("paymentKey", maskPaymentKey(foundedPayment.getTossPaymentKey()))
+        );
+
         return ApiResult.ok(
                 SuccessCode.PAYMENT_REFUND_COMPLETE
         );
+    }
+
+    private String maskPaymentKey(String paymentKey) {
+        if (paymentKey == null || paymentKey.length() <= 12) {
+            return "****";
+        }
+        return paymentKey.substring(0, 6) + "****" + paymentKey.substring(paymentKey.length() - 6);
     }
 }
