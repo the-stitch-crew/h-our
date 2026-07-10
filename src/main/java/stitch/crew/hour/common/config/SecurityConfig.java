@@ -8,6 +8,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
 import org.springframework.beans.factory.ObjectProvider;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -25,6 +26,9 @@ import stitch.crew.hour.common.config.entrypoint.JwtAuthenticationEntryPoint;
 @Configuration
 @RequiredArgsConstructor
 public class SecurityConfig {
+
+    @Value("${app.frontend.base-url}")
+    private String frontendBaseUrl;
 
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
     private final JwtAccessDeniedHandler jwtAccessDeniedHandler;
@@ -67,13 +71,10 @@ public class SecurityConfig {
                     .requestMatchers("/api/lessons/**").authenticated()
                     .requestMatchers("/api/reservations", "/api/reservations/**").hasAnyRole( "USER")
                     .requestMatchers("/api/categories").hasAnyRole("ADMIN", "USER")
-                    .requestMatchers("/api/admin/lessons/**").hasRole("ADMIN")
                     .requestMatchers("/api/lessons/**").hasAnyRole("ADMIN", "USER")
-                    .requestMatchers("/api/admin/reservations/**").hasRole("ADMIN")
                     .requestMatchers("/api/reservations/**").hasAnyRole( "USER")
                     .requestMatchers("/api/lessons").hasAnyRole("ADMIN", "USER")
                     .requestMatchers("/api/admin/shppingpolicy").hasAnyRole("ADMIN", "USER")
-                    .requestMatchers("/api/admin/shppingpolicy").hasRole("ADMIN")
                     .anyRequest().permitAll()
                 )
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)

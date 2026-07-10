@@ -3,6 +3,7 @@ package stitch.crew.hour.category.controller;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -50,7 +51,7 @@ public class CategoryAdminController {
         );
     }
 
-    @PostMapping
+    @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<ApiResponses<Void>>  saveCategory (
             @RequestPart @Valid CategoryRequest request,
             @RequestPart(required = false) MultipartFile file
@@ -59,11 +60,33 @@ public class CategoryAdminController {
         return ApiResult.created(SuccessCode.CATEGORY_CREATED);
     }
 
-    @PutMapping("/{categoryId}")
+    @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<ApiResponses<Void>> saveCategoryJson(
+            @RequestBody @Valid CategoryRequest request
+    ) {
+        categoryService.save(request, null);
+        return ApiResult.created(SuccessCode.CATEGORY_CREATED);
+    }
+
+    @PutMapping(value = "/{categoryId}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<ApiResponses<Void>> updateCategory (@PathVariable Long categoryId,
                                                               @RequestPart @Valid CategoryRequest request,
                                                               @RequestPart(required = false) MultipartFile file) {
         categoryService.updateCategory(categoryId, request, file);
+        return ApiResult.ok(SuccessCode.CATEGORY_UPDATED);
+    }
+
+    @PutMapping(value = "/{categoryId}", consumes = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<ApiResponses<Void>> updateCategoryJson(@PathVariable Long categoryId,
+                                                                 @RequestBody @Valid CategoryRequest request) {
+        categoryService.updateCategory(categoryId, request, null);
+        return ApiResult.ok(SuccessCode.CATEGORY_UPDATED);
+    }
+
+    @PatchMapping(value = "/{categoryId}", consumes = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<ApiResponses<Void>> patchCategoryJson(@PathVariable Long categoryId,
+                                                                @RequestBody @Valid CategoryRequest request) {
+        categoryService.updateCategory(categoryId, request, null);
         return ApiResult.ok(SuccessCode.CATEGORY_UPDATED);
     }
 
