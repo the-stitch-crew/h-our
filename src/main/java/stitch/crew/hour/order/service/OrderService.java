@@ -1,6 +1,7 @@
 package stitch.crew.hour.order.service;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.access.annotation.Secured;
@@ -28,6 +29,9 @@ import stitch.crew.hour.user.repository.UserRepository;
 import java.util.List;
 import java.util.UUID;
 
+import static net.logstash.logback.argument.StructuredArguments.kv;
+
+@Slf4j
 @Service
 @RequiredArgsConstructor
 @EnableMethodSecurity(prePostEnabled = true, securedEnabled = true)
@@ -76,6 +80,17 @@ public class OrderService {
 
         savedOrder.setOrderProduct(savedOrderProduct);
 
+        log.info("single order created",
+                kv("event", "order_created"),
+                kv("orderType", "SINGLE_PRODUCT"),
+                kv("userId", userId),
+                kv("orderNumber", savedOrder.getOrderNumber()),
+                kv("orderStatus", savedOrder.getOrderStatus()),
+                kv("totalPrice", savedOrder.getTotalPrice()),
+                kv("deliveryFee", savedOrder.getDeliveryFee()),
+                kv("productCount", savedOrder.getOrderProduct().size())
+        );
+
         return OrderCreateResponse.from(savedOrder);
     }
 
@@ -122,6 +137,17 @@ public class OrderService {
         ).toList();
 
         order.setOrderProducts(orderProducts);
+
+        log.info("cart order created",
+                kv("event", "order_created"),
+                kv("orderType", "CART"),
+                kv("userId", userId),
+                kv("orderNumber", order.getOrderNumber()),
+                kv("orderStatus", order.getOrderStatus()),
+                kv("totalPrice", order.getTotalPrice()),
+                kv("deliveryFee", order.getDeliveryFee()),
+                kv("productCount", order.getOrderProduct().size())
+        );
 
         return OrderCreateResponse.from(order);
     }
@@ -189,7 +215,17 @@ public class OrderService {
                 ErrorCode.NO_AUTHORITY_ON_ORDER
         );
 
+        OrderStatus beforeStatus = foundedOrder.getOrderStatus();
         foundedOrder.switchStatus(OrderStatus.PURCHASED);
+
+        log.info("order status changed",
+                kv("event", "order_status_changed"),
+                kv("userId", userId),
+                kv("orderNumber", foundedOrder.getOrderNumber()),
+                kv("beforeStatus", beforeStatus),
+                kv("afterStatus", foundedOrder.getOrderStatus()),
+                kv("totalPrice", foundedOrder.getTotalPrice())
+        );
     }
 
     @Transactional
@@ -198,7 +234,16 @@ public class OrderService {
             UUID orderNumber
     ){
         Order founded = orderBoundaryRepository.findByOrderNumberOrThrow(orderNumber);
+        OrderStatus beforeStatus = founded.getOrderStatus();
         founded.switchStatus(OrderStatus.IN_DELIVERY);
+
+        log.info("order status changed",
+                kv("event", "order_status_changed"),
+                kv("orderNumber", founded.getOrderNumber()),
+                kv("beforeStatus", beforeStatus),
+                kv("afterStatus", founded.getOrderStatus()),
+                kv("totalPrice", founded.getTotalPrice())
+        );
     }
 
     @Transactional
@@ -207,7 +252,16 @@ public class OrderService {
             UUID orderNumber
     ){
         Order founded = orderBoundaryRepository.findByOrderNumberOrThrow(orderNumber);
+        OrderStatus beforeStatus = founded.getOrderStatus();
         founded.switchStatus(OrderStatus.DELIVERED);
+
+        log.info("order status changed",
+                kv("event", "order_status_changed"),
+                kv("orderNumber", founded.getOrderNumber()),
+                kv("beforeStatus", beforeStatus),
+                kv("afterStatus", founded.getOrderStatus()),
+                kv("totalPrice", founded.getTotalPrice())
+        );
     }
 
     @Transactional
@@ -216,7 +270,16 @@ public class OrderService {
             UUID orderNumber
     ){
         Order founded = orderBoundaryRepository.findByOrderNumberOrThrow(orderNumber);
+        OrderStatus beforeStatus = founded.getOrderStatus();
         founded.switchStatus(OrderStatus.COMPLETE);
+
+        log.info("order status changed",
+                kv("event", "order_status_changed"),
+                kv("orderNumber", founded.getOrderNumber()),
+                kv("beforeStatus", beforeStatus),
+                kv("afterStatus", founded.getOrderStatus()),
+                kv("totalPrice", founded.getTotalPrice())
+        );
     }
 
     @Transactional
@@ -233,7 +296,17 @@ public class OrderService {
                 ErrorCode.NO_AUTHORITY_ON_ORDER
         );
 
+        OrderStatus beforeStatus = foundedOrder.getOrderStatus();
         foundedOrder.switchStatus(OrderStatus.CANCELED);
+
+        log.info("order status changed",
+                kv("event", "order_status_changed"),
+                kv("userId", userId),
+                kv("orderNumber", foundedOrder.getOrderNumber()),
+                kv("beforeStatus", beforeStatus),
+                kv("afterStatus", foundedOrder.getOrderStatus()),
+                kv("totalPrice", foundedOrder.getTotalPrice())
+        );
     }
 
 
