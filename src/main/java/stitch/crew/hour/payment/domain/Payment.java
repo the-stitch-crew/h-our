@@ -79,6 +79,7 @@ public class Payment {
         this.tossPaymentKey = requestBody.paymentKey();
         this.tossOrderId = UUID.fromString(requestBody.orderId());
 
+        this.orderNumber = UUID.fromString(requestBody.orderNumber());
         this.idempotencyKey = UUID.randomUUID();
         this.paymentStatus = PaymentStatus.PENDING;
         this.paymentMethod = paymentMethod;

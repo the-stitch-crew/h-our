@@ -45,14 +45,16 @@ public class ReservationService {
 
     // 손님이 예약
     @Lock(key = Lock.Key.RESERVATION, waitTime = 5L, leaseTime = 10L, timeunit =  TimeUnit.SECONDS)
-    public void saveReservation(CurrentUser currentUser, ReservationRequest request) {
+    @Transactional
+    public ReservationResponse saveReservation(CurrentUser currentUser, ReservationRequest request) {
         User user = userService.getActiveUserFromCurrentUser(currentUser);
         Lesson lesson = lessonService.getLessonById(request.lessonId());
         validatePolicy(request);
         validateLesson(lesson, request);
         validateReservation(request);
         Reservation reservation = new Reservation(request.date(), request.startTime(), request.endTime(), request.deposit(), request.price(), request.request(),user, lesson);
-        reservationRepository.save(reservation);
+        Reservation savedReservation = reservationRepository.save(reservation);
+        return ReservationResponse.from(savedReservation);
     }
 
     //예약 전 기존 예약 확인

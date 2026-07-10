@@ -146,5 +146,32 @@ class JwtAuthenticationFilterTest {
 			verify(jwtTokenProvider, never()).parseJwt(token);
 			verify(userService, never()).loadCurrentUserByEmail(anyString());
 		}
+
+		@Test
+		@DisplayName("It: 토큰의 유저가 없으면 인증 실패 401 응답을 반환한다")
+		void it_returns_401_when_token_user_does_not_exist() throws Exception {
+			// given
+			JwtAuthenticationFilter filter = new JwtAuthenticationFilter(jwtTokenProvider, userService);
+			MockHttpServletRequest request = new MockHttpServletRequest();
+			MockHttpServletResponse response = new MockHttpServletResponse();
+			MockFilterChain filterChain = new MockFilterChain();
+			String token = "stale-token";
+			String email = "deleted@hour.test";
+
+			request.addHeader("Authorization", "Bearer " + token);
+			given(jwtTokenProvider.validate(token)).willReturn(true);
+			given(jwtTokenProvider.parseJwt(token)).willReturn(new TokenBody(email));
+			given(userService.loadCurrentUserByEmail(email))
+				.willThrow(new BusinessException(ErrorCode.USER_DONT_EXISTS));
+
+			// when
+			filter.doFilter(request, response, filterChain);
+
+			// then
+			assertThat(response.getStatus()).isEqualTo(ErrorCode.UNAUTHORIZED.getStatus().value());
+			assertThat(response.getContentAsString()).contains(ErrorCode.UNAUTHORIZED.name());
+			assertThat(response.getContentAsString()).contains(ErrorCode.UNAUTHORIZED.getMessage());
+			assertThat(SecurityContextHolder.getContext().getAuthentication()).isNull();
+		}
 	}
 }

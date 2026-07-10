@@ -65,7 +65,10 @@ public class PaymentService {
                 UUID.fromString(request.orderNumber())
         );
 
+        return initOrderPayment(foundedOrder, request);
+    }
 
+    private Payment initOrderPayment(Order foundedOrder, PaymentRequestBody request) {
         PreConditions.validate(
                 foundedOrder.getOrderStatus().equals(OrderStatus.ORDERED),
                 ErrorCode.PAYMENT_ALREADY_PAYED
@@ -128,6 +131,23 @@ public class PaymentService {
         );
 
         return payment;
+    }
+
+    private Payment initReservationPayment(Reservation foundedReservation, PaymentRequestBody request) {
+        PreConditions.validate(
+                foundedReservation.getStatus().equals(ReservationStatus.PENDING),
+                ErrorCode.RESERVATION_NOT_PENDING
+        );
+
+        return paymentRepository.save(
+                new Payment(
+                        null,
+                        foundedReservation,
+                        request,
+                        PaymentMethod.EASY_PAY,
+                        PaymentType.RESERVATION
+                )
+        );
     }
 
     @Transactional
@@ -229,10 +249,8 @@ public class PaymentService {
                 ErrorCode.PAYMENT_NOT_PAYED
         );
 
-        Order order = foundedPayment.get().getOrder();
-
         PreConditions.validate(
-                validateCondition(order, userId),
+                validateCondition(foundedPayment.get(), userId),
                 ErrorCode.PAYMENT_PERMISSION_DENY
         );
 
@@ -306,6 +324,7 @@ public class PaymentService {
                 kv("afterStatus", foundedPayment.getPaymentStatus()),
                 kv("amount", foundedPayment.getTotalPrice())
         );
+
     }
 
     private Boolean validateCondition(

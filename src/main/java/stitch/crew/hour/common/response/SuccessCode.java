@@ -72,6 +72,13 @@ public enum SuccessCode {
     LESSON_POLICY_READ("수업정책이 정상적으로 조회되었습니다."),
     LESSON_POLICY_UPDATED("수업정책이 정상적으로 수정되었습니다."),
 
+    /*SHIPPING POLICY*/
+    SHIPPING_POLICY_CREATED("배송 정책이 정상적으로 생성되었습니다."),
+    SHIPPING_POLICY_READ("배송 정책이 정상적으로 조회되었습니다."),
+    SHIPPING_POLICY_UPDATED("배송 정책이 정상적으로 수정되었습니다."),
+    SHIPPING_POLICY_DELETED("배송 정책이 정상적으로 삭제되었습니다."),
+    SHIPPING_POLICY_ACTIVATED("배송 정책이 정상적으로 활성화되었습니다."),
+
     /*RESERVATION*/
     RESERVATION_CREATED("예약이 정상적으로 생성되었습니다."),
     RESERVATION_READ("예약이 정상적으로 조회되었습니다."),

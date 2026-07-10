@@ -59,6 +59,7 @@ public enum ErrorCode {
 
     // 배송규칙
     NO_SHIPPING_POLICY(HttpStatus.NOT_FOUND, "활성화된 배송규칙이 없습니다."),
+    SHIPPING_POLICY_NOT_FOUND(HttpStatus.NOT_FOUND, "배송 정책을 찾을 수 없습니다."),
 
     // 상품
     PRODUCT_NOT_FOUND(HttpStatus.NOT_FOUND, "해당 상품을 찾을 수 없습니다."),

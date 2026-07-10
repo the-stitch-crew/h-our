@@ -23,11 +23,15 @@ public record AdminProductDetailResponse(
         LocalDateTime deletedAt
 ) {
     public static AdminProductDetailResponse from(Product product) {
+        return from(product, product.getThumbnail());
+    }
+
+    public static AdminProductDetailResponse from(Product product, String thumbnail) {
         return new AdminProductDetailResponse(
                 product.getId(),
                 product.getName(),
                 product.getPrice(),
-                product.getThumbnail(),
+                thumbnail,
                 product.getStatus().name(),
                 product.getSummary(),
                 product.getDescription(),

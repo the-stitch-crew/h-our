@@ -1,10 +1,13 @@
 package stitch.crew.hour.admin.service;
 
 import lombok.RequiredArgsConstructor;
+import org.apache.logging.log4j.util.Strings;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import stitch.crew.hour.admin.dto.AdminDashboardResponse;
+import stitch.crew.hour.admin.dto.TopProductResponse;
 import stitch.crew.hour.admin.repository.AdminDashboardRepository;
+import stitch.crew.hour.image.service.ImageService;
 import stitch.crew.hour.order.constant.OrderStatus;
 import stitch.crew.hour.product.constant.ProductStatus;
 
@@ -27,11 +30,22 @@ public class AdminDashboardService {
     );
 
     private final AdminDashboardRepository adminDashboardRepository;
+    private final ImageService imageService;
 
     public AdminDashboardResponse getDashboardInfo() {
         LocalDate today = LocalDate.now();
         LocalDateTime start = today.atStartOfDay();
         LocalDateTime end = today.plusDays(1).atStartOfDay();
+        List<TopProductResponse> topProducts = adminDashboardRepository.findTopProducts(SALES_STATUSES, TOP_PRODUCT_LIMIT)
+                .stream()
+                .map(product -> new TopProductResponse(
+                        product.productId(),
+                        product.name(),
+                        product.totalQuantity(),
+                        product.totalSales(),
+                        createThumbnailUrl(product.thumbnail())
+                ))
+                .toList();
 
         return new AdminDashboardResponse(
                 adminDashboardRepository.sumSalesBetween(SALES_STATUSES, start, end),
@@ -44,7 +58,17 @@ public class AdminDashboardService {
                 adminDashboardRepository.countProductsByStatus(ProductStatus.ACTIVATED),
                 adminDashboardRepository.countProductsByStatus(ProductStatus.SOLD_OUT),
                 adminDashboardRepository.findRecentOrders(RECENT_ORDER_LIMIT),
-                adminDashboardRepository.findTopProducts(SALES_STATUSES, TOP_PRODUCT_LIMIT)
+                topProducts
         );
+    }
+
+    private String createThumbnailUrl(String thumbnail) {
+        if (Strings.isBlank(thumbnail)) {
+            return null;
+        }
+        if (thumbnail.startsWith("http://") || thumbnail.startsWith("https://") || thumbnail.startsWith("/")) {
+            return thumbnail;
+        }
+        return imageService.getPresignedUrl(thumbnail);
     }
 }

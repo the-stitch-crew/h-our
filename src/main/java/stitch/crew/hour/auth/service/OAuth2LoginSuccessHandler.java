@@ -34,6 +34,7 @@ public class OAuth2LoginSuccessHandler implements AuthenticationSuccessHandler {
 	private final UserRepository userRepository;
 	private final JwtTokenProvider jwtTokenProvider;
 	private final SignupTokenStore oauthSignupTokenStore;
+	private final OAuthSignupCookieManager oAuthSignupCookieManager;
 
 	@Value("${app.frontend.base-url}")
 	private String frontendBaseUrl;
@@ -69,7 +70,8 @@ public class OAuth2LoginSuccessHandler implements AuthenticationSuccessHandler {
 		String signupToken = oauthSignupTokenStore.save(
 			new OAuthSignupPayload(email, name, provider)
 		);
-		response.sendRedirect(createOAuthSignupRedirectUrl(signupToken));
+		oAuthSignupCookieManager.addSignupTokenCookie(response, signupToken);
+		response.sendRedirect(createOAuthSignupRedirectUrl());
 
 	}
 
@@ -84,11 +86,8 @@ public class OAuth2LoginSuccessHandler implements AuthenticationSuccessHandler {
 	}
 
 	// 회원가입 페이지
-	private String createOAuthSignupRedirectUrl(
-		String signupToken
-	) {
+	private String createOAuthSignupRedirectUrl() {
 		return UriComponentsBuilder.fromUriString(frontendBaseUrl+"/signup")
-			.queryParam("signupToken", signupToken)
 			.build()
 			.encode()
 			.toUriString();

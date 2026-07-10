@@ -299,7 +299,7 @@ class AdminDashboardServiceTest {
                 category
         ));
         product.switchStatus(status);
-        product.setThumbnail(name + ".png");
+        product.setThumbnail("https://example.com/" + name + ".png");
         return product;
     }
 

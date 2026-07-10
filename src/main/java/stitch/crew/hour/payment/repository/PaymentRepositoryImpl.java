@@ -22,7 +22,6 @@ public class PaymentRepositoryImpl implements PaymentCustomRepository{
     private final JPAQueryFactory jpaQueryFactory;
 
     private final QPayment qPayment = QPayment.payment;
-    private final QUser qUser = QUser.user;
     private final QOrder qOrder = QOrder.order;
     private final QReservation qReservation = QReservation.reservation;
 
