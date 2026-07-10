@@ -1,6 +1,8 @@
 package stitch.crew.hour.policy.repository;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
+import org.springframework.data.jpa.repository.Query;
 import stitch.crew.hour.common.exception.BusinessException;
 import stitch.crew.hour.common.exception.ErrorCode;
 import stitch.crew.hour.policy.domain.ShippingPolicy;
@@ -9,17 +11,21 @@ import java.util.List;
 import java.util.Optional;
 
 public interface ShippingPolicyRepository extends JpaRepository<ShippingPolicy, Long> {
-    Optional<ShippingPolicy> findFirstByIsActiveTrueAndDeletedAtIsNullOrderByIdDesc();
-
-    List<ShippingPolicy> findAllByIsActiveTrueAndDeletedAtIsNull();
-
     List<ShippingPolicy> findAllByDeletedAtIsNullOrderByCreatedAtDesc();
 
     Optional<ShippingPolicy> findByIdAndDeletedAtIsNull(Long id);
 
-    default Optional<ShippingPolicy> findActive() {
-        return findFirstByIsActiveTrueAndDeletedAtIsNullOrderByIdDesc();
-    }
+    List<ShippingPolicy> findAllByIsActiveTrueAndDeletedAtIsNull();
+
+    @Query(
+            """
+            SELECT sp
+                 FROM ShippingPolicy sp
+                 WHERE sp.isActive = true
+                   AND sp.deletedAt IS NULL
+            """
+    )
+    Optional<ShippingPolicy> findActive();
 
     default ShippingPolicy findActiveOrThrow(){
         return findActive().orElseThrow(
@@ -27,9 +33,12 @@ public interface ShippingPolicyRepository extends JpaRepository<ShippingPolicy, 
         );
     }
 
-    default ShippingPolicy findByIdOrThrow(Long id) {
-        return findByIdAndDeletedAtIsNull(id).orElseThrow(
-                () -> new BusinessException(ErrorCode.SHIPPING_POLICY_NOT_FOUND)
-        );
-    }
+    @Modifying
+    @Query(
+            """
+            UPDATE ShippingPolicy sp
+               SET sp.isActive = false
+            """
+    )
+    void setAllUnActive();
 }

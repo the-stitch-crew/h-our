@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import stitch.crew.hour.common.exception.BusinessException;
 import stitch.crew.hour.common.exception.ErrorCode;
+import stitch.crew.hour.common.lock.Lock;
 import stitch.crew.hour.common.util.PreConditions;
 import stitch.crew.hour.lesson.domain.Lesson;
 import stitch.crew.hour.lesson.service.LessonService;
@@ -32,6 +33,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.TimeUnit;
 
 @Service
 @RequiredArgsConstructor
@@ -42,6 +44,7 @@ public class ReservationService {
     private final LessonService lessonService;
 
     // 손님이 예약
+    @Lock(key = Lock.Key.RESERVATION, waitTime = 5L, leaseTime = 10L, timeunit =  TimeUnit.SECONDS)
     @Transactional
     public ReservationResponse saveReservation(CurrentUser currentUser, ReservationRequest request) {
         User user = userService.getActiveUserFromCurrentUser(currentUser);
@@ -77,7 +80,7 @@ public class ReservationService {
 
     }
 
-    //예약자가 예약 상세 확인
+    //예약자가 예약 상세 확인d
     @Transactional(readOnly = true)
     public ReservationResponse getMyReservation(CurrentUser currentUser, Long reservationId) {
         Reservation reservation = reservationRepository.findById(reservationId).orElseThrow(() -> new BusinessException(ErrorCode.RESERVATION_NOT_FOUND));

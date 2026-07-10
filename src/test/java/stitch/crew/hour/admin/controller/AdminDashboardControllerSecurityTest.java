@@ -71,7 +71,12 @@ class AdminDashboardControllerSecurityTest {
         given(jwtTokenProvider.validate(token)).willReturn(true);
         given(jwtTokenProvider.parseJwt(token)).willReturn(new TokenBody("user@test.com"));
         given(userService.loadCurrentUserByEmail("user@test.com"))
-                .willReturn(new CurrentUser(1L, "user@test.com", Role.USER));
+                .willReturn(new CurrentUser(
+                        1L,
+                        "user@test.com",
+                        Role.USER
+                        )
+                );
 
         mockMvc.perform(get(URL).header(HttpHeaders.AUTHORIZATION, "Bearer " + token))
                 .andExpect(status().isForbidden())

@@ -1,79 +1,55 @@
 package stitch.crew.hour.policy.controller;
 
-import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.security.access.annotation.Secured;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 import stitch.crew.hour.common.response.ApiResponses;
 import stitch.crew.hour.common.response.ApiResult;
 import stitch.crew.hour.common.response.SuccessCode;
-import stitch.crew.hour.policy.dto.ShippingPolicyCreateRequest;
-import stitch.crew.hour.policy.dto.ShippingPolicyResponse;
-import stitch.crew.hour.policy.dto.ShippingPolicyUpdateRequest;
-import stitch.crew.hour.policy.service.ShippingPolicyAdminService;
+import stitch.crew.hour.policy.domain.ShippingPolicy;
+import stitch.crew.hour.policy.dto.DeliveryFeeRequest;
+import stitch.crew.hour.policy.dto.DeliveryFeeResponse;
+import stitch.crew.hour.policy.repository.ShippingPolicyRepository;
+import stitch.crew.hour.user.domain.CurrentUser;
 
-import java.util.List;
-
+@Slf4j
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api/admin/shipping-policies")
+@EnableMethodSecurity(securedEnabled = true)
+@Transactional
+@RequestMapping("/api/admin/shippingpolicy")
 public class ShippingPolicyAdminController {
-    private final ShippingPolicyAdminService shippingPolicyAdminService;
 
-    @GetMapping
-    public ResponseEntity<ApiResponses<List<ShippingPolicyResponse>>> getShippingPolicies() {
-        return ApiResult.ok(
-                SuccessCode.SHIPPING_POLICY_READ,
-                shippingPolicyAdminService.getShippingPolicies()
-        );
-    }
-
-    @GetMapping("/{shippingPolicyId}")
-    public ResponseEntity<ApiResponses<ShippingPolicyResponse>> getShippingPolicy(
-            @PathVariable Long shippingPolicyId
-    ) {
-        return ApiResult.ok(
-                SuccessCode.SHIPPING_POLICY_READ,
-                shippingPolicyAdminService.getShippingPolicy(shippingPolicyId)
-        );
-    }
+    private final ShippingPolicyRepository shippingPolicyRepository;
 
     @PostMapping
-    public ResponseEntity<ApiResponses<ShippingPolicyResponse>> createShippingPolicy(
-            @RequestBody @Valid ShippingPolicyCreateRequest request
-    ) {
+    @Secured("ROLE_ADMIN")
+    public ResponseEntity<ApiResponses<DeliveryFeeResponse>> createShippingPolicy(
+            @RequestBody DeliveryFeeRequest request
+    ){
+        shippingPolicyRepository.setAllUnActive();
+
+        ShippingPolicy saved = shippingPolicyRepository.save(
+                new ShippingPolicy(
+                        request.deliveryFee().longValue(),
+                        request.extraFee().longValue(),
+                        true
+                )
+        );
+
         return ApiResult.created(
-                SuccessCode.SHIPPING_POLICY_CREATED,
-                shippingPolicyAdminService.createShippingPolicy(request)
+            SuccessCode.DELIVERY_FEE_SAVEED_SUCCESS,
+            new DeliveryFeeResponse(saved.getDeliveryFee() + saved.getExtraFee())
         );
     }
 
-    @PutMapping("/{shippingPolicyId}")
-    public ResponseEntity<ApiResponses<ShippingPolicyResponse>> updateShippingPolicy(
-            @PathVariable Long shippingPolicyId,
-            @RequestBody @Valid ShippingPolicyUpdateRequest request
-    ) {
-        return ApiResult.ok(
-                SuccessCode.SHIPPING_POLICY_UPDATED,
-                shippingPolicyAdminService.updateShippingPolicy(shippingPolicyId, request)
-        );
-    }
-
-    @PatchMapping("/{shippingPolicyId}/active")
-    public ResponseEntity<ApiResponses<ShippingPolicyResponse>> activateShippingPolicy(
-            @PathVariable Long shippingPolicyId
-    ) {
-        return ApiResult.ok(
-                SuccessCode.SHIPPING_POLICY_ACTIVATED,
-                shippingPolicyAdminService.activateShippingPolicy(shippingPolicyId)
-        );
-    }
-
-    @DeleteMapping("/{shippingPolicyId}")
-    public ResponseEntity<ApiResponses<Void>> deleteShippingPolicy(
-            @PathVariable Long shippingPolicyId
-    ) {
-        shippingPolicyAdminService.deleteShippingPolicy(shippingPolicyId);
-        return ApiResult.ok(SuccessCode.SHIPPING_POLICY_DELETED);
-    }
 }

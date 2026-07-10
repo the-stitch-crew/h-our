@@ -86,6 +86,10 @@ public enum SuccessCode {
     RESERVATION_DELETED("예약이 정상적으로 삭제되었습니다."),
 
 
+    // DELIVERY FEE
+    DELIVERY_FEE_READED_SUCCESS("활성화 중인 배송비를 조회하였습니다."),
+    DELIVERY_FEE_SAVEED_SUCCESS("배송비를 저장하였습니다."),
+
     BUSINESS_SUCCESS("정상적으로 작성되었습니다.");
 
     private final String successMessage;

@@ -42,6 +42,7 @@ custom:
       app-key: test-jwt-app-key-test-jwt-app-key-test-jwt-app-key-test-jwt-app-key
       origin-key: test-jwt-origin-key
   redis:
+    enabled: false
     host: localhost
     port: 6379
   oauth:

@@ -11,6 +11,7 @@ import stitch.crew.hour.payment.domain.QPayment;
 import stitch.crew.hour.payment.dto.PaymentDetailResponse;
 import stitch.crew.hour.payment.dto.QPaymentDetailResponse;
 import stitch.crew.hour.reservation.domain.QReservation;
+import stitch.crew.hour.user.domain.QUser;
 
 import java.util.List;
 
@@ -44,7 +45,10 @@ public class PaymentRepositoryImpl implements PaymentCustomRepository{
                 .on(qPayment.order.id.eq(qOrder.id))
                 .leftJoin(qReservation)
                 .on(qPayment.reservation.id.eq(qReservation.id))
-                .where(qOrder.orderer.id.eq(userId).or(qReservation.user.id.eq(userId)))
+                .where(
+                        qOrder.orderer.id.eq(userId)
+                                .or(qReservation.user.id.eq(userId))
+                )
                 .offset(pageable.getOffset())
                 .limit(pageable.getPageSize())
                 .fetch();
@@ -56,7 +60,10 @@ public class PaymentRepositoryImpl implements PaymentCustomRepository{
                 .on(qPayment.order.id.eq(qOrder.id))
                 .leftJoin(qReservation)
                 .on(qPayment.reservation.id.eq(qReservation.id))
-                .where(qOrder.orderer.id.eq(userId).or(qReservation.user.id.eq(userId)))
+                .where(
+                        qOrder.orderer.id.eq(userId)
+                                .or(qReservation.user.id.eq(userId))
+                )
                 .fetchOne();
         return new PageImpl<>(
                 fetched,

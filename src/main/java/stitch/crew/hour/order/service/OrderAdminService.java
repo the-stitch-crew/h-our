@@ -1,6 +1,7 @@
 package stitch.crew.hour.order.service;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
@@ -14,6 +15,9 @@ import stitch.crew.hour.order.repository.OrderRepository;
 
 import java.util.UUID;
 
+import static net.logstash.logback.argument.StructuredArguments.kv;
+
+@Slf4j
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
@@ -44,6 +48,15 @@ public class OrderAdminService {
     @Transactional
     public void cancelOrder(UUID orderNumber) {
         Order order = orderRepository.findByOrderNumberOrThrow(orderNumber);
+        OrderStatus beforeStatus = order.getOrderStatus();
         order.switchStatus(OrderStatus.CANCELED);
+
+        log.info("order status changed",
+                kv("event", "order_status_changed"),
+                kv("orderNumber", order.getOrderNumber()),
+                kv("beforeStatus", beforeStatus),
+                kv("afterStatus", order.getOrderStatus()),
+                kv("totalPrice", order.getTotalPrice())
+        );
     }
 }
